@@ -12,3 +12,6 @@ Claude Code: append here whenever a fix fails twice, a wrong assumption is found
 
 ## Log
 <!-- 2026-11-xx · P1 · ... -->
+- 2026-11-01 · P0 · Planned on HF Docker Space + HF Hub as free · assumed free-tier terms from memory; account shows Docker/Gradio are paid · dropped HF hosting, API + models local (ADR-022) · **Rule:** verify a "free" claim on the provider's current page before an ADR depends on it.
+- 2026-11-01 · P0 · `pre-commit` failed: `mirrors-prettier` tag `v3.3.3` not found · pinned a hook `rev` from memory; that repo is archived · removed the prettier hook (ruff only) · **Rule:** never write tool versions/tags from memory; run `uv run pre-commit autoupdate` or check the repo's tags.
+- 2026-11-01 · P0 · `ruff` flagged imports in tests (I001) · isort didn't know `app` and `physique_schemas` live in subfolders · set `known-first-party` in `pyproject.toml` · **Rule:** when adding a new top-level package outside the root, add it to `known-first-party`.

@@ -1,6 +1,6 @@
 # Phase plan
 Status values: `TODO` · `IN PROGRESS` · `DONE`. Exactly one phase is `IN PROGRESS`.
-Each phase ends with the end-of-phase protocol in `CLAUDE.md` (logs, ADRs, mistakes, `/sensei` -> `learn/phase-NN/`, tag).
+Each phase ends with the end-of-phase protocol in `CLAUDE.md` (logs, ADRs, mistakes, tag). `/sensei` -> `learn/phase-NN/` only for the major phases: P3, P4, P5, P6.
 
 **Track A — demo (P0–P7):** capture -> data + baseline -> **Siamese CNN** -> **muscle definition** -> RAG -> agent -> deploy.
 **Track B — best (P8–P10):** real data, product depth, hardening. Do not start B until A is live.
@@ -22,15 +22,15 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 
 ---
 
-## P0 · Foundation — `IN PROGRESS` (~1 day)
-- [ ] Monorepo scaffold per README folder tree; `uv` for Python, Vite+React+TS for web
-- [ ] `.gitignore` (ml/data, synth/out, *.onnx, .env, validation-set/), pre-commit (ruff, prettier)
-- [ ] Pydantic schemas in `packages/schemas`: `Scan`, `GapProfile`, `BodyComp`, `DefinitionScores`, `UserProfile`, `Report` (+ generated TS types)
-- [ ] GitHub repo, push; Vercel project linked (web only; API and models stay local, ADR-022)
-- [ ] Groq + OpenRouter keys in local `.env`; `/health` pings both
+## P0 · Foundation — `DONE` (~1 day)
+- [x] Monorepo scaffold per README folder tree; `uv` for Python, Vite+React+TS for web
+- [x] `.gitignore` (ml/data, synth/out, *.onnx, .env, validation-set/), pre-commit (ruff; prettier hook dropped, see mistakes.md)
+- [x] Pydantic schemas in `packages/schemas`: `Scan`, `GapProfile`, `BodyComp`, `DefinitionScores`, `UserProfile`, `Report` (+ generated TS types)
+- [x] GitHub repo, push; Vercel project linked (web only; API and models stay local, ADR-022)
+- [x] Groq + OpenRouter keys in local `.env`; `/health` pings both
 **Gate:** `pytest -q` green on schema tests; hello-world web on Vercel URL; `/health` on localhost:8000 shows both providers `ok`.
 
-## P1 · Private capture in the browser (~4 days)
+## P1 · Private capture in the browser — `IN PROGRESS` (~4 days)
 - [ ] MediaPipe Pose Landmarker + Image Segmenter (tasks-vision WASM) on live webcam (laptop/phone) + file upload
 - [ ] Silhouette preview mode (camera feed hidden by default), pose outline guide
 - [ ] Guided turn capture (ADR-011): ~8 s turn, yaw from keypoints, sharpest frame per view (front / left / back / right), retake prompt

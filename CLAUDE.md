@@ -29,8 +29,9 @@ Privacy-first: raw photos never leave the browser. Only binary silhouettes + key
 1. All exit gates in `docs/phase-plan.md` pass -> record numbers in `docs/logs/dev-log.md`.
 2. New decisions -> append ADR to `docs/decisions.md`. Bugs/wrong turns -> `docs/mistakes.md`.
 3. Update `docs/architecture.md` if anything structural changed.
-4. Run `/sensei` to write `learn/phase-NN/` (see `learn/README.md` for required files).
+4. Run `/sensei` to write `learn/phase-NN/` (see `learn/README.md`) **only for major phases: P3, P4, P5, P6.** Skip for setup/plumbing phases (P0, P1, P7+) unless the user asks. P2: ask the user.
 5. Mark phase `DONE`, next phase `IN PROGRESS`. Commit + `git tag phase-NN`.
+6. Download datasets only in the phase that needs them (BodyM in P2); never earlier.
 
 ## Commands
 - API: `cd services/api && uvicorn app.main:app --reload`

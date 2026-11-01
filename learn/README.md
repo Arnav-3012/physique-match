@@ -1,4 +1,4 @@
-# learn/ — written with /sensei at the end of every phase
+# learn/ — written with /sensei at the end of each major phase (P3, P4, P5, P6; P2 on request)
 
 Each phase gets `learn/phase-NN/` with exactly these files, written beginner -> advanced ("0 to 100"):
 

@@ -14,4 +14,7 @@ Done: scaffold written by Claude (files only, no commands run): pyproject (uv wo
 Metrics: none yet, nothing executed.
 Blockers: user must run install/test commands (see chat); accounts/keys requested phase by phase.
 Decision: HF Spaces/Hub dropped (not free) -> ADR-022; API + models local, web on Vercel. Removed HF token, deploy-space workflow, HF Space README frontmatter.
-Next: `uv sync` + `pytest`, then GitHub push (Arnav-3012/physique-match), Vercel, Groq/OpenRouter keys in local `.env`.
+Also: ruff isort `known-first-party` fix; prettier pre-commit hook removed (bad tag). 3 entries added to mistakes.md.
+Gate (P0): reported passed by user on 2026-11-01 (pytest, Vercel URL, `/health` with both keys); outputs not shared with Claude, so no numbers recorded. Repo: Arnav-3012/physique-match.
+Process: `/sensei` learn docs skipped for P0 (setup phase); only P3-P6 get them. Datasets downloaded only in their own phase.
+Next: P1 (private 4-view capture). Awaiting user go-ahead.
