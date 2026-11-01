@@ -23,6 +23,7 @@ __pycache__/
 node_modules/
 dist/
 .vercel/
+apps/web/public/wasm/
 
 # os / editor
 .DS_Store

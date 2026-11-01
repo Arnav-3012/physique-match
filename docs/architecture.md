@@ -26,7 +26,7 @@
 
 | Component | v1 (demo) | v2 (final) |
 |---|---|---|
-| Capture | MediaPipe tasks-vision (WASM, on-device), guided turn video -> 4 view silhouettes (ADR-011) | + region mode, better frame selection |
+| Capture | MediaPipe Pose Landmarker (WASM, on-device, self-hosted model; its mask is the silhouette), user-paced guided turn -> 4 head-less 384x512 8-bit {0,255} PNG silhouettes + remapped keypoints (ADR-011, ADR-023); code in `apps/web/src/capture/`, RGB frames kept in memory only | + region mode, better frame selection |
 | Analyzer | Siamese CNN (ResNet-18 shared encoder, front+side, BodyM), ONNX on CPU + geometric analyzer for back view, chest/back split, asymmetry and fallback | Siamese fine-tuned on real deltas (P8) |
 | Gap output | 10 regions: shoulders, chest, upper back, lats (V-taper), waist, hips, upper-arm, forearm, thigh, calf + left/right asymmetry | same + per-region uncertainty |
 | Body comp | RFM BF% range from silhouette waist + height + sex; Mifflin RMR -> energy ranges with floors; on-device MobileNetV3-Small definition/adiposity scores (synthetic-trained, "experimental"), fused into BF% range | same model fine-tuned on real data, uncertainty, badge removed if ρ ≥ 0.5 |

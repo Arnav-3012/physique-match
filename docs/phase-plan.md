@@ -30,16 +30,17 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 - [x] Groq + OpenRouter keys in local `.env`; `/health` pings both
 **Gate:** `pytest -q` green on schema tests; hello-world web on Vercel URL; `/health` on localhost:8000 shows both providers `ok`.
 
-## P1 · Private capture in the browser — `IN PROGRESS` (~4 days)
-- [ ] MediaPipe Pose Landmarker + Image Segmenter (tasks-vision WASM) on live webcam (laptop/phone) + file upload
-- [ ] Silhouette preview mode (camera feed hidden by default), pose outline guide
-- [ ] Guided turn capture (ADR-011): ~8 s turn, yaw from keypoints, sharpest frame per view (front / left / back / right), retake prompt
-- [ ] Quality checks: full body in frame, lighting, loose-clothing warning
-- [ ] Head removal + binarise + resize -> `Scan {views[mask, keypoints]}`; keep the 4 RGB frames **in memory only** for the definition model (P4), then discard
-- [ ] Consent screen (itemised notice), 18+ gate, "what we send" preview
+## P1 · Private capture in the browser — `DONE` (~4 days)
+- [x] MediaPipe Pose Landmarker (mask only, ADR-023; no Image Segmenter) on live webcam (laptop/phone) + file upload
+- [x] Silhouette preview mode (camera feed hidden by default), pose outline guide
+- [x] Guided turn capture (ADR-011): user-paced hold, yaw from keypoints, sharpest frame per view (front / left / back / right), retake per view
+- [x] Quality checks: full body in frame, lighting, loose-clothing warning
+- [x] Head removal + binarise + resize -> `Scan {views[mask, keypoints]}`; keep the 4 RGB frames **in memory only** for the definition model (P4), then discard
+- [x] Consent screen (itemised notice), 18+ gate, "what we send" preview
 **Gate:** 10 test captures (laptop + phone): 10/10 produce 4 valid masks; network tab shows no image except 1-bit masks; capture ≤ 12 s.
+**Result (2026-11-01):** ~8/10 captures valid, accepted by the user; best turn 7.6 s; network-tab check not run (do it before P7). See `docs/logs/dev-log.md`.
 
-## P2 · BodyM data pipeline + geometric baseline + body comp (~4 days)
+## P2 · BodyM data pipeline + geometric baseline + body comp — `IN PROGRESS` (~4 days)
 - [ ] Download BodyM (`aws s3 cp --no-sign-request s3://amazon-bodym ...`) into `ml/data/` (gitignored); EDA: subjects, repeats, measurement distributions, sex balance
 - [ ] Subject-level split (train / val from Training; Test-A, Test-B kept untouched); map 14 measurements -> 10 regions
 - [ ] `ml/src/preprocess.py` (shared with API + browser parity test): crop, head removal, height-normalise, resize
