@@ -91,11 +91,11 @@ Gate: *10 captures (laptop + phone): 10/10 give 4 valid masks; network tab shows
 | Unit tests + strict TS build | build green (`tsc --noEmit`, 63 modules, 407 kB JS / 129 kB gzip); the build runs only after `npm test` passes in the same command |
 | Laptop scan, 4/4 valid | yes; turn 7.6 s on the run with all four valid |
 | Phone | user-reported working (4 captures) |
-| Captures done | ~8 reported, **10 not yet reached** |
-| Network tab | **not yet reported** |
+| Captures done | ~8 reported, **10 not reached**; accepted by the user |
+| Network tab | all requests to localhost, none to another domain (user-reported) |
 | Earlier runs | 19.6 s (before the hold/flash shortening), 5.9 s (with views failing), 52.9 s (reference bug, 2 views missing) |
 
-The final numbers for the gate go in [dev-log.md](../../docs/logs/dev-log.md) once the two missing checks are in; this table is not a gate pass.
+Gate outcome: 8 of 10 captures, accepted by the user, plus a passing network check. Final numbers are in [dev-log.md](../../docs/logs/dev-log.md).
 
 ## 6. What went wrong (details in [mistakes.md](../../docs/mistakes.md))
 1. Time-slotted capture: no "turn now" cue, silent skipped views.
