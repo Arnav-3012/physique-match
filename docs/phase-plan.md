@@ -5,6 +5,7 @@ Each phase ends with the end-of-phase protocol in `CLAUDE.md` (logs, ADRs, mista
 **Track A — demo (P0–P7):** capture -> data + baseline -> **Siamese CNN** -> **muscle definition** -> RAG -> agent -> deploy.
 **Track B — best (P8–P10):** real data, product depth, hardening. Do not start B until A is live.
 Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photos come in P8.
+**Goal input has two modes (ADR-025..027).** Mode 1, goal photo (usually front-only): **priority, ships in P7** (touches P3, P4, P7). Mode 2, "describe your goal" (text -> archetype table): **P9 only, must not delay P7**; its single pre-deploy cost is the P4 render-params + masks save.
 
 | Phase | Outcome | ~Time |
 |---|---|---|
@@ -17,7 +18,7 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 | P6 | Agent + planner + safety | 4 d |
 | **P7** | **Demo deploy** | 2 d |
 | P8 | Real data + fine-tune + validation | 1 wk |
-| P9 | Product depth | 1 wk |
+| P9 | Product depth + describe-your-goal (Mode 2) | 2 wk |
 | P10 | Hardening & polish | 4 d |
 
 ---
@@ -48,26 +49,31 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 - [ ] Geometric analyzer (no ML): widths/depths at keypoint rows, chest/back split, ellipse girths, asymmetry -> **baseline A** and fallback
 - [ ] Waist calibration on BodyM (silhouette -> real waist, MAE cm) -> `BodyComp`: RFM BF% range, optional tape override, Mifflin RMR + energy ranges with floors
 - [ ] FastAPI `/analyze` skeleton (mask validation, payload cap, rate limit, CORS) behind `Analyzer` interface
-**Gate:** no subject in two splits (test); geometric Spearman ρ ≥ 0.6 on ≥ 6/10 regions (Test-A); waist MAE ≤ 5 cm; RFM/Mifflin unit tests; rejects RGB upload.
+**Gate:** no subject in two splits (test); geometric Spearman ρ ≥ 0.6 on ≥ 6 of the 8 BodyM-labelled regions (Test-A; `upper_back` and `lats` have no label) **and silhouette features beat a null ridge on [height, weight, sex]** (ADR-024); waist MAE ≤ 5 cm and below the null model's MAE; RFM/Mifflin unit tests; rejects RGB upload; gap unchanged when only weight changes.
 
 ## P3 · Siamese CNN — core model (~1 week)
 - [ ] Pair sampler: random subject pairs (A, B) per epoch from train split; target Δ = (meas(A) − meas(B)) / height for each region; antisymmetry augmentation (swap pair, negate target)
 - [ ] Mask augmentation to match browser masks: edge noise, morphological jitter, small rotation/scale, clothing-bulge sim
 - [ ] **Baseline B:** single ResNet-18 regressor (silhouettes -> measurements), run on both, subtract
 - [ ] Siamese ResNet-18 (ImageNet, 1ch->3ch, front+side input), head on [e_g, e_c, e_g−e_c, e_g⊙e_c]; Huber loss
+- [ ] **Side-view dropout (ADR-025):** goal side input randomly blanked in training (current keeps both views) so a front-only goal photo is a valid input; confirm the `Scan` schema accepts a goal with a front view only (side optional) and add a schema test
 - [ ] Overfit 1 batch -> linear probe -> unfreeze last 2 blocks -> full fine-tune; stop at first rung that passes the gate; MPS, log every N steps
-- [ ] Per-region uncertainty (MC dropout) -> confidence in `GapProfile`
+- [ ] Per-region uncertainty (MC dropout) -> confidence in `GapProfile`; girth regions (upper_arm, forearm, thigh, calf, chest depth) get a lower confidence when the goal side view is missing, calibrated on the front-only slice below
+- [ ] **Front-only eval slice** on Test-B (goal side blanked); baselines A and B run on the same slice (A: widths only, B: front-only regressor)
 - [ ] Export ONNX, model card in `ml/MODEL_CARD.md` (data, splits, metrics, limits, BodyM CC BY-NC); plug into `/analyze` (geometric stays for back view + asymmetry)
 **Gate:** per-region MAE of Δ beats baseline A and baseline B on **Test-B** (in-the-wild); ONNX CPU inference < 150 ms; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
+**Gate report also includes (ADR-025):** the front-only slice on Test-B, per-region MAE vs baselines A and B, width regions and girth regions listed separately, next to the full-input numbers so the cost of side-view dropout is visible.
 
 ## P4 · Muscle-definition model — synthetic, on-device (~1.5 weeks)
 - [ ] `synth/`: Blender + MPFB (MakeHuman) headless script; grid: sex × muscle × fat × height × proportions × skin tone × lighting (3 HDRIs) × fitted clothing × 4 views; start 5k renders, scale to ~30k
 - [ ] Labels from sliders via fixed mapping -> definition 1–5 per region (abs, chest, shoulders, arms, back, legs) + adiposity 1–5; `synth/labels.csv` + mapping doc
+- [ ] **Save render parameters + masks for P9 (ADR-026, pre-deploy requirement):** every render's sex, muscle, fat, height and proportion parameters go in `synth/params.csv` (keyed by render id, same id as `labels.csv`), and its 4-view masks next to the images (`synth/out/`, gitignored). Masks come from the same segmentation + crop + head removal as real input, run on the clean (pre-augmentation) render. No re-rendering in P9.
 - [ ] Domain-gap mitigation: run the **same browser segmentation + crop** on renders; background swap with real CC0 room photos; noise, blur, JPEG, colour jitter
 - [ ] MobileNetV3-Small (ImageNet) shared trunk + 7 ordinal heads; split by render identity; overfit 1 batch first
 - [ ] Export ONNX, int8 (≤ 5 MB), run with ONNX Runtime Web (WebGPU -> WASM)
 - [ ] Fusion: adiposity nudges RFM BF% range (never beyond RFM bounds); UI badge "experimental — trained on synthetic data"
-**Gate:** synthetic held-out Spearman ρ ≥ 0.8 per head, MAE ≤ 0.6; ≤ 300 ms on laptop and mid-range phone; sanity ordering on your own scans logged honestly in `dev-log.md`.
+- [ ] **Goal-photo inference (ADR-025):** the same in-browser model also scores the single goal photo (front frame), so the report compares definition and adiposity, goal vs current. Heads for regions a front photo cannot show (back) are `N/A` for the goal. Eval adds a front-only slice (front view only as input).
+**Gate:** synthetic held-out Spearman ρ ≥ 0.8 per head, MAE ≤ 0.6 (front-only slice reported alongside); ≤ 300 ms on laptop and mid-range phone; sanity ordering on your own scans and on 3+ goal-style photos logged honestly in `dev-log.md`; `synth/params.csv` + masks exist for every render id in `labels.csv`.
 
 ## P5 · Knowledge base + hybrid RAG + semantic cache (~4 days)
 - [ ] Corpus: open exercise library (licence-checked ADR), muscle-group guides, volume and nutrition guidelines summarised from open-access reviews (cited)
@@ -88,11 +94,13 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 
 ## P7 · Demo deploy — `MILESTONE: working demo live` (~2 days)
 - [ ] Web flow: consent -> goal upload -> 4-view scan -> profile -> report -> plan (+ PDF)
-- [ ] Visuals: silhouette overlay, per-region gap bars with confidence, definition bars, BF% range, energy card
+- [ ] **Goal photo = Mode 1, must ship (ADR-025):** front-only goal accepted (side optional); goal step built as two tabs with only "Upload a goal photo" live (the "Describe your goal" tab arrives in P9, ADR-027); warn (not block) if the full body is not in frame, reusing the P1 mask edge-contact check and showing its number; goal-derived scores labelled "appearance-based" (pose, pump, lighting, edits); definition + adiposity shown goal vs current
+- [ ] Realism flag: goal shoulder-to-waist ratio vs the ratio the user's own frame allows (bone width cannot change); formula and threshold set from `evals/safety.jsonl` in P6, wired into the report here
+- [ ] Visuals: silhouette overlay, per-region gap bars with confidence (lower confidence shown for girth regions on a front-only goal), definition bars, BF% range, energy card
 - [ ] Siamese ONNX served by the local API; definition ONNX as static asset (Vercel) with caching
 - [ ] GitHub Action: test; Vercel auto-deploy. Public API hosting is open (ADR-022): decide at P7 start
 - [ ] README: GIF, architecture diagram, metrics table (baselines vs Siamese, synthetic definition scores), limitations, licences
-**Gate:** full flow completes in < 4 min on laptop against the local API. The "stranger from a public URL" version is blocked until API hosting is decided (ADR-022).
+**Gate:** full flow completes in < 4 min on laptop against the local API **with a front-only goal photo** (girth regions show reduced confidence, "appearance-based" labels and the full-body warning appear when expected). The "stranger from a public URL" version is blocked until API hosting is decided (ADR-022).
 
 ---
 
@@ -102,7 +110,17 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 - [ ] Fine-tune definition model on real set (subject-level split); remove "experimental" badge only if ρ ≥ 0.5
 - [ ] Subgroup error (sex, BMI band) in model cards
 
-## P9 · Product depth (~1 week)
+## P9 · Product depth + "describe your goal" (~2 weeks)
+Mode 2 (ADR-026, ADR-027). Starts only after P7 is live; uses the P4 saved params + masks, no re-rendering.
+- [ ] **Evals first:** `evals/goal_text.jsonl` (extraction fields, named-person -> descriptors only, below-floor BF requests, ambiguous input -> clarify), added as a suite to `evals.run`
+- [ ] Archetype table (offline script): for each P4 render id, region proportions from the saved masks via the geometric analyzer (scale-free, ADR-024) + definition labels from `labels.csv`, keyed by (sex, muscle, fat, height, proportions)
+- [ ] Agent tool `goal_from_text` (text only, never images): pydantic-validated goal = sex, build, muscle level, fat level, region emphasis; user confirms the interpretation; same safety floors (no target BF below the sex floor); lookup -> target `GapProfile` + target definition scores -> same report and plan flow. Real people are translated to descriptors ("lean, athletic, defined"); the agent never states a real person's body stats
+- [ ] Goal preview library: ~300–500 pre-rendered front+side previews (neutral grey, fitted clothing, no face detail, compressed, static assets); nearest render to the parsed goal, "more muscle / leaner" sliders swap previews client-side; no live rendering, no server cost
+- [ ] UI: enable the "Describe your goal" tab on the goal step
+- [ ] *Stretch (optional, after the above passes):* live 3D preview in three.js with muscle/fat morphs
+**Gate:** `goal_from_text` eval passes (schema-valid 100%, named-person and below-floor cases 100%); Mode 2 end to end produces the same `Report` schema as Mode 1; preview swap is client-side only (network tab: no request on slider move); library size and load time logged.
+
+### Product depth (original P9 scope)
 - [ ] Progress tracking: re-scan every 4 weeks, trend chart (browser-only storage, export/import JSON)
 - [ ] Follow-up chat over the plan (same agent, cache reused)
 - [ ] Constraint-aware re-plan ("no barbell", "knee pain"), diet preference (veg / non-veg)

@@ -8,6 +8,8 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "httpx>=0.27",
+    "numpy>=2.5.4",
+    "pillow>=13.0.0",
 ]
 
 [dependency-groups]
@@ -16,6 +18,16 @@ dev = [
     "ruff>=0.6",
     "pre-commit>=3.8",
 ]
+ml = [
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
+    "pillow>=13.0.0",
+    "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
+]
+
+[tool.uv]
+default-groups = ["dev", "ml"]
 
 [tool.uv.workspace]
 members = ["packages/schemas"]
@@ -36,4 +48,4 @@ extend-exclude = ["ml/data", "synth/out"]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["app", "physique_schemas"]
+known-first-party = ["app", "physique_schemas", "ml"]
