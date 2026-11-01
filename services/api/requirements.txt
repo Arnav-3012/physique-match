@@ -1,0 +1,6 @@
+# Runtime deps for the HF Space Docker image. Keep in sync with the root pyproject.toml.
+# ML/RAG deps (onnxruntime, rank-bm25, sentence-transformers, ...) are added in their phases.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+httpx>=0.27
+pydantic>=2.8

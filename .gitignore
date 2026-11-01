@@ -1,0 +1,30 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# data / artefacts (CLAUDE.md: never commit ml/data/)
+ml/data/
+synth/out/
+validation-set/
+*.onnx
+*.pt
+*.pth
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# web
+node_modules/
+dist/
+.vercel/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/

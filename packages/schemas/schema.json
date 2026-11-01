@@ -1,0 +1,671 @@
+{
+  "$defs": {
+    "BodyComp": {
+      "additionalProperties": false,
+      "description": "Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).",
+      "properties": {
+        "body_fat": {
+          "$ref": "#/$defs/BodyFatRange"
+        },
+        "rmr_kcal": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rmr Kcal"
+        },
+        "tdee_kcal": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tdee Kcal"
+        },
+        "energy": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/EnergyTarget"
+          },
+          "title": "Energy",
+          "type": "array"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "body_fat"
+      ],
+      "title": "BodyComp",
+      "type": "object"
+    },
+    "BodyFatRange": {
+      "additionalProperties": false,
+      "description": "Always a range, never a point estimate (privacy-and-safety.md).",
+      "properties": {
+        "low": {
+          "maximum": 60,
+          "minimum": 3,
+          "title": "Low",
+          "type": "number"
+        },
+        "high": {
+          "maximum": 60,
+          "minimum": 3,
+          "title": "High",
+          "type": "number"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "low",
+        "high",
+        "method",
+        "confidence"
+      ],
+      "title": "BodyFatRange",
+      "type": "object"
+    },
+    "DefinitionScores": {
+      "additionalProperties": false,
+      "description": "On-device model output; only these numbers leave the browser (ADR-013).",
+      "properties": {
+        "abs": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Abs",
+          "type": "integer"
+        },
+        "chest": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Chest",
+          "type": "integer"
+        },
+        "shoulders": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Shoulders",
+          "type": "integer"
+        },
+        "arms": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Arms",
+          "type": "integer"
+        },
+        "back": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Back",
+          "type": "integer"
+        },
+        "legs": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Legs",
+          "type": "integer"
+        },
+        "adiposity": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Adiposity",
+          "type": "integer"
+        },
+        "experimental": {
+          "default": true,
+          "title": "Experimental",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "abs",
+        "chest",
+        "shoulders",
+        "arms",
+        "back",
+        "legs",
+        "adiposity"
+      ],
+      "title": "DefinitionScores",
+      "type": "object"
+    },
+    "EnergyTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "goal": {
+          "enum": [
+            "cut",
+            "recomp",
+            "bulk",
+            "maintain"
+          ],
+          "title": "Goal",
+          "type": "string"
+        },
+        "kcal_low": {
+          "exclusiveMinimum": 0,
+          "title": "Kcal Low",
+          "type": "number"
+        },
+        "kcal_high": {
+          "exclusiveMinimum": 0,
+          "title": "Kcal High",
+          "type": "number"
+        },
+        "protein_g_low": {
+          "exclusiveMinimum": 0,
+          "title": "Protein G Low",
+          "type": "number"
+        },
+        "protein_g_high": {
+          "exclusiveMinimum": 0,
+          "title": "Protein G High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "goal",
+        "kcal_low",
+        "kcal_high",
+        "protein_g_low",
+        "protein_g_high"
+      ],
+      "title": "EnergyTarget",
+      "type": "object"
+    },
+    "GapProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "analyzer": {
+          "enum": [
+            "geometric",
+            "siamese"
+          ],
+          "title": "Analyzer",
+          "type": "string"
+        },
+        "regions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RegionGap"
+          },
+          "propertyNames": {
+            "enum": [
+              "shoulders",
+              "chest",
+              "upper_back",
+              "lats",
+              "waist",
+              "hips",
+              "upper_arm",
+              "forearm",
+              "thigh",
+              "calf"
+            ]
+          },
+          "title": "Regions",
+          "type": "object"
+        },
+        "asymmetry": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "propertyNames": {
+                "enum": [
+                  "shoulders",
+                  "chest",
+                  "upper_back",
+                  "lats",
+                  "waist",
+                  "hips",
+                  "upper_arm",
+                  "forearm",
+                  "thigh",
+                  "calf"
+                ]
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asymmetry"
+        }
+      },
+      "required": [
+        "analyzer",
+        "regions"
+      ],
+      "title": "GapProfile",
+      "type": "object"
+    },
+    "Keypoint": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "visibility": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Visibility",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "visibility"
+      ],
+      "title": "Keypoint",
+      "type": "object"
+    },
+    "PlanDay": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "exercises": {
+          "items": {
+            "$ref": "#/$defs/PlannedExercise"
+          },
+          "minItems": 1,
+          "title": "Exercises",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "exercises"
+      ],
+      "title": "PlanDay",
+      "type": "object"
+    },
+    "PlannedExercise": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "muscle": {
+          "title": "Muscle",
+          "type": "string"
+        },
+        "sets": {
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Sets",
+          "type": "integer"
+        },
+        "reps": {
+          "title": "Reps",
+          "type": "string"
+        },
+        "cue": {
+          "title": "Cue",
+          "type": "string"
+        },
+        "citations": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "muscle",
+        "sets",
+        "reps",
+        "cue",
+        "citations"
+      ],
+      "title": "PlannedExercise",
+      "type": "object"
+    },
+    "RegionGap": {
+      "additionalProperties": false,
+      "properties": {
+        "delta": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Delta",
+          "type": "number"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "delta",
+        "confidence"
+      ],
+      "title": "RegionGap",
+      "type": "object"
+    },
+    "Report": {
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "priorities": {
+          "items": {
+            "enum": [
+              "shoulders",
+              "chest",
+              "upper_back",
+              "lats",
+              "waist",
+              "hips",
+              "upper_arm",
+              "forearm",
+              "thigh",
+              "calf"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "title": "Priorities",
+          "type": "array"
+        },
+        "gap": {
+          "$ref": "#/$defs/GapProfile"
+        },
+        "body_comp": {
+          "$ref": "#/$defs/BodyComp"
+        },
+        "definition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DefinitionScores"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "plan": {
+          "items": {
+            "$ref": "#/$defs/PlanDay"
+          },
+          "minItems": 1,
+          "title": "Plan",
+          "type": "array"
+        },
+        "realism_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Realism Note"
+        },
+        "disclaimer": {
+          "title": "Disclaimer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "summary",
+        "priorities",
+        "gap",
+        "body_comp",
+        "plan",
+        "disclaimer"
+      ],
+      "title": "Report",
+      "type": "object"
+    },
+    "Scan": {
+      "additionalProperties": false,
+      "description": "Front + left are required (Siamese input); back/right feed asymmetry and lat width.",
+      "properties": {
+        "views": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ViewData"
+          },
+          "propertyNames": {
+            "enum": [
+              "front",
+              "left",
+              "back",
+              "right"
+            ]
+          },
+          "title": "Views",
+          "type": "object"
+        }
+      },
+      "required": [
+        "views"
+      ],
+      "title": "Scan",
+      "type": "object"
+    },
+    "UserProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "height_cm": {
+          "maximum": 230,
+          "minimum": 120,
+          "title": "Height Cm",
+          "type": "number"
+        },
+        "weight_kg": {
+          "maximum": 300,
+          "minimum": 30,
+          "title": "Weight Kg",
+          "type": "number"
+        },
+        "age": {
+          "maximum": 100,
+          "minimum": 18,
+          "title": "Age",
+          "type": "integer"
+        },
+        "sex": {
+          "enum": [
+            "male",
+            "female"
+          ],
+          "title": "Sex",
+          "type": "string"
+        },
+        "activity": {
+          "enum": [
+            "sedentary",
+            "light",
+            "moderate",
+            "active",
+            "very_active"
+          ],
+          "title": "Activity",
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "goal": {
+          "enum": [
+            "cut",
+            "recomp",
+            "bulk"
+          ],
+          "title": "Goal",
+          "type": "string"
+        },
+        "days_per_week": {
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Days Per Week",
+          "type": "integer"
+        },
+        "equipment": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Equipment",
+          "type": "array"
+        },
+        "ed_history": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ed History"
+        },
+        "tape_waist_cm": {
+          "anyOf": [
+            {
+              "maximum": 200,
+              "minimum": 40,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tape Waist Cm"
+        }
+      },
+      "required": [
+        "height_cm",
+        "weight_kg",
+        "age",
+        "sex",
+        "activity",
+        "level",
+        "goal",
+        "days_per_week"
+      ],
+      "title": "UserProfile",
+      "type": "object"
+    },
+    "ViewData": {
+      "additionalProperties": false,
+      "properties": {
+        "mask_png_b64": {
+          "maxLength": 350000,
+          "minLength": 1,
+          "title": "Mask Png B64",
+          "type": "string"
+        },
+        "keypoints": {
+          "items": {
+            "$ref": "#/$defs/Keypoint"
+          },
+          "maxItems": 33,
+          "minItems": 33,
+          "title": "Keypoints",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mask_png_b64",
+        "keypoints"
+      ],
+      "title": "ViewData",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "scan": {
+      "$ref": "#/$defs/Scan"
+    },
+    "gap_profile": {
+      "$ref": "#/$defs/GapProfile"
+    },
+    "body_comp": {
+      "$ref": "#/$defs/BodyComp"
+    },
+    "definition_scores": {
+      "$ref": "#/$defs/DefinitionScores"
+    },
+    "user_profile": {
+      "$ref": "#/$defs/UserProfile"
+    },
+    "report": {
+      "$ref": "#/$defs/Report"
+    }
+  },
+  "required": [
+    "scan",
+    "gap_profile",
+    "body_comp",
+    "definition_scores",
+    "user_profile",
+    "report"
+  ],
+  "title": "Contracts",
+  "type": "object"
+}

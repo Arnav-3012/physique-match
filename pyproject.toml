@@ -1,0 +1,39 @@
+[project]
+name = "physique-gap"
+version = "0.0.0"
+description = "PhysiqueGap workspace root (dev tooling + API runtime deps)"
+requires-python = ">=3.12"
+dependencies = [
+    "physique-schemas",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "httpx>=0.27",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.6",
+    "pre-commit>=3.8",
+]
+
+[tool.uv.workspace]
+members = ["packages/schemas"]
+
+[tool.uv.sources]
+physique-schemas = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["services/api"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["ml/data", "synth/out"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "physique_schemas"]
