@@ -34,7 +34,7 @@ Privacy-first: raw photos never leave the browser. Only binary silhouettes + key
 6. Download datasets only in the phase that needs them (BodyM in P2); never earlier.
 
 ## Commands
-- API: `cd services/api && uvicorn app.main:app --reload`
+- API: `cd services/api && uv run uvicorn app.main:app --reload --env-file ../../.env`
 - Web: `cd apps/web && npm run dev`
 - Tests: `pytest -q -x --tb=short`
 - Train: `python -m ml.src.train --config ml/configs/<name>.yaml`
