@@ -1,5 +1,44 @@
 {
   "$defs": {
+    "AnalyzeRequest": {
+      "additionalProperties": false,
+      "description": "Goal and current scans are silhouettes only; the profile is numbers (ADR-003).",
+      "properties": {
+        "goal": {
+          "$ref": "#/$defs/Scan"
+        },
+        "current": {
+          "$ref": "#/$defs/Scan"
+        },
+        "profile": {
+          "$ref": "#/$defs/UserProfile"
+        }
+      },
+      "required": [
+        "goal",
+        "current",
+        "profile"
+      ],
+      "title": "AnalyzeRequest",
+      "type": "object"
+    },
+    "AnalyzeResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "gap": {
+          "$ref": "#/$defs/GapProfile"
+        },
+        "body_comp": {
+          "$ref": "#/$defs/BodyComp"
+        }
+      },
+      "required": [
+        "gap",
+        "body_comp"
+      ],
+      "title": "AnalyzeResponse",
+      "type": "object"
+    },
     "BodyComp": {
       "additionalProperties": false,
       "description": "Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).",
@@ -639,6 +678,12 @@
     }
   },
   "properties": {
+    "analyze_request": {
+      "$ref": "#/$defs/AnalyzeRequest"
+    },
+    "analyze_response": {
+      "$ref": "#/$defs/AnalyzeResponse"
+    },
     "scan": {
       "$ref": "#/$defs/Scan"
     },
@@ -659,6 +704,8 @@
     }
   },
   "required": [
+    "analyze_request",
+    "analyze_response",
     "scan",
     "gap_profile",
     "body_comp",

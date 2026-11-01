@@ -5,13 +5,14 @@ Each phase ends with the end-of-phase protocol in `CLAUDE.md` (logs, ADRs, mista
 **Track A — demo (P0–P7):** capture -> data + baseline -> **Siamese CNN** -> **muscle definition** -> RAG -> agent -> deploy.
 **Track B — best (P8–P10):** real data, product depth, hardening. Do not start B until A is live.
 Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photos come in P8.
+Hosting (ADR-028): web on Vercel, API on **Google Cloud Run free tier**, models on HF Hub. The deploy spike and billing safety (budget + kill switch) are deferred to deploy time (ADR-031) but come before the first deploy; see the block inside P2 and the first P7 item.
 **Goal input has two modes (ADR-025..027).** Mode 1, goal photo (usually front-only): **priority, ships in P7** (touches P3, P4, P7). Mode 2, "describe your goal" (text -> archetype table): **P9 only, must not delay P7**; its single pre-deploy cost is the P4 render-params + masks save.
 
 | Phase | Outcome | ~Time |
 |---|---|---|
 | P0 | Repo, schemas, empty deploys live | 1 d |
 | P1 | Private 4-view capture in browser | 4 d |
-| P2 | BodyM pipeline + geometric baseline + body comp | 4 d |
+| P2 | Deploy spike (Cloud Run) + BodyM pipeline + geometric baseline + body comp | 4.5 d |
 | **P3** | **Siamese CNN (core model)** | 1 wk |
 | **P4** | **Muscle-definition model (synthetic, on-device)** | 1.5 wk |
 | P5 | Hybrid RAG + query manager + semantic cache | 4 d |
@@ -27,7 +28,7 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 - [x] Monorepo scaffold per README folder tree; `uv` for Python, Vite+React+TS for web
 - [x] `.gitignore` (ml/data, synth/out, *.onnx, .env, validation-set/), pre-commit (ruff; prettier hook dropped, see mistakes.md)
 - [x] Pydantic schemas in `packages/schemas`: `Scan`, `GapProfile`, `BodyComp`, `DefinitionScores`, `UserProfile`, `Report` (+ generated TS types)
-- [x] GitHub repo, push; Vercel project linked (web only; API and models stay local, ADR-022)
+- [x] GitHub repo, push; Vercel project linked (web only). At P0 the API and models stayed local (ADR-022); superseded by ADR-028: API on Cloud Run, models on HF Hub, from the P2 deploy spike on
 - [x] Groq + OpenRouter keys in local `.env`; `/health` pings both
 **Gate:** `pytest -q` green on schema tests; hello-world web on Vercel URL; `/health` on localhost:8000 shows both providers `ok`.
 
@@ -41,18 +42,33 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 **Gate:** 10 test captures (laptop + phone): 10/10 produce 4 valid masks; network tab shows no image except 1-bit masks; capture ≤ 12 s.
 **Result (2026-11-01):** ~8/10 captures valid, accepted by the user; best turn 7.6 s; network tab all localhost (user-reported). See `docs/logs/dev-log.md`.
 
-## P2 · BodyM data pipeline + geometric baseline + body comp — `IN PROGRESS` (~4 days)
-- [ ] Download BodyM (`aws s3 cp --no-sign-request s3://amazon-bodym ...`) into `ml/data/` (gitignored); EDA: subjects, repeats, measurement distributions, sex balance
-- [ ] Subject-level split (train / val from Training; Test-A, Test-B kept untouched); map 14 measurements -> 10 regions
-- [ ] `ml/src/preprocess.py` (shared with API + browser parity test): crop, head removal, height-normalise, resize
-- [ ] Parity check: same preprocessing on a BodyM silhouette and on a browser-made mask of you -> visually and statistically comparable
-- [ ] Geometric analyzer (no ML): widths/depths at keypoint rows, chest/back split, ellipse girths, asymmetry -> **baseline A** and fallback
-- [ ] Waist calibration on BodyM (silhouette -> real waist, MAE cm) -> `BodyComp`: RFM BF% range, optional tape override, Mifflin RMR + energy ranges with floors
-- [ ] FastAPI `/analyze` skeleton (mask validation, payload cap, rate limit, CORS) behind `Analyzer` interface
-**Gate:** no subject in two splits (test); geometric Spearman ρ ≥ 0.6 on ≥ 6 of the 8 BodyM-labelled regions (Test-A; `upper_back` and `lats` have no label) **and silhouette features beat a null ridge on [height, weight, sex]** (ADR-024); waist MAE ≤ 5 cm and below the null model's MAE; RFM/Mifflin unit tests; rejects RGB upload; gap unchanged when only weight changes.
+## P2 · Deploy spike + BodyM data pipeline + geometric baseline + body comp — `IN PROGRESS` (~4.5 days)
+### Deploy spike + billing safety (ADR-028) — `DEFERRED` to deploy time by the user (ADR-031); does not block P3
+Run this whole block at the start of P7 (or earlier if the user says so), before anything is deployed. Already done: APIs `billingbudgets`, `pubsub`, `cloudbilling` enabled; Pub/Sub topic `budget-alerts` created in project `physique-gap-3012`. Nothing is deployed and no budget exists yet.
+Order matters: account and billing safety, then code. The user does account/billing setup; Claude writes files only and gives one exact command at a time.
+- [x] (done 2026-11-01; trial dates still to log) User checklist: Google account -> Free Trial billing account (INR; if card/UPI signup fails **stop and tell Claude**, fallback = Vercel Python Functions spike) -> one project -> link billing -> install + log in to `gcloud` -> enable only the APIs the steps need (Claude names each at the step that needs it)
+- [ ] Log trial start/end dates and the **day-85 upgrade decision** date in `dev-log.md`
+- [ ] Budget (~INR 100, project-scoped, alerts 50/90/100%, Pub/Sub topic attached); check it counts gross cost, not net of trial credits; budget alert created
+- [ ] Kill switch (`infra/kill_switch/`): function deployed, `SIMULATE_DEACTIVATION=true`, tested with a synthetic over-budget Pub/Sub message; log shows "(Simulated)", billing still linked
+- [ ] Confirm region in the console (`asia-south1` if offered) and record it
+- [ ] Spike service (`spikes/cloudrun/`): FastAPI + onnxruntime + numpy + Pillow, loads a ~50 MB dummy ONNX, `POST /infer` takes a ~100 KB PNG, `GET /whoami` echoes how the client IP arrives; Artifact Registry repo with old-version cleanup
+- [ ] Deploy **private** with `--max-instances` set (and 1 vCPU / 2 GiB, request-based billing, min 0); only then allow public access
+- [ ] Measure: image size (as stored), cold start (baked model vs fetched at start; scipy in/out), warm latency (p50/p95 over >= 30 requests), `X-Forwarded-For` shape; decide bake vs fetch
+- [ ] Usage + billing report shows $0 for the spike
+**Spike gate (before the first deploy, ADR-031):** all of the above recorded in `docs/logs/dev-log.md`: image size, cold start, warm latency, usage/billing report at $0, budget alert created, kill switch tested in simulation. Nothing goes to Cloud Run before the budget and kill switch exist. Whether bake-vs-fetch and the scipy decision are made here changes nothing in P3 or P5 design beyond the size limits already stated.
 
-## P3 · Siamese CNN — core model (~1 week)
-- [ ] Pair sampler: random subject pairs (A, B) per epoch from train split; target Δ = (meas(A) − meas(B)) / height for each region; antisymmetry augmentation (swap pair, negate target)
+### BodyM pipeline, geometric baseline, body comp
+- [x] Download BodyM (`aws s3 cp --no-sign-request s3://amazon-bodym ...`) into `ml/data/` (gitignored); EDA: subjects, repeats, measurement distributions, sex balance
+- [x] Subject-level split (train / val from Training; Test-A, Test-B kept untouched); map 14 measurements -> 8 labelled regions (`upper_back`, `lats` have no label)
+- [x] `ml/src/preprocess.py` (shared with API + browser parity test): crop, head removal, height-normalise, resize
+- [x] Parity check: same preprocessing on a BodyM silhouette and on a browser-made mask of you -> visually and statistically comparable (3 captures, 12 masks; the planned 5 were not all taken)
+- [x] Geometric analyzer (no ML): silhouette-only rows, widths/depths, ellipse girths -> **baseline A** and fallback. **Left/right asymmetry not done** (no ground truth to validate it); chest/back split not done
+- [x] Waist calibration on BodyM (silhouette -> real waist, MAE cm) -> `BodyComp`: RFM BF% range, optional tape override, Mifflin RMR + energy ranges with floors
+- [x] FastAPI `/analyze` skeleton (mask validation, payload cap, rate limit behind an interface (in-memory now, Upstash before P7), CORS = Vercel origin only) behind `Analyzer` interface; imports only what the Cloud Run image will carry (no torch)
+**Gate:** no subject in two splits (test); geometric Spearman ρ ≥ 0.6 on ≥ 6 of the 8 BodyM-labelled regions (Test-A; `upper_back` and `lats` have no label) **and silhouette features beat a null ridge on [height, weight, sex]** (ADR-024); waist MAE ≤ 5 cm and below the null model's MAE; RFM/Mifflin unit tests; rejects RGB upload; gap unchanged when only weight changes.
+**BodyM part result (2026-11-01):** gate 2 criterion changed after the first result (ADR-029): silhouette-only rho >= 0.6 on 7/8 regions (testA and testB), and the silhouette adds signal beyond the null on 7/8 (testA) but only 5/8 (testB). Waist MAE 2.70 cm on testA (null 3.00), 3.39 on testB (null 3.50). Test suite green (user-reported); full numbers in `docs/logs/dev-log.md`. The deploy spike is deferred (ADR-031), so the BodyM gate is the P2 gate.
+
+## P3 · Siamese CNN — core model (~1 week)- [ ] Pair sampler: random subject pairs (A, B) per epoch from train split; target Δ = (meas(A) − meas(B)) / height for each region; antisymmetry augmentation (swap pair, negate target)
 - [ ] Mask augmentation to match browser masks: edge noise, morphological jitter, small rotation/scale, clothing-bulge sim
 - [ ] **Baseline B:** single ResNet-18 regressor (silhouettes -> measurements), run on both, subtract
 - [ ] Siamese ResNet-18 (ImageNet, 1ch->3ch, front+side input), head on [e_g, e_c, e_g−e_c, e_g⊙e_c]; Huber loss
@@ -60,8 +76,8 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 - [ ] Overfit 1 batch -> linear probe -> unfreeze last 2 blocks -> full fine-tune; stop at first rung that passes the gate; MPS, log every N steps
 - [ ] Per-region uncertainty (MC dropout) -> confidence in `GapProfile`; girth regions (upper_arm, forearm, thigh, calf, chest depth) get a lower confidence when the goal side view is missing, calibrated on the front-only slice below
 - [ ] **Front-only eval slice** on Test-B (goal side blanked); baselines A and B run on the same slice (A: widths only, B: front-only regressor)
-- [ ] Export ONNX, model card in `ml/MODEL_CARD.md` (data, splits, metrics, limits, BodyM CC BY-NC); plug into `/analyze` (geometric stays for back view + asymmetry)
-**Gate:** per-region MAE of Δ beats baseline A and baseline B on **Test-B** (in-the-wild); ONNX CPU inference < 150 ms; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
+- [ ] Export ONNX (**file <= 50 MB**, int8 if needed), model card in `ml/MODEL_CARD.md` (data, splits, metrics, limits, BodyM CC BY-NC), weights to an HF Hub model repo; plug into `/analyze` (geometric stays for back view + asymmetry)
+**Gate:** per-region MAE of Δ beats baseline A and baseline B on **Test-B** (in-the-wild); ONNX inference < 150 ms measured locally on CPU with 1 thread as a proxy, **re-confirmed on the deployed Cloud Run container (1 vCPU) at the P7 spike** (ADR-031); model file <= 50 MB; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
 **Gate report also includes (ADR-025):** the front-only slice on Test-B, per-region MAE vs baselines A and B, width regions and girth regions listed separately, next to the full-input numbers so the cost of side-view dropout is visible.
 
 ## P4 · Muscle-definition model — synthetic, on-device (~1.5 weeks)
@@ -79,9 +95,9 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 - [ ] Corpus: open exercise library (licence-checked ADR), muscle-group guides, volume and nutrition guidelines summarised from open-access reviews (cited)
 - [ ] Chunk with metadata (muscle, equipment, level, goal, source)
 - [ ] **Evals first:** `evals/rag.jsonl` (40 queries), `evals/cache.jsonl` (60 should-hit / must-miss pairs)
-- [ ] BM25 + bge-small dense + RRF; metadata filters
+- [ ] BM25 (rank-bm25) + bge-small dense (ONNX Runtime int8, no torch/sentence-transformers in the API; corpus embeddings precomputed offline; tokenizer package size measured) + RRF; metadata filters; image stays inside the ADR-028 size budget
 - [ ] Query manager: normalise -> embedding intent router -> region decomposition -> filters
-- [ ] Semantic cache: namespaced, threshold τ from cache eval
+- [ ] Semantic cache: namespaced, threshold τ from cache eval; behind an interface, in-memory locally, **Upstash Redis** when deployed (instances scale to zero, ADR-028); verify Upstash free-tier limits first, else document the limitation
 **Gate:** recall@5 ≥ 0.85; hybrid beats each single retriever; cache false-hit ≤ 2%.
 
 ## P6 · Agent, planner, report (~4 days)
@@ -97,10 +113,14 @@ Data rule (ADR-020): demo models train on **BodyM + synthetic only**. Real photo
 - [ ] **Goal photo = Mode 1, must ship (ADR-025):** front-only goal accepted (side optional); goal step built as two tabs with only "Upload a goal photo" live (the "Describe your goal" tab arrives in P9, ADR-027); warn (not block) if the full body is not in frame, reusing the P1 mask edge-contact check and showing its number; goal-derived scores labelled "appearance-based" (pose, pump, lighting, edits); definition + adiposity shown goal vs current
 - [ ] Realism flag: goal shoulder-to-waist ratio vs the ratio the user's own frame allows (bone width cannot change); formula and threshold set from `evals/safety.jsonl` in P6, wired into the report here
 - [ ] Visuals: silhouette overlay, per-region gap bars with confidence (lower confidence shown for girth regions on a front-only goal), definition bars, BF% range, energy card
-- [ ] Siamese ONNX served by the local API; definition ONNX as static asset (Vercel) with caching
-- [ ] GitHub Action: test; Vercel auto-deploy. Public API hosting is open (ADR-022): decide at P7 start
+- [ ] Deploy = Vercel (web) + Cloud Run (API) + HF Hub (models) (ADR-028): Siamese ONNX served by the Cloud Run container; definition ONNX as static asset (Vercel) with caching; model cards on HF Hub linked from README and UI footer
+- [ ] GitHub Actions: tests; Vercel auto-deploy for web; CI builds and deploys the API image to Cloud Run (keyless Workload Identity Federation) and removes old image versions. No HF Space sync, no Vercel API project
+- [ ] **First:** run the deferred "Deploy spike + billing safety" block in P2 (budget, kill switch in simulation, private deploy with max-instances, measurements). Nothing is deployed before it passes
+- [ ] Before the service is public: `max-instances` set, Upstash-backed cache + rate limiter live, CORS = Vercel origin only, secrets via Secret Manager/env, real `X-Forwarded-For` handling from the spike
+- [ ] Arm the kill switch: deliberate real trip test (`SIMULATE_DEACTIVATION=false`) as a separate user-approved step; re-link billing by hand afterwards; document that it stops every service and the cap is not exact
+- [ ] Day-85 trial check done and logged (upgrade or let the trial close)
 - [ ] README: GIF, architecture diagram, metrics table (baselines vs Siamese, synthetic definition scores), limitations, licences
-**Gate:** full flow completes in < 4 min on laptop against the local API **with a front-only goal photo** (girth regions show reduced confidence, "appearance-based" labels and the full-body warning appear when expected). The "stranger from a public URL" version is blocked until API hosting is decided (ADR-022).
+**Gate:** full flow completes in < 4 min **from the public Vercel URL against the Cloud Run API** (cold start included once) **with a front-only goal photo** (girth regions show reduced confidence, "appearance-based" labels and the full-body warning appear when expected); billing report still at $0 (or within the free tier) after the load; Siamese inference < 150 ms on the deployed container.
 
 ---
 

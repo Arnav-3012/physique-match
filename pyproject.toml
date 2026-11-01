@@ -10,6 +10,7 @@ dependencies = [
     "httpx>=0.27",
     "numpy>=2.5.4",
     "pillow>=13.0.0",
+    "scipy>=1.18.1",
 ]
 
 [dependency-groups]
@@ -37,7 +38,7 @@ physique-schemas = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["services/api"]
+pythonpath = [".", "services/api"]
 
 [tool.ruff]
 line-length = 100

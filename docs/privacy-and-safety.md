@@ -46,4 +46,5 @@ What the user sees during capture: their **live silhouette preview**, not their 
 - Every report ends with: not medical advice; see a professional for injuries or health conditions.
 
 ## Logging
-- Logs: request id, latency, cache hit, region deltas (numbers only). Never masks, never free-text queries beyond the intent label.
+- Logs: request id, latency, cache hit, region deltas (numbers only). Never masks, never free-text queries beyond the intent label. Never secrets.
+- Cloud Run (ADR-028) writes its own request logs (URL, status, latency, client IP, user agent) outside our code. Set the log retention as short as the console allows, and say in the consent screen that the host sees the requester's IP address. Per-IP rate-limit counters in Upstash expire with the window.

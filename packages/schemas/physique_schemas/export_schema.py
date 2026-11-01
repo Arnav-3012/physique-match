@@ -5,10 +5,21 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from .models import BodyComp, DefinitionScores, GapProfile, Report, Scan, UserProfile
+from .models import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    BodyComp,
+    DefinitionScores,
+    GapProfile,
+    Report,
+    Scan,
+    UserProfile,
+)
 
 
 class Contracts(BaseModel):
+    analyze_request: AnalyzeRequest
+    analyze_response: AnalyzeResponse
     scan: Scan
     gap_profile: GapProfile
     body_comp: BodyComp

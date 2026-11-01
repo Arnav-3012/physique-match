@@ -39,6 +39,11 @@ export default function ReviewScreen({ views, turnMs, onRetake, onRestart }: Pro
                 <div className="mt-1 grid aspect-[3/4] place-items-center bg-neutral-200 text-sm text-gray-600">missing</div>
               )}
               {v && <p className="mt-1 text-xs text-gray-600">{Math.round((v.maskPngB64.length * 0.75) / 1024)} KB · sharp {Math.round(v.sharpness)}</p>}
+              {import.meta.env.DEV && v?.maskPngB64 && (
+                <a className="text-xs underline" download={`${name}.png`} href={`data:image/png;base64,${v.maskPngB64}`}>
+                  dev: save mask
+                </a>
+              )}
               {[...(v?.issues ?? []), ...(v?.warnings ?? [])].map((m) => (
                 <p key={m} className="text-xs text-amber-700">{m}</p>
               ))}

@@ -49,6 +49,17 @@ export type X = number;
 export type Y = number;
 export type Z = number;
 export type Visibility = number;
+export type HeightCm = number;
+export type WeightKg = number;
+export type Age = number;
+export type Sex = "male" | "female";
+export type Activity = "sedentary" | "light" | "moderate" | "active" | "very_active";
+export type Level = "beginner" | "intermediate" | "advanced";
+export type Goal = "cut" | "recomp" | "bulk";
+export type DaysPerWeek = number;
+export type Equipment = string[];
+export type EdHistory = boolean | null;
+export type TapeWaistCm = number | null;
 export type Analyzer = "geometric" | "siamese";
 export type Delta = number;
 export type Confidence = number;
@@ -61,7 +72,7 @@ export type Method = string;
 export type Confidence1 = "low" | "medium" | "high";
 export type RmrKcal = number | null;
 export type TdeeKcal = number | null;
-export type Goal = "cut" | "recomp" | "bulk" | "maintain";
+export type Goal1 = "cut" | "recomp" | "bulk" | "maintain";
 export type KcalLow = number;
 export type KcalHigh = number;
 export type ProteinGLow = number;
@@ -76,17 +87,6 @@ export type Back = number;
 export type Legs = number;
 export type Adiposity = number;
 export type Experimental = boolean;
-export type HeightCm = number;
-export type WeightKg = number;
-export type Age = number;
-export type Sex = "male" | "female";
-export type Activity = "sedentary" | "light" | "moderate" | "active" | "very_active";
-export type Level = "beginner" | "intermediate" | "advanced";
-export type Goal1 = "cut" | "recomp" | "bulk";
-export type DaysPerWeek = number;
-export type Equipment = string[];
-export type EdHistory = boolean | null;
-export type TapeWaistCm = number | null;
 export type Summary = string;
 /**
  * @maxItems 3
@@ -125,6 +125,8 @@ export type RealismNote = string | null;
 export type Disclaimer = string;
 
 export interface Contracts {
+  analyze_request: AnalyzeRequest;
+  analyze_response: AnalyzeResponse;
   scan: Scan;
   gap_profile: GapProfile;
   body_comp: BodyComp;
@@ -132,6 +134,14 @@ export interface Contracts {
   user_profile: UserProfile;
   report: Report;
   [k: string]: unknown;
+}
+/**
+ * Goal and current scans are silhouettes only; the profile is numbers (ADR-003).
+ */
+export interface AnalyzeRequest {
+  goal: Scan;
+  current: Scan;
+  profile: UserProfile;
 }
 /**
  * Front + left are required (Siamese input); back/right feed asymmetry and lat width.
@@ -151,6 +161,23 @@ export interface Keypoint {
   y: Y;
   z: Z;
   visibility: Visibility;
+}
+export interface UserProfile {
+  height_cm: HeightCm;
+  weight_kg: WeightKg;
+  age: Age;
+  sex: Sex;
+  activity: Activity;
+  level: Level;
+  goal: Goal;
+  days_per_week: DaysPerWeek;
+  equipment?: Equipment;
+  ed_history?: EdHistory;
+  tape_waist_cm?: TapeWaistCm;
+}
+export interface AnalyzeResponse {
+  gap: GapProfile;
+  body_comp: BodyComp;
 }
 export interface GapProfile {
   analyzer: Analyzer;
@@ -184,7 +211,7 @@ export interface BodyFatRange {
   confidence: Confidence1;
 }
 export interface EnergyTarget {
-  goal: Goal;
+  goal: Goal1;
   kcal_low: KcalLow;
   kcal_high: KcalHigh;
   protein_g_low: ProteinGLow;
@@ -202,19 +229,6 @@ export interface DefinitionScores {
   legs: Legs;
   adiposity: Adiposity;
   experimental?: Experimental;
-}
-export interface UserProfile {
-  height_cm: HeightCm;
-  weight_kg: WeightKg;
-  age: Age;
-  sex: Sex;
-  activity: Activity;
-  level: Level;
-  goal: Goal1;
-  days_per_week: DaysPerWeek;
-  equipment?: Equipment;
-  ed_history?: EdHistory;
-  tape_waist_cm?: TapeWaistCm;
 }
 export interface Report {
   summary: Summary;

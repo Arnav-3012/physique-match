@@ -17,7 +17,10 @@ Privacy-first: raw photos never leave the browser. Only binary silhouettes + key
 - Overfit one batch before any full training run. Train on M4 Pro (MPS). Log every N steps, not every batch.
 - LLM: one agent with tools, direct OpenAI-compatible SDK, pydantic structured output. No LangChain.
 - Write the eval set before tuning prompts / RAG / cache thresholds (`evals/`).
-- Secrets only via env / HF Space secrets. Never commit keys or `ml/data/`.
+- Secrets only via env / Cloud Run env vars or Secret Manager. Never commit keys or `ml/data/`; never put them in the image or logs.
+- Hosting (ADR-028): web on Vercel, API on Google Cloud Run free tier (1 vCPU / 2 GiB, request-based billing, min-instances 0, max-instances 1–2), models on HF Hub. API image is `python:3.12-slim` with **no torch**: anything the API imports (incl. `ml/src/preprocess.py`) must be numpy/Pillow-class; check image size when adding a dependency.
+- Billing safety is a hard requirement: free-trial billing account, project-scoped budget, kill switch tested in simulation **before** the first deploy; `max-instances` set **before** the service is public; one project only, no extra projects/accounts to dodge limits. Cache and rate-limit state go in Upstash (instances scale to zero).
+- The Cloud Run deploy spike and billing safety are deferred to deploy time (ADR-031, user decision). Nothing is deployed before the budget, the kill switch (simulation) and `max-instances` exist; the spike result is logged in `docs/logs/dev-log.md`. The runbook is the "Deploy spike + billing safety" block in `docs/phase-plan.md` P2.
 - Body-image safety rules in `docs/privacy-and-safety.md` are hard requirements, not nice-to-haves.
 
 ## Working agreement with the user (hard rules)

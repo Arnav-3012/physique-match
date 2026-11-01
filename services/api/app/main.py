@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import health
+from .routes import analyze, health
 
 app = FastAPI(title="PhysiqueGap API")
 
@@ -14,3 +14,4 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 app.include_router(health.router)
+app.include_router(analyze.router)

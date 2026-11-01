@@ -191,3 +191,17 @@ class Report(_Strict):
         if "not medical advice" not in self.disclaimer.lower():
             raise ValueError("disclaimer must state it is not medical advice")
         return self
+
+
+# --- /analyze -------------------------------------------------------------
+class AnalyzeRequest(_Strict):
+    """Goal and current scans are silhouettes only; the profile is numbers (ADR-003)."""
+
+    goal: Scan
+    current: Scan
+    profile: UserProfile
+
+
+class AnalyzeResponse(_Strict):
+    gap: GapProfile
+    body_comp: BodyComp
