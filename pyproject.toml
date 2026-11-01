@@ -26,6 +26,15 @@ ml = [
     "scikit-learn>=1.9.1",
     "scipy>=1.18.1",
 ]
+# Training/export only; not in default-groups so CI and the API image stay torch-free (ADR-028).
+# Install: uv sync --group train
+train = [
+    "torch",
+    "torchvision",
+    "onnx",
+    "onnxruntime",
+    "pyyaml",
+]
 
 [tool.uv]
 default-groups = ["dev", "ml"]

@@ -39,6 +39,8 @@ REGION_FEATURE = {
     "upper_back": "upper_back_w",
     "lats": "lats_w",
 }
+# Front-only goal (ADR-025/033): the side-dependent regions fall back to their front width.
+WIDTH_FEATURE = REGION_FEATURE | {"chest": "chest_w", "waist": "waist_w", "hips": "hip_w"}
 
 
 def girth(width: float, depth: float) -> float:

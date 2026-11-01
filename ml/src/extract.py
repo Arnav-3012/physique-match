@@ -29,7 +29,10 @@ def main() -> None:
     owner = {s: name for name, ids in json.loads(SPLITS_JSON.read_text()).items() for s in ids}
     df = pd.concat([load_table(s) for s in SPLITS], ignore_index=True)
     df["set"] = df.subject_id.map(owner)
-    df = df.dropna(subset=["set"]).reset_index(drop=True)  # drops the subject shared by both tests
+    # A row stays only if its source split holds its subject: the shared subject's testB photos
+    # (owner = testA) are dropped here instead of being counted in testA.
+    from_train = df.split.eq("train") & df.set.isin(["train", "val"])
+    df = df[from_train | df.split.eq(df.set)].reset_index(drop=True)
     with ProcessPoolExecutor() as pool:
         feats = list(pool.map(one, zip(df.front_path, df.side_path, strict=True), chunksize=32))
     out = pd.concat([df.drop(columns=["front_path", "side_path"]), pd.DataFrame(feats)], axis=1)

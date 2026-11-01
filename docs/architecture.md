@@ -46,7 +46,7 @@ silhouette_goal ─┐                         ┌─ e_g ─┐
 silhouette_cur  ─┘  (ImageNet init,        └─ e_c ─┘
                      1ch -> 3ch, 256×192)
 ```
-- Target: Δ = (goal measurements − current measurements) / height, for 8 regions mapped from BodyM's 14 measurements.
+- Target (ADR-032): Δ = m_goal/h_goal − m_cur/h_cur (difference of height-normalised ratios, `height_cm`), for 8 regions mapped from BodyM's 14 measurements. A proportion gap: the UI converts to cm as Δ × the user's own height ("at your height"). The net never sees height.
 - Loss: Huber on Δ. Antisymmetry augmentation: swap pair, negate target.
 - Baseline it must beat: single-image regressor run twice and subtracted. If it doesn't, we report that honestly (ADR-006).
 - Front-only silhouettes give widths, not girths -> front+side input in v2.

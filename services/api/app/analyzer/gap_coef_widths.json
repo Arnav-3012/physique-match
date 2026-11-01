@@ -1,0 +1,50 @@
+{
+ "shoulders": {
+  "feature": "shoulder_w",
+  "slope": 0.28915631035193146,
+  "intercept": 0.12932439409399124,
+  "rho_val": 0.6115838017476187
+ },
+ "chest": {
+  "feature": "chest_w",
+  "slope": 2.6693945065225524,
+  "intercept": 0.11254164072786814,
+  "rho_val": 0.7065352986841441
+ },
+ "waist": {
+  "feature": "waist_w",
+  "slope": 2.8601583372379094,
+  "intercept": 0.0359504610755907,
+  "rho_val": 0.9124098580856542
+ },
+ "hips": {
+  "feature": "hip_w",
+  "slope": 2.298116511807686,
+  "intercept": 0.09864977396430152,
+  "rho_val": 0.78111897835887
+ },
+ "upper_arm": {
+  "feature": "upper_arm_w",
+  "slope": 3.2800154342833157,
+  "intercept": 0.009967221874322349,
+  "rho_val": 0.8067684949045619
+ },
+ "forearm": {
+  "feature": "forearm_w",
+  "slope": 1.133654823825005,
+  "intercept": 0.11809431673532203,
+  "rho_val": 0.31766855667790544
+ },
+ "thigh": {
+  "feature": "thigh_w",
+  "slope": 2.4644327767589833,
+  "intercept": 0.06744869395863959,
+  "rho_val": 0.7014709767018301
+ },
+ "calf": {
+  "feature": "calf_w",
+  "slope": 1.7899589057083218,
+  "intercept": 0.10920256030940446,
+  "rho_val": 0.5806253196976752
+ }
+}

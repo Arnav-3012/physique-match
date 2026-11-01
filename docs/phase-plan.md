@@ -42,7 +42,7 @@ Hosting (ADR-028): web on Vercel, API on **Google Cloud Run free tier**, models 
 **Gate:** 10 test captures (laptop + phone): 10/10 produce 4 valid masks; network tab shows no image except 1-bit masks; capture ≤ 12 s.
 **Result (2026-11-01):** ~8/10 captures valid, accepted by the user; best turn 7.6 s; network tab all localhost (user-reported). See `docs/logs/dev-log.md`.
 
-## P2 · Deploy spike + BodyM data pipeline + geometric baseline + body comp — `IN PROGRESS` (~4.5 days)
+## P2 · Deploy spike + BodyM data pipeline + geometric baseline + body comp — `DONE` (BodyM part; spike deferred to P7, ADR-031) (~4.5 days)
 ### Deploy spike + billing safety (ADR-028) — `DEFERRED` to deploy time by the user (ADR-031); does not block P3
 Run this whole block at the start of P7 (or earlier if the user says so), before anything is deployed. Already done: APIs `billingbudgets`, `pubsub`, `cloudbilling` enabled; Pub/Sub topic `budget-alerts` created in project `physique-gap-3012`. Nothing is deployed and no budget exists yet.
 Order matters: account and billing safety, then code. The user does account/billing setup; Claude writes files only and gives one exact command at a time.
@@ -68,16 +68,20 @@ Order matters: account and billing safety, then code. The user does account/bill
 **Gate:** no subject in two splits (test); geometric Spearman ρ ≥ 0.6 on ≥ 6 of the 8 BodyM-labelled regions (Test-A; `upper_back` and `lats` have no label) **and silhouette features beat a null ridge on [height, weight, sex]** (ADR-024); waist MAE ≤ 5 cm and below the null model's MAE; RFM/Mifflin unit tests; rejects RGB upload; gap unchanged when only weight changes.
 **BodyM part result (2026-11-01):** gate 2 criterion changed after the first result (ADR-029): silhouette-only rho >= 0.6 on 7/8 regions (testA and testB), and the silhouette adds signal beyond the null on 7/8 (testA) but only 5/8 (testB). Waist MAE 2.70 cm on testA (null 3.00), 3.39 on testB (null 3.50). Test suite green (user-reported); full numbers in `docs/logs/dev-log.md`. The deploy spike is deferred (ADR-031), so the BodyM gate is the P2 gate.
 
-## P3 · Siamese CNN — core model (~1 week)- [ ] Pair sampler: random subject pairs (A, B) per epoch from train split; target Δ = (meas(A) − meas(B)) / height for each region; antisymmetry augmentation (swap pair, negate target)
-- [ ] Mask augmentation to match browser masks: edge noise, morphological jitter, small rotation/scale, clothing-bulge sim
+## P3 · Siamese CNN — core model — `IN PROGRESS` (~1 week)
+Close-out learn docs (`learn/phase-03/`, same format for P4-P6): each concept explained with our real files and numbers, plus glossary and 10 viva questions; topic list in the user's memory `learn-docs-format`.
+Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring. Detailed plan: `/Users/arnav/.claude/plans/quiet-exploring-pillow.md`.
+- [ ] Pre-work: fix `extract.py` testB/testA keying (7 photos); pair-list generator + hash; power check on val; `evaluate.py --test-b` ledger (refuses a second run per model hash)
+- [ ] Pair sampler: subject-first, in-batch all-pairs (encode each subject once per variant, head on all ordered pairs) from the train split; target Δ = m_A/h_A − m_B/h_B per region (difference of height-normalised ratios, `height_cm`, ADR-032); antisymmetry augmentation (swap pair, negate target)
+- [ ] Mask augmentation to match browser masks: start with swap, goal side-dropout and small affine; add edge noise, morphological jitter, clothing-bulge sim, neck cut-row jitter only if val shows the need
 - [ ] **Baseline B:** single ResNet-18 regressor (silhouettes -> measurements), run on both, subtract
 - [ ] Siamese ResNet-18 (ImageNet, 1ch->3ch, front+side input), head on [e_g, e_c, e_g−e_c, e_g⊙e_c]; Huber loss
 - [ ] **Side-view dropout (ADR-025):** goal side input randomly blanked in training (current keeps both views) so a front-only goal photo is a valid input; confirm the `Scan` schema accepts a goal with a front view only (side optional) and add a schema test
 - [ ] Overfit 1 batch -> linear probe -> unfreeze last 2 blocks -> full fine-tune; stop at first rung that passes the gate; MPS, log every N steps
-- [ ] Per-region uncertainty (MC dropout) -> confidence in `GapProfile`; girth regions (upper_arm, forearm, thigh, calf, chest depth) get a lower confidence when the goal side view is missing, calibrated on the front-only slice below
+- [ ] Per-region confidence = calibrated val residual std (no MC dropout), separately for full-input and front-only slices, -> `GapProfile`; front-only goals show "widths only, lower confidence"; goal `Scan` requires only `front`, current keeps 4 views (validated separately); `GeometricAnalyzer` never raises on a missing view; width-only baseline A coefficients fitted
 - [ ] **Front-only eval slice** on Test-B (goal side blanked); baselines A and B run on the same slice (A: widths only, B: front-only regressor)
 - [ ] Export ONNX (**file <= 50 MB**, int8 if needed), model card in `ml/MODEL_CARD.md` (data, splits, metrics, limits, BodyM CC BY-NC), weights to an HF Hub model repo; plug into `/analyze` (geometric stays for back view + asymmetry)
-**Gate:** per-region MAE of Δ beats baseline A and baseline B on **Test-B** (in-the-wild); ONNX inference < 150 ms measured locally on CPU with 1 thread as a proxy, **re-confirmed on the deployed Cloud Run container (1 vCPU) at the P7 spike** (ADR-031); model file <= 50 MB; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
+**Gate (ADR-033):** vs each of baseline A and baseline B separately, the 95% subject-bootstrap CI of (MAE_baseline − MAE_siamese) > 0 on >= 6/8 regions on **Test-B** (in-the-wild), and no region significantly worse; same fixed pair list for all; front-only slice judged against width-only baseline A with the same rule; Test-B scored once per final candidate. ONNX inference <= 75 ms measured locally on CPU with 1 thread as a proxy, **150 ms re-confirmed on the deployed Cloud Run container (1 vCPU) at the P7 spike** (ADR-031); model file <= 50 MB; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
 **Gate report also includes (ADR-025):** the front-only slice on Test-B, per-region MAE vs baselines A and B, width regions and girth regions listed separately, next to the full-input numbers so the cost of side-view dropout is visible.
 
 ## P4 · Muscle-definition model — synthetic, on-device (~1.5 weeks)
