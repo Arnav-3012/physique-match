@@ -1,0 +1,729 @@
+{
+  "n_queries": 33,
+  "rag_jsonl_sha256": "ac22cc707c1632b1c170ef77ecffbcec6a4c8951b3f363a95ffd5de5de19a450",
+  "corpus_hash": "9ce6bc8290c6bf685bf78c026c412d1fe3f635033570429390d47b279b47b8b0",
+  "recall_at_5": {
+    "bm25": 0.8333333333333334,
+    "dense": 0.8409090909090909,
+    "hybrid": 0.903030303030303
+  },
+  "hit_at_5": {
+    "bm25": 0.9696969696969697,
+    "dense": 0.9393939393939394,
+    "hybrid": 1.0
+  },
+  "recall_at_5_by_type": {
+    "bm25": {
+      "exact": 1.0,
+      "guideline": 0.8333333333333334,
+      "planner": 0.8235294117647058,
+      "synonym": 0.6666666666666666
+    },
+    "dense": {
+      "exact": 1.0,
+      "guideline": 0.7777777777777778,
+      "planner": 0.8441176470588236,
+      "synonym": 0.7999999999999999
+    },
+    "hybrid": {
+      "exact": 1.0,
+      "guideline": 1.0,
+      "planner": 0.8470588235294118,
+      "synonym": 0.7999999999999999
+    }
+  },
+  "hybrid_minus": {
+    "bm25": {
+      "mean_diff": 0.06969696969696969,
+      "ci95": [
+        0.010606060606060603,
+        0.14696969696969697
+      ]
+    },
+    "dense": {
+      "mean_diff": 0.06212121212121212,
+      "ci95": [
+        -0.016666666666666663,
+        0.1590909090909091
+      ]
+    }
+  },
+  "gate": {
+    "recall_at_5_ge_0.85": true,
+    "hybrid_beats_bm25": true,
+    "hybrid_beats_dense": true
+  },
+  "failures": {
+    "bm25": [
+      {
+        "id": "p01",
+        "query": "dumbbell press for chest",
+        "recall": 0.8,
+        "top5": [
+          "ex:One_Arm_Dumbbell_Bench_Press",
+          "ex:Dumbbell_Bench_Press",
+          "ex:Incline_Dumbbell_Press",
+          "ex:Decline_Dumbbell_Bench_Press",
+          "ex:One-Arm_Flat_Bench_Dumbbell_Flye"
+        ],
+        "gold": [
+          "ex:Dumbbell_Bench_Press",
+          "ex:Dumbbell_Bench_Press_with_Neutral_Grip",
+          "ex:Decline_Dumbbell_Bench_Press",
+          "ex:Hammer_Grip_Incline_DB_Bench_Press",
+          "ex:Incline_Dumbbell_Bench_With_Palms_Facing_In",
+          "ex:Incline_Dumbbell_Press",
+          "ex:One_Arm_Dumbbell_Bench_Press"
+        ]
+      },
+      {
+        "id": "p02",
+        "query": "chest fly isolation with dumbbells",
+        "recall": 0.2,
+        "top5": [
+          "ex:Incline_Dumbbell_Press",
+          "ex:Dumbbell_Bench_Press",
+          "ex:Incline_Dumbbell_Bench_With_Palms_Facing_In",
+          "ex:Dumbbell_Flyes",
+          "ex:Hammer_Grip_Incline_DB_Bench_Press"
+        ],
+        "gold": [
+          "ex:Dumbbell_Flyes",
+          "ex:Decline_Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Flyes_-_With_A_Twist",
+          "ex:One-Arm_Flat_Bench_Dumbbell_Flye"
+        ]
+      },
+      {
+        "id": "p07",
+        "query": "overhead press for shoulders with dumbbells",
+        "recall": 0.5,
+        "top5": [
+          "ex:Standing_Alternating_Dumbbell_Press",
+          "ex:Seated_Dumbbell_Press",
+          "ex:Side_Lateral_Raise",
+          "ex:Front_Two-Dumbbell_Raise",
+          "ex:Seated_Side_Lateral_Raise"
+        ],
+        "gold": [
+          "ex:Seated_Dumbbell_Press",
+          "ex:Standing_Dumbbell_Press",
+          "ex:Standing_Alternating_Dumbbell_Press",
+          "ex:Standing_Palm-In_One-Arm_Dumbbell_Press"
+        ]
+      },
+      {
+        "id": "p08",
+        "query": "lateral raise for side delts",
+        "recall": 0.75,
+        "top5": [
+          "ex:One-Arm_Incline_Lateral_Raise",
+          "ex:Side_Lateral_Raise",
+          "ex:Seated_Side_Lateral_Raise",
+          "ex:Alternating_Deltoid_Raise",
+          "ex:Standing_Alternating_Dumbbell_Press"
+        ],
+        "gold": [
+          "ex:Side_Lateral_Raise",
+          "ex:Seated_Side_Lateral_Raise",
+          "ex:One-Arm_Side_Laterals",
+          "ex:One-Arm_Incline_Lateral_Raise"
+        ]
+      },
+      {
+        "id": "p09",
+        "query": "barbell curl for biceps",
+        "recall": 0.8,
+        "top5": [
+          "ex:Barbell_Curl",
+          "ex:Wide-Grip_Standing_Barbell_Curl",
+          "ex:Reverse_Barbell_Curl",
+          "ex:Close-Grip_Standing_Barbell_Curl",
+          "ex:Close-Grip_EZ_Bar_Curl"
+        ],
+        "gold": [
+          "ex:Barbell_Curl",
+          "ex:Close-Grip_EZ_Bar_Curl",
+          "ex:Close-Grip_Standing_Barbell_Curl",
+          "ex:Wide-Grip_Standing_Barbell_Curl",
+          "ex:Preacher_Curl",
+          "ex:Barbell_Curls_Lying_Against_An_Incline"
+        ]
+      },
+      {
+        "id": "p11",
+        "query": "calf raise on a machine",
+        "recall": 0.8,
+        "top5": [
+          "ex:Smith_Machine_Calf_Raise",
+          "ex:Standing_Calf_Raises",
+          "ex:Smith_Machine_Reverse_Calf_Raises",
+          "ex:Seated_Calf_Raise",
+          "ex:Calf_Press_On_The_Leg_Press_Machine"
+        ],
+        "gold": [
+          "ex:Standing_Calf_Raises",
+          "ex:Seated_Calf_Raise",
+          "ex:Calf_Press",
+          "ex:Calf_Press_On_The_Leg_Press_Machine",
+          "ex:Smith_Machine_Calf_Raise"
+        ]
+      },
+      {
+        "id": "p13",
+        "query": "quad exercise on a machine",
+        "recall": 0.8,
+        "top5": [
+          "ex:Leg_Extensions",
+          "ex:Hack_Squat",
+          "ex:Leg_Press",
+          "ex:Smith_Single-Leg_Split_Squat",
+          "ex:Smith_Machine_Squat"
+        ],
+        "gold": [
+          "ex:Leg_Extensions",
+          "ex:Single-Leg_Leg_Extension",
+          "ex:Leg_Press",
+          "ex:Hack_Squat",
+          "ex:Smith_Machine_Squat"
+        ]
+      },
+      {
+        "id": "p14",
+        "query": "cable crunch for abs",
+        "recall": 0.6,
+        "top5": [
+          "ex:Cable_Crunch",
+          "ex:Cable_Reverse_Crunch",
+          "ex:Bosu_Ball_Cable_Crunch_With_Side_Bends",
+          "ex:Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists",
+          "ex:Standing_Rope_Crunch"
+        ],
+        "gold": [
+          "ex:Cable_Crunch",
+          "ex:Cable_Seated_Crunch",
+          "ex:Rope_Crunch",
+          "ex:Standing_Rope_Crunch",
+          "ex:Cable_Reverse_Crunch"
+        ]
+      },
+      {
+        "id": "p15",
+        "query": "glute bridge",
+        "recall": 0.75,
+        "top5": [
+          "ex:Single_Leg_Glute_Bridge",
+          "ex:Physioball_Hip_Bridge",
+          "ex:Butt_Lift_Bridge",
+          "ex:Glute_Kickback"
+        ],
+        "gold": [
+          "ex:Butt_Lift_Bridge",
+          "ex:Single_Leg_Glute_Bridge",
+          "ex:Physioball_Hip_Bridge",
+          "ex:Hip_Lift_with_Band"
+        ]
+      },
+      {
+        "id": "s02",
+        "query": "press-up on the floor with no equipment",
+        "recall": 0.8,
+        "top5": [
+          "ex:Pushups_Close_and_Wide_Hand_Positions",
+          "ex:Push-Ups_With_Feet_Elevated",
+          "ex:Push-Up_Wide",
+          "ex:Pushups",
+          "ex:Push_Up_to_Side_Plank"
+        ],
+        "gold": [
+          "ex:Pushups",
+          "ex:Push-Up_Wide",
+          "ex:Pushups_Close_and_Wide_Hand_Positions",
+          "ex:Push-Ups_With_Feet_Elevated",
+          "ex:Incline_Push-Up",
+          "ex:Incline_Push-Up_Medium",
+          "ex:Incline_Push-Up_Wide",
+          "ex:Incline_Push-Up_Reverse_Grip"
+        ]
+      },
+      {
+        "id": "s03",
+        "query": "skull crusher",
+        "recall": 0.2,
+        "top5": [
+          "ex:Band_Skull_Crusher"
+        ],
+        "gold": [
+          "ex:EZ-Bar_Skullcrusher",
+          "ex:Band_Skull_Crusher",
+          "ex:Decline_EZ_Bar_Triceps_Extension",
+          "ex:Decline_Dumbbell_Triceps_Extension",
+          "ex:Cable_Lying_Triceps_Extension"
+        ]
+      },
+      {
+        "id": "g08",
+        "query": "I have kidney disease, is a high protein diet safe",
+        "recall": 0.5,
+        "top5": [
+          "doc:protein-energy#medical-conditions",
+          "doc:protein-energy#protein",
+          "ex:Medicine_Ball_Full_Twist",
+          "ex:Barbell_Seated_Calf_Raise",
+          "ex:Lateral_Box_Jump"
+        ],
+        "gold": [
+          "doc:protein-energy#medical-conditions",
+          "doc:see-a-professional#when-to-talk-to-a-professional"
+        ]
+      },
+      {
+        "id": "g09",
+        "query": "will training abs make my waist smaller",
+        "recall": 0.0,
+        "top5": [
+          "ex:Cable_Crunch",
+          "ex:Leg_Pull-In",
+          "ex:Bench_Dips",
+          "ex:Trail_Running_Walking",
+          "ex:Hyperextensions_Back_Extensions"
+        ],
+        "gold": [
+          "doc:muscle-group-guide#which-muscle-groups-the-plan-trains-for-each-body-region"
+        ]
+      }
+    ],
+    "dense": [
+      {
+        "id": "p01",
+        "query": "dumbbell press for chest",
+        "recall": 0.8,
+        "top5": [
+          "ex:Dumbbell_Bench_Press",
+          "ex:One_Arm_Dumbbell_Bench_Press",
+          "ex:Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Press",
+          "ex:Dumbbell_Bench_Press_with_Neutral_Grip"
+        ],
+        "gold": [
+          "ex:Dumbbell_Bench_Press",
+          "ex:Dumbbell_Bench_Press_with_Neutral_Grip",
+          "ex:Decline_Dumbbell_Bench_Press",
+          "ex:Hammer_Grip_Incline_DB_Bench_Press",
+          "ex:Incline_Dumbbell_Bench_With_Palms_Facing_In",
+          "ex:Incline_Dumbbell_Press",
+          "ex:One_Arm_Dumbbell_Bench_Press"
+        ]
+      },
+      {
+        "id": "p02",
+        "query": "chest fly isolation with dumbbells",
+        "recall": 0.8,
+        "top5": [
+          "ex:Dumbbell_Flyes",
+          "ex:One-Arm_Flat_Bench_Dumbbell_Flye",
+          "ex:Decline_Dumbbell_Flyes",
+          "ex:One_Arm_Dumbbell_Bench_Press",
+          "ex:Incline_Dumbbell_Flyes_-_With_A_Twist"
+        ],
+        "gold": [
+          "ex:Dumbbell_Flyes",
+          "ex:Decline_Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Flyes_-_With_A_Twist",
+          "ex:One-Arm_Flat_Bench_Dumbbell_Flye"
+        ]
+      },
+      {
+        "id": "p07",
+        "query": "overhead press for shoulders with dumbbells",
+        "recall": 0.75,
+        "top5": [
+          "ex:Seated_Dumbbell_Press",
+          "ex:Standing_Alternating_Dumbbell_Press",
+          "ex:Dumbbell_Incline_Shoulder_Raise",
+          "ex:One-Arm_Side_Laterals",
+          "ex:Standing_Palm-In_One-Arm_Dumbbell_Press"
+        ],
+        "gold": [
+          "ex:Seated_Dumbbell_Press",
+          "ex:Standing_Dumbbell_Press",
+          "ex:Standing_Alternating_Dumbbell_Press",
+          "ex:Standing_Palm-In_One-Arm_Dumbbell_Press"
+        ]
+      },
+      {
+        "id": "p08",
+        "query": "lateral raise for side delts",
+        "recall": 0.75,
+        "top5": [
+          "ex:Alternating_Deltoid_Raise",
+          "ex:One-Arm_Incline_Lateral_Raise",
+          "ex:Side_Laterals_to_Front_Raise",
+          "ex:Side_Lateral_Raise",
+          "ex:Seated_Side_Lateral_Raise"
+        ],
+        "gold": [
+          "ex:Side_Lateral_Raise",
+          "ex:Seated_Side_Lateral_Raise",
+          "ex:One-Arm_Side_Laterals",
+          "ex:One-Arm_Incline_Lateral_Raise"
+        ]
+      },
+      {
+        "id": "p09",
+        "query": "barbell curl for biceps",
+        "recall": 0.8,
+        "top5": [
+          "ex:Barbell_Curl",
+          "ex:Wide-Grip_Standing_Barbell_Curl",
+          "ex:Reverse_Barbell_Curl",
+          "ex:Close-Grip_Standing_Barbell_Curl",
+          "ex:Close-Grip_EZ_Bar_Curl"
+        ],
+        "gold": [
+          "ex:Barbell_Curl",
+          "ex:Close-Grip_EZ_Bar_Curl",
+          "ex:Close-Grip_Standing_Barbell_Curl",
+          "ex:Wide-Grip_Standing_Barbell_Curl",
+          "ex:Preacher_Curl",
+          "ex:Barbell_Curls_Lying_Against_An_Incline"
+        ]
+      },
+      {
+        "id": "p10",
+        "query": "triceps pushdown on a cable",
+        "recall": 0.5,
+        "top5": [
+          "ex:Cable_Rope_Overhead_Triceps_Extension",
+          "ex:Cable_One_Arm_Tricep_Extension",
+          "ex:Triceps_Pushdown_-_Rope_Attachment",
+          "ex:Cable_Incline_Triceps_Extension",
+          "ex:Reverse_Grip_Triceps_Pushdown"
+        ],
+        "gold": [
+          "ex:Triceps_Pushdown",
+          "ex:Triceps_Pushdown_-_Rope_Attachment",
+          "ex:Triceps_Pushdown_-_V-Bar_Attachment",
+          "ex:Reverse_Grip_Triceps_Pushdown"
+        ]
+      },
+      {
+        "id": "p11",
+        "query": "calf raise on a machine",
+        "recall": 0.8,
+        "top5": [
+          "ex:Standing_Calf_Raises",
+          "ex:Smith_Machine_Calf_Raise",
+          "ex:Seated_Calf_Raise",
+          "ex:Smith_Machine_Reverse_Calf_Raises",
+          "ex:Calf_Press_On_The_Leg_Press_Machine"
+        ],
+        "gold": [
+          "ex:Standing_Calf_Raises",
+          "ex:Seated_Calf_Raise",
+          "ex:Calf_Press",
+          "ex:Calf_Press_On_The_Leg_Press_Machine",
+          "ex:Smith_Machine_Calf_Raise"
+        ]
+      },
+      {
+        "id": "p14",
+        "query": "cable crunch for abs",
+        "recall": 0.6,
+        "top5": [
+          "ex:Cable_Reverse_Crunch",
+          "ex:Cable_Crunch",
+          "ex:Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists",
+          "ex:Cable_Seated_Crunch",
+          "ex:Bosu_Ball_Cable_Crunch_With_Side_Bends"
+        ],
+        "gold": [
+          "ex:Cable_Crunch",
+          "ex:Cable_Seated_Crunch",
+          "ex:Rope_Crunch",
+          "ex:Standing_Rope_Crunch",
+          "ex:Cable_Reverse_Crunch"
+        ]
+      },
+      {
+        "id": "p15",
+        "query": "glute bridge",
+        "recall": 0.75,
+        "top5": [
+          "ex:Single_Leg_Glute_Bridge",
+          "ex:Physioball_Hip_Bridge",
+          "ex:Glute_Kickback",
+          "ex:Butt_Lift_Bridge",
+          "ex:Hip_Extension_with_Bands"
+        ],
+        "gold": [
+          "ex:Butt_Lift_Bridge",
+          "ex:Single_Leg_Glute_Bridge",
+          "ex:Physioball_Hip_Bridge",
+          "ex:Hip_Lift_with_Band"
+        ]
+      },
+      {
+        "id": "p16",
+        "query": "shrug for traps",
+        "recall": 0.8,
+        "top5": [
+          "ex:Leverage_Shrug",
+          "ex:Dumbbell_Shrug",
+          "ex:Scapular_Pull-Up",
+          "ex:Smith_Machine_Behind_the_Back_Shrug",
+          "ex:Barbell_Shrug"
+        ],
+        "gold": [
+          "ex:Barbell_Shrug",
+          "ex:Barbell_Shrug_Behind_The_Back",
+          "ex:Cable_Shrugs",
+          "ex:Dumbbell_Shrug",
+          "ex:Leverage_Shrug",
+          "ex:Smith_Machine_Behind_the_Back_Shrug",
+          "ex:Calf-Machine_Shoulder_Shrug"
+        ]
+      },
+      {
+        "id": "s03",
+        "query": "skull crusher",
+        "recall": 0.4,
+        "top5": [
+          "ex:Band_Skull_Crusher",
+          "ex:EZ-Bar_Skullcrusher",
+          "ex:Triceps_Pushdown_-_Rope_Attachment",
+          "ex:Triceps_Pushdown_-_V-Bar_Attachment",
+          "ex:Dip_Machine"
+        ],
+        "gold": [
+          "ex:EZ-Bar_Skullcrusher",
+          "ex:Band_Skull_Crusher",
+          "ex:Decline_EZ_Bar_Triceps_Extension",
+          "ex:Decline_Dumbbell_Triceps_Extension",
+          "ex:Cable_Lying_Triceps_Extension"
+        ]
+      },
+      {
+        "id": "g05",
+        "query": "do I need to push every set until I cannot do another rep",
+        "recall": 0.0,
+        "top5": [
+          "doc:rest-progression#progression",
+          "doc:rep-ranges-failure#rep-ranges",
+          "ex:Leverage_Shoulder_Press",
+          "ex:Chain_Handle_Extension",
+          "ex:Single-Arm_Push-Up"
+        ],
+        "gold": [
+          "doc:rep-ranges-failure#how-close-to-failure"
+        ]
+      },
+      {
+        "id": "g09",
+        "query": "will training abs make my waist smaller",
+        "recall": 0.0,
+        "top5": [
+          "ex:Decline_Oblique_Crunch",
+          "ex:Cable_Crunch",
+          "ex:Decline_Reverse_Crunch",
+          "ex:Decline_Crunch",
+          "ex:Tuck_Crunch"
+        ],
+        "gold": [
+          "doc:muscle-group-guide#which-muscle-groups-the-plan-trains-for-each-body-region"
+        ]
+      }
+    ],
+    "hybrid": [
+      {
+        "id": "p02",
+        "query": "chest fly isolation with dumbbells",
+        "recall": 0.4,
+        "top5": [
+          "ex:Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Press",
+          "ex:Incline_Dumbbell_Bench_With_Palms_Facing_In",
+          "ex:Decline_Dumbbell_Flyes",
+          "ex:Dumbbell_Bench_Press"
+        ],
+        "gold": [
+          "ex:Dumbbell_Flyes",
+          "ex:Decline_Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Flyes",
+          "ex:Incline_Dumbbell_Flyes_-_With_A_Twist",
+          "ex:One-Arm_Flat_Bench_Dumbbell_Flye"
+        ]
+      },
+      {
+        "id": "p07",
+        "query": "overhead press for shoulders with dumbbells",
+        "recall": 0.75,
+        "top5": [
+          "ex:Seated_Dumbbell_Press",
+          "ex:Standing_Alternating_Dumbbell_Press",
+          "ex:Dumbbell_Incline_Shoulder_Raise",
+          "ex:Dumbbell_Raise",
+          "ex:Standing_Dumbbell_Press"
+        ],
+        "gold": [
+          "ex:Seated_Dumbbell_Press",
+          "ex:Standing_Dumbbell_Press",
+          "ex:Standing_Alternating_Dumbbell_Press",
+          "ex:Standing_Palm-In_One-Arm_Dumbbell_Press"
+        ]
+      },
+      {
+        "id": "p08",
+        "query": "lateral raise for side delts",
+        "recall": 0.75,
+        "top5": [
+          "ex:One-Arm_Incline_Lateral_Raise",
+          "ex:Alternating_Deltoid_Raise",
+          "ex:Side_Lateral_Raise",
+          "ex:Seated_Side_Lateral_Raise",
+          "ex:Side_Laterals_to_Front_Raise"
+        ],
+        "gold": [
+          "ex:Side_Lateral_Raise",
+          "ex:Seated_Side_Lateral_Raise",
+          "ex:One-Arm_Side_Laterals",
+          "ex:One-Arm_Incline_Lateral_Raise"
+        ]
+      },
+      {
+        "id": "p09",
+        "query": "barbell curl for biceps",
+        "recall": 0.8,
+        "top5": [
+          "ex:Barbell_Curl",
+          "ex:Wide-Grip_Standing_Barbell_Curl",
+          "ex:Reverse_Barbell_Curl",
+          "ex:Close-Grip_Standing_Barbell_Curl",
+          "ex:Close-Grip_EZ_Bar_Curl"
+        ],
+        "gold": [
+          "ex:Barbell_Curl",
+          "ex:Close-Grip_EZ_Bar_Curl",
+          "ex:Close-Grip_Standing_Barbell_Curl",
+          "ex:Wide-Grip_Standing_Barbell_Curl",
+          "ex:Preacher_Curl",
+          "ex:Barbell_Curls_Lying_Against_An_Incline"
+        ]
+      },
+      {
+        "id": "p10",
+        "query": "triceps pushdown on a cable",
+        "recall": 0.75,
+        "top5": [
+          "ex:Reverse_Grip_Triceps_Pushdown",
+          "ex:Triceps_Pushdown_-_Rope_Attachment",
+          "ex:Cable_Rope_Overhead_Triceps_Extension",
+          "ex:Triceps_Pushdown_-_V-Bar_Attachment",
+          "ex:Cable_Incline_Triceps_Extension"
+        ],
+        "gold": [
+          "ex:Triceps_Pushdown",
+          "ex:Triceps_Pushdown_-_Rope_Attachment",
+          "ex:Triceps_Pushdown_-_V-Bar_Attachment",
+          "ex:Reverse_Grip_Triceps_Pushdown"
+        ]
+      },
+      {
+        "id": "p11",
+        "query": "calf raise on a machine",
+        "recall": 0.8,
+        "top5": [
+          "ex:Smith_Machine_Calf_Raise",
+          "ex:Standing_Calf_Raises",
+          "ex:Seated_Calf_Raise",
+          "ex:Smith_Machine_Reverse_Calf_Raises",
+          "ex:Calf_Press_On_The_Leg_Press_Machine"
+        ],
+        "gold": [
+          "ex:Standing_Calf_Raises",
+          "ex:Seated_Calf_Raise",
+          "ex:Calf_Press",
+          "ex:Calf_Press_On_The_Leg_Press_Machine",
+          "ex:Smith_Machine_Calf_Raise"
+        ]
+      },
+      {
+        "id": "p13",
+        "query": "quad exercise on a machine",
+        "recall": 0.8,
+        "top5": [
+          "ex:Leg_Extensions",
+          "ex:Hack_Squat",
+          "ex:Leg_Press",
+          "ex:Single-Leg_Leg_Extension",
+          "ex:Smith_Single-Leg_Split_Squat"
+        ],
+        "gold": [
+          "ex:Leg_Extensions",
+          "ex:Single-Leg_Leg_Extension",
+          "ex:Leg_Press",
+          "ex:Hack_Squat",
+          "ex:Smith_Machine_Squat"
+        ]
+      },
+      {
+        "id": "p14",
+        "query": "cable crunch for abs",
+        "recall": 0.6,
+        "top5": [
+          "ex:Cable_Crunch",
+          "ex:Cable_Reverse_Crunch",
+          "ex:Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists",
+          "ex:Bosu_Ball_Cable_Crunch_With_Side_Bends",
+          "ex:Cable_Seated_Crunch"
+        ],
+        "gold": [
+          "ex:Cable_Crunch",
+          "ex:Cable_Seated_Crunch",
+          "ex:Rope_Crunch",
+          "ex:Standing_Rope_Crunch",
+          "ex:Cable_Reverse_Crunch"
+        ]
+      },
+      {
+        "id": "p15",
+        "query": "glute bridge",
+        "recall": 0.75,
+        "top5": [
+          "ex:Single_Leg_Glute_Bridge",
+          "ex:Physioball_Hip_Bridge",
+          "ex:Butt_Lift_Bridge",
+          "ex:Glute_Kickback",
+          "ex:Hip_Extension_with_Bands"
+        ],
+        "gold": [
+          "ex:Butt_Lift_Bridge",
+          "ex:Single_Leg_Glute_Bridge",
+          "ex:Physioball_Hip_Bridge",
+          "ex:Hip_Lift_with_Band"
+        ]
+      },
+      {
+        "id": "s03",
+        "query": "skull crusher",
+        "recall": 0.4,
+        "top5": [
+          "ex:Band_Skull_Crusher",
+          "ex:EZ-Bar_Skullcrusher",
+          "ex:Triceps_Pushdown_-_Rope_Attachment",
+          "ex:Triceps_Pushdown_-_V-Bar_Attachment",
+          "ex:Dip_Machine"
+        ],
+        "gold": [
+          "ex:EZ-Bar_Skullcrusher",
+          "ex:Band_Skull_Crusher",
+          "ex:Decline_EZ_Bar_Triceps_Extension",
+          "ex:Decline_Dumbbell_Triceps_Extension",
+          "ex:Cable_Lying_Triceps_Extension"
+        ]
+      }
+    ]
+  }
+}

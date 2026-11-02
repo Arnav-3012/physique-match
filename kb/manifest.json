@@ -1,0 +1,11 @@
+{
+  "corpus_hash": "9ce6bc8290c6bf685bf78c026c412d1fe3f635033570429390d47b279b47b8b0",
+  "chunks": 893,
+  "exercise_chunks": 876,
+  "guideline_chunks": 17,
+  "model_sha256": "6c9c6101a956d62dfb5e7190c538226c0c5bb9cb27b651234b6df063ee7dbfe4",
+  "tokenizer_sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66",
+  "pooling": "cls",
+  "normalised": true,
+  "dim": 384
+}

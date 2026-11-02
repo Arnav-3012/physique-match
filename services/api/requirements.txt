@@ -1,5 +1,5 @@
 # Runtime deps for the Cloud Run image (ADR-028). Keep in sync with the root pyproject.toml.
-# RAG deps (rank-bm25, tokenizers, ...) are added in their phase. No torch.
+# RAG deps (ADR-048): rank-bm25 and tokenizers, added in P5; measure the image at the P7 spike. No torch.
 fastapi>=0.115
 uvicorn[standard]>=0.30
 httpx>=0.27
@@ -8,3 +8,5 @@ numpy>=2.5.4
 pillow>=13.0.0
 scipy>=1.18.1
 onnxruntime
+rank-bm25
+tokenizers

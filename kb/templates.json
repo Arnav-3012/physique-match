@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "about": "Split templates (ADR-048). Sets per exercise per day. Exercise ids are free-exercise-db ids, checked against kb/raw/exercises.json by tests/test_kb_templates.py. The template exists to prove every tracked muscle group can reach its cited floor under the counting rule (primary 1, secondary 0.5); a failure is a planner finding, never a reason to lower the floor. Set counts are OUR design, not cited numbers; only the floor and the per-session cap are cited.",
+  "templates": {
+    "full_body_3day_gym": {
+      "days_per_week": 3,
+      "needs": ["barbell", "dumbbell", "machine", "cable", "body only"],
+      "level": "beginner",
+      "days": {
+        "day_1": {
+          "Barbell_Bench_Press_-_Medium_Grip": 3,
+          "Bent_Over_Barbell_Row": 3,
+          "Barbell_Squat": 3,
+          "Side_Lateral_Raise": 2,
+          "Dumbbell_Bicep_Curl": 2,
+          "Crunches": 3,
+          "Thigh_Abductor": 2
+        },
+        "day_2": {
+          "Pullups": 3,
+          "Standing_Dumbbell_Press": 3,
+          "Lying_Leg_Curls": 3,
+          "Butt_Lift_Bridge": 3,
+          "Triceps_Pushdown": 3,
+          "Standing_Calf_Raises": 3,
+          "Thigh_Adductor": 2,
+          "Dumbbell_Shrug": 2
+        },
+        "day_3": {
+          "Barbell_Bench_Press_-_Medium_Grip": 3,
+          "Bent_Over_Barbell_Row": 3,
+          "Barbell_Squat": 3,
+          "Dumbbell_Bicep_Curl": 2,
+          "Crunches": 3,
+          "Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench": 3,
+          "Thigh_Abductor": 2,
+          "Thigh_Adductor": 2,
+          "Dumbbell_Shrug": 2
+        }
+      }
+    }
+  }
+}
