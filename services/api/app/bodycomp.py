@@ -72,6 +72,11 @@ def rfm(height_cm: float, waist_cm: float, sex: str) -> float:
     return 64 - 20 * height_cm / waist_cm + (12 if sex == "female" else 0)
 
 
+def waist_at_bf(bf: float, height_cm: float, sex: str) -> float:
+    """Inverse of `rfm` in the waist: the waist (cm) that RFM maps to `bf` at this height."""
+    return 20 * height_cm / (64 + (12 if sex == "female" else 0) - bf)
+
+
 def label_case(support: int, extrapolated: bool, texts: dict) -> dict:
     """ADR-041/042 wording case. The API image has no ANSUR files, so callers pass the `n_below`
     and `extrapolated` stored by ml/src/ceiling_extrapolation.py (`n_below` is strictly below;

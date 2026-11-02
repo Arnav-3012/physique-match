@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from app.bodycomp import BF_ATHLETE_UPPER, BF_FLOOR, rfm
+from app.bodycomp import waist_at_bf as api_waist_at_bf
 from ml.src.ceiling_extrapolation import BF_ENDS, check, waist_at_bf
 
 
@@ -19,6 +20,15 @@ def test_athlete_upper_end_is_the_planner_constant(sex):
 def test_inverse_round_trips_rfm(sex):
     for bf in BF_ENDS[sex].values():
         assert rfm(1.0, waist_at_bf(bf, sex == "female"), sex) == pytest.approx(bf)
+
+
+@pytest.mark.parametrize("sex", ["male", "female"])
+@pytest.mark.parametrize("height_cm", [150.0, 180.0])
+def test_api_inverse_round_trips_rfm_and_matches_the_script(sex, height_cm):
+    for bf in BF_ENDS[sex].values():
+        waist = api_waist_at_bf(bf, height_cm, sex)
+        assert rfm(height_cm, waist, sex) == pytest.approx(bf)
+        assert waist / height_cm == pytest.approx(waist_at_bf(bf, sex == "female"))
 
 
 def frame(male_ratios, female_ratios):
