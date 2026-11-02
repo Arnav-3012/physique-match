@@ -1,0 +1,47 @@
+{
+ "version": 1,
+ "script_commit": "22a1ec34cc09339115bfa40bcea24a4db7cf60e7",
+ "tree_clean": true,
+ "data": {
+  "ANSUR_II_FEMALE_Public.csv": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a",
+  "ANSUR_II_MALE_Public.csv": "0547aea0170e5293de519389981135e75803f02e6d40c77ace740decc0caac64"
+ },
+ "sexes": {
+  "male": {
+   "n": 4082,
+   "min_waist_stature": 0.3597122302158273,
+   "ends": {
+    "floor": {
+     "bf": 8.0,
+     "waist_stature": 0.35714285714285715,
+     "extrapolated": true,
+     "n_below": 0
+    },
+    "athlete_upper": {
+     "bf": 13.0,
+     "waist_stature": 0.39215686274509803,
+     "extrapolated": false,
+     "n_below": 4
+    }
+   }
+  },
+  "female": {
+   "n": 1986,
+   "min_waist_stature": 0.382335148215366,
+   "ends": {
+    "floor": {
+     "bf": 18.0,
+     "waist_stature": 0.3448275862068966,
+     "extrapolated": true,
+     "n_below": 0
+    },
+    "athlete_upper": {
+     "bf": 20.0,
+     "waist_stature": 0.35714285714285715,
+     "extrapolated": true,
+     "n_below": 0
+    }
+   }
+  }
+ }
+}
