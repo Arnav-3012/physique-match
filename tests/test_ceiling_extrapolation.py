@@ -1,13 +1,18 @@
 import pandas as pd
 import pytest
 
-from app.bodycomp import BF_FLOOR, rfm
+from app.bodycomp import BF_ATHLETE_UPPER, BF_FLOOR, rfm
 from ml.src.ceiling_extrapolation import BF_ENDS, check, waist_at_bf
 
 
 @pytest.mark.parametrize("sex", ["male", "female"])
 def test_floor_end_is_the_planner_floor(sex):
     assert BF_ENDS[sex]["floor"] == BF_FLOOR[sex]
+
+
+@pytest.mark.parametrize("sex", ["male", "female"])
+def test_athlete_upper_end_is_the_planner_constant(sex):
+    assert BF_ENDS[sex]["athlete_upper"] == BF_ATHLETE_UPPER[sex]
 
 
 @pytest.mark.parametrize("sex", ["male", "female"])

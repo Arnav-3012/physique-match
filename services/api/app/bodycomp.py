@@ -19,6 +19,20 @@ RFM_REL_ERR = 0.20
 LEAN_RFM = {"male": 14.0, "female": 22.0}  # RFM is weakest in lean people (same source)
 OLD_AGE = 60  # ...and declines with age
 BF_FLOOR = {"male": 8.0, "female": 18.0}  # privacy-and-safety.md: no deficit below these
+BF_ATHLETE_UPPER = {"male": 13.0, "female": 20.0}  # ADR-040: top of the ACE athlete bands
+# ADR-041, fixed before M2 step 3: ANSUR subjects at or below the high-end waist/stature needed
+# for an unqualified "reachable" claim. Do not tune after seeing step 3 output.
+SUPPORT_MIN = 30
+ZONE1_TEXT = {  # ADR-041 label_case -> exact wording; the agent must use it, never paraphrase
+    1: "Reachable on frame alone (estimate)",
+    2: "Reachable on frame alone (estimate), thin reference data",
+    3: "Outside the range our data covers; cannot verify",
+}
+ZONE2_TEXT = {  # ADR-042: same rule, applied at the BF_FLOOR end
+    1: "Reachable only near the body-fat floor (estimate)",
+    2: "Reachable only near the body-fat floor (estimate), thin reference data",
+    3: ZONE1_TEXT[3],
+}
 MIN_BMI = 18.5
 # Standard activity multipliers on RMR; not validated here.
 ACTIVITY = {"sedentary": 1.2, "light": 1.375, "moderate": 1.55, "active": 1.725, "very_active": 1.9}
@@ -56,6 +70,27 @@ def silhouette_waist_g(scan: Scan) -> float:
 def rfm(height_cm: float, waist_cm: float, sex: str) -> float:
     """Relative Fat Mass: 64 - 20 * height / waist + 12 * (female)."""
     return 64 - 20 * height_cm / waist_cm + (12 if sex == "female" else 0)
+
+
+def label_case(support: int, extrapolated: bool, texts: dict) -> dict:
+    """ADR-041/042 wording case. The API image has no ANSUR files, so callers pass the `n_below`
+    and `extrapolated` stored by ml/src/ceiling_extrapolation.py (`n_below` is strictly below;
+    the rule's `<=` differs only for a subject exactly on the inverted value)."""
+    case = 3 if extrapolated else 1 if support >= SUPPORT_MIN else 2
+    return {
+        "support": support, "extrapolated": extrapolated,
+        "label_case": case, "text": texts[case],
+    }  # fmt: skip
+
+
+def zone1_case(support: int, extrapolated: bool) -> dict:
+    """Zone 1, from the stored values at BF_ATHLETE_UPPER (ADR-041)."""
+    return label_case(support, extrapolated, ZONE1_TEXT)
+
+
+def zone2_case(support: int, extrapolated: bool) -> dict:
+    """Zone 2, from the stored values at BF_FLOOR (ADR-042)."""
+    return label_case(support, extrapolated, ZONE2_TEXT)
 
 
 def rmr(p: UserProfile) -> float:
