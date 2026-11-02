@@ -1,0 +1,81 @@
+{
+ "model_hash": "213383d7c86f33c8040910c7c165f38589eecbdc8b6da4330641a2ee86f26b0b",
+ "input": {
+  "name": "x",
+  "shape": [
+   "n",
+   3,
+   256,
+   192
+  ],
+  "channels": "front, side, zeros; float in [0, 1]; side is zeros if absent"
+ },
+ "output": {
+  "name": "proportions",
+  "regions": [
+   "shoulders",
+   "chest",
+   "waist",
+   "hips",
+   "upper_arm",
+   "forearm",
+   "thigh",
+   "calf"
+  ],
+  "unit": "measurement / height_cm"
+ },
+ "calibration": {
+  "shoulders": {
+   "sigma_full": 0.005596426781266928,
+   "sigma_front": 0.0058304849080741405,
+   "sigma_prior": 0.015859445556998253
+  },
+  "chest": {
+   "sigma_full": 0.01820683293044567,
+   "sigma_front": 0.021474527195096016,
+   "sigma_prior": 0.0959579199552536
+  },
+  "waist": {
+   "sigma_full": 0.01941004954278469,
+   "sigma_front": 0.02057085745036602,
+   "sigma_prior": 0.10845547914505005
+  },
+  "hips": {
+   "sigma_full": 0.015093564055860043,
+   "sigma_front": 0.015753576532006264,
+   "sigma_prior": 0.08766144514083862
+  },
+  "upper_arm": {
+   "sigma_full": 0.007808943744748831,
+   "sigma_front": 0.008319921791553497,
+   "sigma_prior": 0.03433649614453316
+  },
+  "forearm": {
+   "sigma_full": 0.005689185578376055,
+   "sigma_front": 0.005611427593976259,
+   "sigma_prior": 0.020478686317801476
+  },
+  "thigh": {
+   "sigma_full": 0.010889294557273388,
+   "sigma_front": 0.011333015747368336,
+   "sigma_prior": 0.04958120360970497
+  },
+  "calf": {
+   "sigma_full": 0.0075080194510519505,
+   "sigma_front": 0.00725214509293437,
+   "sigma_prior": 0.026994163170456886
+  }
+ },
+ "export": {
+  "onnx_mb": 45.2,
+  "parity_max_abs": 5.960464477539062e-07,
+  "run_ms_p50_p95_1thread": [
+   15.6,
+   16.0
+  ],
+  "request_ms_p50_p95_1thread": [
+   31.3,
+   31.6
+  ]
+ }
+}

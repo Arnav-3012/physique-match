@@ -79,9 +79,20 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 - [ ] **Side-view dropout (ADR-025):** goal side input randomly blanked in training (current keeps both views) so a front-only goal photo is a valid input; confirm the `Scan` schema accepts a goal with a front view only (side optional) and add a schema test
 - [ ] Overfit 1 batch -> linear probe -> unfreeze last 2 blocks -> full fine-tune; stop at first rung that passes the gate; MPS, log every N steps
 - [ ] Per-region confidence = calibrated val residual std (no MC dropout), separately for full-input and front-only slices, -> `GapProfile`; front-only goals show "widths only, lower confidence"; goal `Scan` requires only `front`, current keeps 4 views (validated separately); `GeometricAnalyzer` never raises on a missing view; width-only baseline A coefficients fitted
-- [ ] **Front-only eval slice** on Test-B (goal side blanked); baselines A and B run on the same slice (A: widths only, B: front-only regressor)
+- [ ] **Front-only eval slice** on Test-B (goal side blanked); baselines A and B run on the same slice (A: widths only, B: the same single regressor with the goal's side view blanked, ADR-033)
 - [ ] Export ONNX (**file <= 50 MB**, int8 if needed), model card in `ml/MODEL_CARD.md` (data, splits, metrics, limits, BodyM CC BY-NC), weights to an HF Hub model repo; plug into `/analyze` (geometric stays for back view + asymmetry)
-**Gate (ADR-033):** vs each of baseline A and baseline B separately, the 95% subject-bootstrap CI of (MAE_baseline − MAE_siamese) > 0 on >= 6/8 regions on **Test-B** (in-the-wild), and no region significantly worse; same fixed pair list for all; front-only slice judged against width-only baseline A with the same rule; Test-B scored once per final candidate. ONNX inference <= 75 ms measured locally on CPU with 1 thread as a proxy, **150 ms re-confirmed on the deployed Cloud Run container (1 vCPU) at the P7 spike** (ADR-031); model file <= 50 MB; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
+- [ ] **Lats + sex handling, strictly in this order (ADR-036, ADR-037); each step starts only when the previous is done and logged:**
+  1. [x] ADR-037 written (files only)
+  2. [x] Audit: grep that no other ranked region uses a sex term (user ran it 2026-11-02: none; sex appears only in body composition, null-ridge references, splits, tests and the schema; see dev-log)
+  3. [ ] ADR-036: ANSUR II downloaded, shoulder column checked (`biacromial`); `ml/src/fit_lats.py` written, **run pending**; then record the verdict
+  4. [-] Dropped (ADR-037 Amendment 3, user 2026-11-02): no pooled ridge; `lats` needs user_sex and goal_sex set and equal
+  5. [ ] Schema: `UserProfile.sex`, `GoalProfile.sex` (default `not_specified`), regenerate TS types, `test_schemas.py`
+  6. [ ] Calculation: `lats` is `measured: false` with a reason unless both sexes are set and equal (report-level warning for a different-sex goal); no pooled route; RFM for an unset user sex waits for the user's choice (Amendment 3 open point); null baseline, if shown, same condition
+  7. [ ] Tests: missing sex no error; `lats` blocked with a reason for differing or unset sexes; warning for a different-sex goal; B byte-identical with and without sex fields; RFM test per the choice in step 6
+  8. [ ] Docs: model card limitation, privacy doc + consent text, dev-log; label "back width (estimate)" in UI, README and report (API key stays `lats`). (Report note and agent label wired in P6.)
+**Gate (ADR-033):** vs each of baseline A and baseline B separately, the 95% subject-bootstrap CI of (MAE_baseline − MAE_siamese) > 0 on >= 6/8 regions on **Test-B** (in-the-wild), and no region significantly worse; same fixed pair list for all; front-only slice judged against width-only baseline A with the same rule; Test-B scored once per final candidate. ONNX latency rule (ADR-035: single-encode p50 <= 75 ms and two-encode p95 <= 150 ms, 1 thread, local proxy), **150 ms re-confirmed on the deployed Cloud Run container (1 vCPU) at the P7 spike** (ADR-031); model file <= 50 MB; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
+**Val result (2026-11-02, not the gate):** the learned pair head failed against subtraction, 1/8 at `full` (ADR-034); final candidate is baseline B at `full`, 8/8 vs A on both slices (ADR-035). The Test-B gate is now that model vs A, on both slices.
+**Test-B result (2026-11-02):** baseline B `full` seed 0 passes the ADR-033 rule vs A on both slices, 8/8 each, none worse; numbers in `docs/logs/dev-log.md`. Still open: ONNX <= 75 ms, file <= 50 MB, own-scan ordering.
 **Gate report also includes (ADR-025):** the front-only slice on Test-B, per-region MAE vs baselines A and B, width regions and girth regions listed separately, next to the full-input numbers so the cost of side-view dropout is visible.
 
 ## P4 · Muscle-definition model — synthetic, on-device (~1.5 weeks)
@@ -107,14 +118,14 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 ## P6 · Agent, planner, report (~4 days)
 - [ ] **Evals first:** `evals/plan.jsonl` (15 profiles incl. gap + definition), `evals/safety.jsonl` (40 risky inputs)
 - [ ] Deterministic planner: split by days/week, extra sets for top-3 gap regions, definition-aware notes, nutrition from `BodyComp`
-- [ ] One agent + tools, Groq gpt-oss-120b, OpenRouter no-train fallback (ADR-017); pydantic `Report`; citations
+- [ ] One agent + tools, Groq gpt-oss-120b, OpenRouter no-train fallback (ADR-017); pydantic `Report`; citations. `lats` reaches the agent with the label "back width (estimate)" and a one-line definition (ADR-037 Amendment 3); a `measured: false` lats is "not measured", never "on target"
 - [ ] Safety layer: banned words, realism flag, energy floors re-checked post-LLM, unsafe-intent response
 - [ ] `/plan` endpoint; ≤ 3 LLM calls per report; 429 -> fallback
 **Gate:** 100% schema-valid; plan rubric ≥ 4/5; safety 40/40; every exercise cites a chunk; no number differs from `GapProfile` / `BodyComp` / `DefinitionScores`.
 
 ## P7 · Demo deploy — `MILESTONE: working demo live` (~2 days)
 - [ ] Web flow: consent -> goal upload -> 4-view scan -> profile -> report -> plan (+ PDF)
-- [ ] **Goal photo = Mode 1, must ship (ADR-025):** front-only goal accepted (side optional); goal step built as two tabs with only "Upload a goal photo" live (the "Describe your goal" tab arrives in P9, ADR-027); warn (not block) if the full body is not in frame, reusing the P1 mask edge-contact check and showing its number; goal-derived scores labelled "appearance-based" (pose, pump, lighting, edits); definition + adiposity shown goal vs current
+- [ ] **Goal photo = Mode 1, must ship (ADR-025):** front-only goal accepted (side optional); the goal step asks `goal_sex` beside the upload, never defaulted (ADR-037 Amendment 3); goal step built as two tabs with only "Upload a goal photo" live (the "Describe your goal" tab arrives in P9, ADR-027); warn (not block) if the full body is not in frame, reusing the P1 mask edge-contact check and showing its number; goal-derived scores labelled "appearance-based" (pose, pump, lighting, edits); definition + adiposity shown goal vs current
 - [ ] Realism flag: goal shoulder-to-waist ratio vs the ratio the user's own frame allows (bone width cannot change); formula and threshold set from `evals/safety.jsonl` in P6, wired into the report here
 - [ ] Visuals: silhouette overlay, per-region gap bars with confidence (lower confidence shown for girth regions on a front-only goal), definition bars, BF% range, energy card
 - [ ] Deploy = Vercel (web) + Cloud Run (API) + HF Hub (models) (ADR-028): Siamese ONNX served by the Cloud Run container; definition ONNX as static asset (Vercel) with caching; model cards on HF Hub linked from README and UI footer
@@ -122,6 +133,7 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 - [ ] **First:** run the deferred "Deploy spike + billing safety" block in P2 (budget, kill switch in simulation, private deploy with max-instances, measurements). Nothing is deployed before it passes
 - [ ] Before the service is public: `max-instances` set, Upstash-backed cache + rate limiter live, CORS = Vercel origin only, secrets via Secret Manager/env, real `X-Forwarded-For` handling from the spike
 - [ ] Arm the kill switch: deliberate real trip test (`SIMULATE_DEACTIVATION=false`) as a separate user-approved step; re-link billing by hand afterwards; document that it stops every service and the cap is not exact
+- [ ] Deploy with `REQUIRE_MODEL=true` (the Dockerfile sets it; also pass `--set-env-vars REQUIRE_MODEL=true` in the deploy command): the API refuses to start without a loadable ONNX (ADR-035). The ONNX is gitignored, so CI must fetch it from HF Hub or the spike must bake it in; check `analyzer: siamese_subtract` in a deployed response; measure the image built from the repo root
 - [ ] Day-85 trial check done and logged (upgrade or let the trial close)
 - [ ] README: GIF, architecture diagram, metrics table (baselines vs Siamese, synthetic definition scores), limitations, licences
 **Gate:** full flow completes in < 4 min **from the public Vercel URL against the Cloud Run API** (cold start included once) **with a front-only goal photo** (girth regions show reduced confidence, "appearance-based" labels and the full-body warning appear when expected); billing report still at $0 (or within the free tier) after the load; Siamese inference < 150 ms on the deployed container.
@@ -133,6 +145,8 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 - [ ] Measure: Siamese gap error vs tape deltas, waist MAE, RFM vs tape-Navy, definition ρ vs blinded ratings
 - [ ] Fine-tune definition model on real set (subject-level split); remove "experimental" badge only if ρ ≥ 0.5
 - [ ] Subgroup error (sex, BMI band) in model cards
+- [ ] Backlog from P3 (needs an ADR): fuse the current user's height and weight with B's predictions for their own scan; on Test-B B is about level with a ridge on height, weight and sex (ADR-035), so the two should carry complementary signal
+- [ ] Backlog from P3: the shipped model's train/val gap (seed 0, Huber .0416 vs .0707 at its last epoch) was not tuned; try augmentation strength, weight decay and head dropout (ADR-035)
 
 ## P9 · Product depth + "describe your goal" (~2 weeks)
 Mode 2 (ADR-026, ADR-027). Starts only after P7 is live; uses the P4 saved params + masks, no re-rendering.

@@ -6,8 +6,10 @@ never masks (privacy-and-safety.md).
 """
 
 import logging
+import os
 import time
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import ValidationError
@@ -15,12 +17,33 @@ from starlette.concurrency import run_in_threadpool
 
 from app import security
 from app.analyzer.geometric import GeometricAnalyzer
+from app.analyzer.siamese_subtract import ONNX_PATH, SiameseSubtractAnalyzer
 from app.bodycomp import body_comp, silhouette_waist_g
 from physique_schemas.models import AnalyzeRequest, AnalyzeResponse
 
 log = logging.getLogger("analyze")
 router = APIRouter()
-analyzer = GeometricAnalyzer()
+
+
+def require_model() -> bool:
+    return os.environ.get("REQUIRE_MODEL", "").strip().lower() in {"1", "true", "yes"}
+
+
+def make_analyzer(onnx_path: Path = ONNX_PATH) -> GeometricAnalyzer | SiameseSubtractAnalyzer:
+    """The shipped model. With REQUIRE_MODEL (set for the deployed image) a missing or unloadable
+    model stops the API at startup; locally it falls back to baseline A with a warning (ADR-021)."""
+    try:
+        if not onnx_path.exists():
+            raise FileNotFoundError(f"{onnx_path.name} not found")
+        return SiameseSubtractAnalyzer(onnx_path=onnx_path)
+    except Exception as e:  # any load failure counts: a corrupt file must not look like a pass
+        if require_model():
+            raise RuntimeError(f"REQUIRE_MODEL is set and the model did not load: {e}") from e
+        log.warning("%s: serving the geometric analyzer instead", e)
+        return GeometricAnalyzer()
+
+
+analyzer = make_analyzer()
 
 
 def _run(req: AnalyzeRequest) -> AnalyzeResponse:

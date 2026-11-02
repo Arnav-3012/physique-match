@@ -9,6 +9,9 @@ import numpy as np
 from PIL import Image, UnidentifiedImageError
 
 from ml.src.preprocess import H, W, from_browser
+from physique_schemas.models import Scan
+
+SIDE_VIEWS = ("left", "right")
 
 
 def decode_mask(b64: str) -> np.ndarray:
@@ -29,3 +32,22 @@ def decode_mask(b64: str) -> np.ndarray:
     if pixels.all():
         raise ValueError("mask is entirely white")
     return from_browser(pixels == 255)
+
+
+def decode_scan(scan: Scan) -> dict[str, np.ndarray]:
+    """Every view, decoded and validated: an unused view must not skip the ADR-003 check."""
+    return {name: decode_mask(v.mask_png_b64) for name, v in scan.views.items()}
+
+
+def has_side_view(scan: Scan) -> bool:
+    return any(v in scan.views for v in SIDE_VIEWS)
+
+
+def side_view(masks: dict[str, np.ndarray]) -> np.ndarray | None:
+    """The side silhouette as a left view: `left` as it is, else `right` mirrored (a profile from
+    the other side is the mirror image). None if the scan has neither."""
+    if "left" in masks:
+        return masks["left"]
+    if "right" in masks:
+        return np.ascontiguousarray(masks["right"][:, ::-1])
+    return None

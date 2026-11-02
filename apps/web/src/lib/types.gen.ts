@@ -60,9 +60,13 @@ export type DaysPerWeek = number;
 export type Equipment = string[];
 export type EdHistory = boolean | null;
 export type TapeWaistCm = number | null;
-export type Analyzer = "geometric" | "siamese";
+export type Analyzer = "geometric" | "siamese_subtract";
 export type Delta = number;
 export type Confidence = number;
+export type GoalRatio = number | null;
+export type CurrentRatio = number | null;
+export type Measured = boolean;
+export type GoalFrontOnly = boolean;
 export type Asymmetry = {
   [k: string]: number;
 } | null;
@@ -144,7 +148,8 @@ export interface AnalyzeRequest {
   profile: UserProfile;
 }
 /**
- * Front + left are required (Siamese input); back/right feed asymmetry and lat width.
+ * Front is required: a goal photo may have nothing else (ADR-025). A current scan also needs a
+ * side view (left, or right mirrored), which AnalyzeRequest checks. Back feeds lat width.
  */
 export interface Scan {
   views: Views;
@@ -182,6 +187,7 @@ export interface AnalyzeResponse {
 export interface GapProfile {
   analyzer: Analyzer;
   regions: Regions;
+  goal_front_only?: GoalFrontOnly;
   asymmetry?: Asymmetry;
 }
 export interface Regions {
@@ -190,6 +196,9 @@ export interface Regions {
 export interface RegionGap {
   delta: Delta;
   confidence: Confidence;
+  goal_ratio?: GoalRatio;
+  current_ratio?: CurrentRatio;
+  measured?: Measured;
 }
 /**
  * Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).

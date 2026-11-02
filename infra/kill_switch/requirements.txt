@@ -1,0 +1,3 @@
+# Unpinned on purpose for the first deploy; pin to the resolved versions once the simulated test passes.
+functions-framework
+google-cloud-billing

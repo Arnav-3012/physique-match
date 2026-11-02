@@ -63,6 +63,47 @@ physique-gap/
 └── .github/workflows/            # ci.yml
 ```
 
+## Model results
+MAE of the per-region proportion gap (measurement / height), on every ordered pair of subjects. Multiply by your height for an approximate cm figure. Data: BodyM, split by subject. Shipped model: a weight-sharing ResNet-18 that predicts each person's proportions, with a fixed subtraction head (baseline B). Honest ablation: the learned pair head did not earn its place.
+
+### Val ablation (val, used for selection)
+251 subjects, 62,750 ordered pairs, full input, `full` rung, seed 0. A = geometric analyzer. B = shipped model. Differences are 95% subject-bootstrap CIs; positive means the second model named is better.
+
+| Region | A | B | Pair head | B better than A by | Pair head better than B by |
+|---|---|---|---|---|---|
+| shoulders | .0094 | .0062 | .0062 | .0032 (.0023, .0041) | .0000 (-.0004, .0004) |
+| chest | .0363 | .0193 | .0191 | .0170 (.0138, .0202) | .0002 (-.0014, .0017) |
+| waist | .0276 | .0217 | .0199 | .0060 (.0026, .0092) | .0018 (-.0000, .0035) |
+| hips | .0298 | .0165 | .0169 | .0132 (.0097, .0175) | -.0004 (-.0017, .0008) |
+| upper_arm | .0137 | .0083 | .0079 | .0054 (.0036, .0074) | .0004 (-.0002, .0010) |
+| forearm | .0144 | .0058 | .0058 | .0086 (.0071, .0103) | .0000 (-.0004, .0003) |
+| thigh | .0240 | .0118 | .0110 | .0121 (.0094, .0148) | .0008 (-.0001, .0017) |
+| calf | .0157 | .0081 | .0071 | .0076 (.0060, .0093) | .0010 (.0004, .0016) |
+
+- The pair head has the lower overall val MAE (standardised, both input slices): .2709, one seed, against B's .2791 (shipped seed 0; seeds 1 and 2 reached .2785 and .2754).
+- On thigh and calf the pair head is below all three B seeds (thigh .0110 vs .0118-.0123, calf .0071 vs .0078-.0081).
+- It still failed the rule written before this run: CI above 0 on at least 6 of 8 regions against the simpler model. It reached 1 of 8 (calf). A lower mean that isn't significant per region doesn't override that (ADR-034, ADR-035).
+- Null ridge (height, weight, sex), val, table order: .0070 .0267 .0349 .0196 .0131 .0086 .0155 .0121.
+- Val also selected the epoch and the model, so these numbers are optimistic.
+
+### Test-B result (final candidate vs A only)
+In-the-wild BodyM, 351 subjects, 122,850 ordered pairs, scored once, on the shipped model only. Differences are 95% subject-bootstrap CIs; positive means B is better. Front-only means the goal has no side view, compared against A's width-only features.
+
+| Region | A | B | Null ridge | B better than A by | Width-only A | B, front-only | B better by |
+|---|---|---|---|---|---|---|---|
+| shoulders | .0107 | .0083 | .0070 | .0023 (.0016, .0030) | .0107 | .0083 | .0023 (.0016, .0029) |
+| chest | .0462 | .0294 | .0294 | .0168 (.0136, .0200) | .0508 | .0311 | .0197 (.0163, .0230) |
+| waist | .0397 | .0308 | .0310 | .0089 (.0058, .0121) | .0388 | .0315 | .0072 (.0044, .0101) |
+| hips | .0434 | .0256 | .0224 | .0177 (.0139, .0218) | .0456 | .0262 | .0194 (.0149, .0238) |
+| upper_arm | .0168 | .0109 | .0117 | .0058 (.0039, .0078) | .0168 | .0114 | .0054 (.0034, .0074) |
+| forearm | .0166 | .0077 | .0076 | .0088 (.0074, .0103) | .0166 | .0080 | .0086 (.0071, .0100) |
+| thigh | .0312 | .0159 | .0166 | .0153 (.0116, .0192) | .0312 | .0164 | .0149 (.0113, .0186) |
+| calf | .0190 | .0111 | .0129 | .0079 (.0062, .0094) | .0190 | .0110 | .0079 (.0063, .0095) |
+
+- B beats A on all 8 regions on both inputs, with no region worse.
+- **B is about as accurate as a ridge on height, weight and sex** (the "Null ridge" column, point estimates, no CI): worse on shoulders and hips, slightly better on upper_arm, thigh and calf, tied on chest, waist and forearm. The ridge needs weight, which a goal photo doesn't have, so it's a reference, not a baseline. B's value is that it needs no height or weight for the goal photo.
+- Error rose 31-55% from val to Test-B, so expect browser masks to be harder than val suggests. No real-world validation yet (P8).
+
 ## Limitations (stated up front)
 - Silhouettes measure shape/size, not muscle vs. fat. Body-fat % is a formula-based range (RFM), refined by an optional on-device definition model trained on synthetic data.
 - Goal photos are often edited, posed or enhanced; realism flag tempers targets.

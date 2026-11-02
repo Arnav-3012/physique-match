@@ -1,0 +1,7 @@
+rung: full
+subjects_per_batch: 16
+epochs: 300
+lr_encoder: 0.001
+side_dropout: 0.0
+augment: false
+overfit: true

@@ -11,6 +11,7 @@ dependencies = [
     "numpy>=2.5.4",
     "pillow>=13.0.0",
     "scipy>=1.18.1",
+    "onnxruntime",
 ]
 
 [dependency-groups]
@@ -32,7 +33,6 @@ train = [
     "torch",
     "torchvision",
     "onnx",
-    "onnxruntime",
     "pyyaml",
 ]
 

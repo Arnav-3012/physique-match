@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+test.png
+bench.py
+make_assets.py
+README.md

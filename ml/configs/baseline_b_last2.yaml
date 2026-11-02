@@ -1,0 +1,3 @@
+# Keep every setting equal to the Siamese run it is compared with (ADR-006).
+arch: regressor
+rung: last2

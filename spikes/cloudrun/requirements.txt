@@ -1,0 +1,7 @@
+# Spike deps, deliberately unpinned: /healthz reports the resolved versions, which go in dev-log.md.
+# The real API pins through uv.lock. scipy is optional (see Dockerfile WITH_SCIPY).
+fastapi
+uvicorn
+onnxruntime
+numpy
+pillow

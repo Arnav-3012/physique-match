@@ -1,0 +1,9 @@
+# Allow-list: the build context is the repo root, and ml/data, .env and the rest must stay out.
+**
+!services/api/requirements.txt
+!services/api/app/**
+!packages/schemas/**
+!ml/src/preprocess.py
+!ml/src/calibrate.py
+!ml/src/data/regions.py
+**/__pycache__

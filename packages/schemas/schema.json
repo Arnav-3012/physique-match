@@ -243,7 +243,7 @@
         "analyzer": {
           "enum": [
             "geometric",
-            "siamese"
+            "siamese_subtract"
           ],
           "title": "Analyzer",
           "type": "string"
@@ -268,6 +268,11 @@
           },
           "title": "Regions",
           "type": "object"
+        },
+        "goal_front_only": {
+          "default": false,
+          "title": "Goal Front Only",
+          "type": "boolean"
         },
         "asymmetry": {
           "anyOf": [
@@ -423,6 +428,35 @@
           "minimum": 0,
           "title": "Confidence",
           "type": "number"
+        },
+        "goal_ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Goal Ratio"
+        },
+        "current_ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Ratio"
+        },
+        "measured": {
+          "default": true,
+          "title": "Measured",
+          "type": "boolean"
         }
       },
       "required": [
@@ -514,7 +548,7 @@
     },
     "Scan": {
       "additionalProperties": false,
-      "description": "Front + left are required (Siamese input); back/right feed asymmetry and lat width.",
+      "description": "Front is required: a goal photo may have nothing else (ADR-025). A current scan also needs a\nside view (left, or right mirrored), which AnalyzeRequest checks. Back feeds lat width.",
       "properties": {
         "views": {
           "additionalProperties": {

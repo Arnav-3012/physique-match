@@ -60,12 +60,24 @@ def test_confidence_follows_validated_rho_and_missing_back(base, wide):
     gap = GeometricAnalyzer().compare(scan(*wide), scan(*base))
     assert gap.regions["waist"].confidence > 0.9  # rho_val .92, rows found on the figure
     assert gap.regions["forearm"].confidence < 0.1  # rho_val .32
-    assert gap.regions["upper_back"].confidence == 0 == gap.regions["lats"].confidence
+    for region in ("upper_back", "lats"):  # no back view: not measured, not just zero confidence
+        assert gap.regions[region].measured is False and gap.regions[region].confidence == 0
+    assert gap.regions["waist"].measured
 
 
 def test_back_view_enables_unvalidated_regions_at_low_confidence(base, wide):
     gap = GeometricAnalyzer().compare(scan(*wide, wide[0]), scan(*base, base[0]))
-    assert 0 < gap.regions["lats"].confidence <= 0.3
+    assert 0 < gap.regions["lats"].confidence <= 0.3 and gap.regions["lats"].measured
+
+
+def test_front_only_goal_uses_width_fits_and_never_raises(base, wide):
+    goal = Scan(views={"front": ViewData(mask_png_b64=mask_b64(wide[0]), keypoints=KEYPOINTS)})
+    gap = GeometricAnalyzer().compare(goal, scan(*base))
+    assert gap.goal_front_only is True
+    assert gap.regions["waist"].confidence > 0 and gap.regions["waist"].delta > 0
+    both = GeometricAnalyzer().compare(scan(*wide), scan(*base))
+    assert gap.regions["shoulders"].delta == pytest.approx(both.regions["shoulders"].delta)
+    assert both.goal_front_only is False
 
 
 def test_decode_accepts_a_good_mask(base):

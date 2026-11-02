@@ -24,6 +24,7 @@ NECK_SMOOTH = 5  # rows, moving average over the width profile
 # browser cut sat 0.013 (front) / 0.031 (side) body heights higher than BodyM; 0.0 closes most
 # of it. Phone captures cut higher still (z ~ -3), left to cut-row jitter augmentation in P3.
 NECK_CUT_OFFSET = 0.0
+MODEL_H, MODEL_W = H // 2, W // 2  # Siamese input, ResNet-18 at 192x256 (P3)
 
 
 def largest_component(mask: np.ndarray) -> np.ndarray:
@@ -85,3 +86,17 @@ def from_bodym(raw: np.ndarray) -> np.ndarray:
     mask[oy : oy + nh, ox : ox + nw] = crop
     mask[: neck_row(mask) + round(NECK_CUT_OFFSET * body_px(mask))] = False
     return mask
+
+
+def downscale(mask: np.ndarray) -> np.ndarray:
+    """Canonical bool (H, W) -> uint8 (MODEL_H, MODEL_W), 2x2 area average on 0..255."""
+    filled = mask.reshape(MODEL_H, 2, MODEL_W, 2).sum(axis=(1, 3))
+    return (filled * 255 // 4).astype(np.uint8)
+
+
+def model_input(front: np.ndarray, side: np.ndarray | None = None) -> np.ndarray:
+    """Canonical masks -> float32 (3, MODEL_H, MODEL_W) in [0, 1]: front, side, zeros.
+    A missing side view is an all-zero channel, the input side-view dropout trains on (ADR-025)."""
+    blank = np.zeros((MODEL_H, MODEL_W), np.uint8)
+    views = [downscale(front), blank if side is None else downscale(side), blank]
+    return np.stack(views).astype(np.float32) / 255

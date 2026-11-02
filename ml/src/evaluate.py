@@ -8,6 +8,8 @@ Gate: per baseline, the 95% subject-bootstrap CI of MAE_baseline - MAE_model is 
 regions and < 0 on none. Bootstrap = resample subjects, weight pair (i, j) by mult(i) * mult(j).
 Baseline NaN pairs are masked on both sides and reported as coverage, never read as delta = 0.
 `--split testB` checks the committed manifest and refuses a model hash it has scored before.
+Every table also prints two reference floors, fit on train and outside the gate: mae_mean (predict
+the train mean, so delta = 0) and mae_null (ridge on height, weight, sex).
 """
 
 import argparse
@@ -17,6 +19,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from ml.src.data.pairs import (
     MANIFEST,
@@ -43,6 +48,35 @@ def abs_errors(pred: np.ndarray, y: np.ndarray) -> np.ndarray:
     i = np.arange(len(y))
     err[i, i] = np.nan
     return err
+
+
+def region_mae(pred: np.ndarray, y: np.ndarray) -> np.ndarray:
+    return np.nanmean(abs_errors(pred, y), axis=(0, 1))
+
+
+def _null_inputs(df: pd.DataFrame) -> pd.DataFrame:
+    return df[["height_cm", "weight_kg"]].assign(male=df.sex.eq("male").astype(float))
+
+
+def null_ridge(df: pd.DataFrame, train: pd.DataFrame) -> np.ndarray:
+    """P2's null model (ADR-024) as a gap for every ordered pair of df, fit on train subjects.
+    It knows weight and a goal photo has none, so it is a reference, not a baseline (ADR-029).
+    Same ridge as eval_geometric.py, which this module cannot import: it needs PYTHONPATH."""
+    model = make_pipeline(StandardScaler(), Ridge(alpha=1.0))
+    model.fit(_null_inputs(train), labels(train))
+    return true_deltas(model.predict(_null_inputs(df)))
+
+
+def floors(df: pd.DataFrame, train: pd.DataFrame) -> pd.DataFrame:
+    """Per-region MAE of delta for the two reference floors."""
+    y = labels(df)
+    return pd.DataFrame(
+        {
+            "region": LABELLED_REGIONS,
+            "mae_mean": region_mae(np.zeros((len(y), len(y), y.shape[1])), y),
+            "mae_null": region_mae(null_ridge(df, train), y),
+        }
+    )
 
 
 def weighted_mae(err: np.ndarray, w: np.ndarray) -> np.ndarray:
@@ -105,10 +139,10 @@ def load_preds(path: str, subjects: pd.Series) -> dict:
     return {"full": z["full"], "front": z["front"], "hash": str(z["model_hash"])}
 
 
-def show(title: str, t: pd.DataFrame) -> None:
+def show(title: str, t: pd.DataFrame, refs: pd.DataFrame) -> None:
     v = verdict(t)
     print(f"\n== {title} ==")
-    print(t.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
+    print(t.merge(refs, on="region").to_string(index=False, float_format=lambda x: f"{x:.4f}"))
     print(f"wins {v['wins']}/{len(t)} (need {v['need']}); significantly worse: "
           f"{', '.join(v['significantly_worse']) or 'none'}; "
           f"{'PASS' if v['passed'] else 'FAIL'}")  # fmt: skip
@@ -139,20 +173,27 @@ def main() -> None:
             claim_test_b(p["hash"])
 
     zero = np.zeros_like(a_full)
+    refs = floors(df, canonical_subjects("train"))
     show(
         "baseline A (2-view) vs predicting 0: MAE_base = zero, MAE_model = A",
         compare(zero, a_full, y),
+        refs,
     )
-    show("width-only A vs predicting 0 (front-only slice reference)", compare(zero, a_width, y))
+    show(
+        "width-only A vs predicting 0 (front-only slice reference)",
+        compare(zero, a_width, y),
+        refs,
+    )
     if "siamese" in preds:
         s = preds["siamese"]
-        show("Siamese (full input) vs baseline A", compare(a_full, s["full"], y))
+        show("Siamese (full input) vs baseline A", compare(a_full, s["full"], y), refs)
         show("Siamese (front-only goal) vs width-only A  [front-only gate]",
-             compare(a_width, s["front"], y))  # fmt: skip
+             compare(a_width, s["front"], y), refs)  # fmt: skip
         if "b" in preds:
-            show("Siamese (full input) vs baseline B", compare(preds["b"]["full"], s["full"], y))
+            show("Siamese (full input) vs baseline B",
+                 compare(preds["b"]["full"], s["full"], y), refs)  # fmt: skip
             show("Siamese (front-only goal) vs baseline B  [info]",
-                 compare(preds["b"]["front"], s["front"], y))  # fmt: skip
+                 compare(preds["b"]["front"], s["front"], y), refs)  # fmt: skip
 
 
 if __name__ == "__main__":

@@ -1,7 +1,18 @@
 import numpy as np
 import pytest
 
-from ml.src.preprocess import MARGIN, H, W, body_px, from_bodym, from_browser
+from ml.src.preprocess import (
+    MARGIN,
+    MODEL_H,
+    MODEL_W,
+    H,
+    W,
+    body_px,
+    downscale,
+    from_bodym,
+    from_browser,
+    model_input,
+)
 
 
 def figure(h=600, canvas=(700, 400), top=40, left=150, arm_half=0.0):
@@ -72,3 +83,26 @@ def test_browser_rejects_wrong_shape_and_empty():
         from_browser(np.zeros((100, 100), bool))
     with pytest.raises(ValueError):
         from_browser(np.zeros((H, W), bool))
+
+
+def test_downscale_is_a_2x2_area_average():
+    mask = np.zeros((H, W), bool)
+    mask[:2, :2] = True  # a full block
+    mask[2, 2] = True  # one pixel of the next block
+    out = downscale(mask)
+    assert out.shape == (MODEL_H, MODEL_W) and out.dtype == np.uint8
+    assert out[0, 0] == 255 and out[1, 1] == 63 and out[5, 5] == 0
+
+
+def test_downscale_rejects_a_non_canonical_mask():
+    with pytest.raises(ValueError):
+        downscale(np.zeros((101, 100), bool))
+
+
+def test_model_input_blanks_a_missing_side_view():
+    front = from_bodym(figure())
+    both, alone = model_input(front, front), model_input(front)
+    assert both.shape == (3, MODEL_H, MODEL_W) and both.dtype == np.float32
+    assert (both[0] == alone[0]).all() and both[1].any()
+    assert not alone[1].any() and not both[2].any()
+    assert both.max() == 1.0

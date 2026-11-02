@@ -10,7 +10,7 @@ from physique_schemas import (
     Scan,
     UserProfile,
 )
-from physique_schemas.models import REGIONS
+from physique_schemas.models import REGIONS, AnalyzeRequest
 
 
 def view():
@@ -27,10 +27,20 @@ def bf():
 
 
 # --- Scan ---
-def test_scan_needs_front_and_left():
+def test_scan_needs_a_front_view_only():
+    Scan(views={"front": view()})  # a goal photo may have nothing else (ADR-025)
     Scan(views={"front": view(), "left": view()})
     with pytest.raises(ValidationError, match="missing required views"):
-        Scan(views={"front": view()})
+        Scan(views={"left": view()})
+
+
+def test_goal_may_be_front_only_but_the_current_scan_needs_a_side_view():
+    front, both = {"views": {"front": view()}}, {"views": {"front": view(), "left": view()}}
+    right = {"views": {"front": view(), "right": view()}}  # a right profile is mirrored later
+    AnalyzeRequest(goal=front, current=both, profile=profile())
+    AnalyzeRequest(goal=front, current=right, profile=profile())
+    with pytest.raises(ValidationError, match="current scan needs a side view"):
+        AnalyzeRequest(goal=both, current=front, profile=profile())
 
 
 def test_scan_rejects_wrong_keypoint_count():
@@ -55,7 +65,7 @@ def test_gap_profile_needs_all_ten_regions():
     GapProfile(analyzer="geometric", regions=gap_regions())
     partial = dict(list(gap_regions().items())[:9])
     with pytest.raises(ValidationError, match="missing regions"):
-        GapProfile(analyzer="siamese", regions=partial)
+        GapProfile(analyzer="siamese_subtract", regions=partial)
 
 
 # --- BodyComp ---

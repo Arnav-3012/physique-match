@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from app.analyzer.features import extract
-from app.analyzer.masks import decode_mask
+from app.analyzer.masks import decode_scan, side_view
 from physique_schemas.models import BodyComp, BodyFatRange, EnergyTarget, Scan, UserProfile
 
 WAIST = json.loads((Path(__file__).parent / "analyzer" / "waist_coef.json").read_text())
@@ -45,8 +45,8 @@ NOTE_LOW = (
 
 def silhouette_waist_g(scan: Scan) -> float:
     """Scale-free silhouette waist girth of one person's scan (NaN when a view is unusable)."""
-    front, side = (decode_mask(scan.views[v].mask_png_b64) for v in ("front", "left"))
-    return extract(front, side)["waist_g"]
+    masks = decode_scan(scan)
+    return extract(masks["front"], side_view(masks))["waist_g"]
 
 
 def rfm(height_cm: float, waist_cm: float, sex: str) -> float:

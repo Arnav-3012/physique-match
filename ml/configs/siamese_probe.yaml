@@ -1,0 +1,4 @@
+# Sanity check only, not a gating rung: frozen ImageNet features, linear head.
+rung: probe
+hidden: 0
+epochs: 10

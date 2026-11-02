@@ -46,15 +46,15 @@ class ViewData(_Strict):
 
 
 class Scan(_Strict):
-    """Front + left are required (Siamese input); back/right feed asymmetry and lat width."""
+    """Front is required: a goal photo may have nothing else (ADR-025). A current scan also needs a
+    side view (left, or right mirrored), which AnalyzeRequest checks. Back feeds lat width."""
 
     views: dict[View, ViewData]
 
     @model_validator(mode="after")
     def _check_views(self):
-        missing = {"front", "left"} - self.views.keys()
-        if missing:
-            raise ValueError(f"missing required views: {sorted(missing)}")
+        if "front" not in self.views:
+            raise ValueError("missing required views: ['front']")
         if sum(len(v.mask_png_b64) for v in self.views.values()) > MAX_PAYLOAD_B64:
             raise ValueError("scan payload exceeds 512 KB")
         return self
@@ -63,12 +63,27 @@ class Scan(_Strict):
 # --- Analyzer output ------------------------------------------------------
 class RegionGap(_Strict):
     delta: Annotated[float, Field(ge=-1, le=1)]  # (goal - current) / height; + = goal larger
-    confidence: Unit
+    confidence: Unit  # UI + model card: "region reliability", fixed per region and slice (ADR-035)
+    # Each person's measurement / height; siamese_subtract only, None for back-view regions.
+    goal_ratio: float | None = None
+    current_ratio: float | None = None
+    # False = the view this region needs was missing. The report says "not measured"; delta and
+    # confidence are 0 placeholders and must not be read as a result.
+    measured: bool = True
+
+    @model_validator(mode="after")
+    def _unmeasured_carries_no_numbers(self):
+        blank = self.delta == 0 and self.confidence == 0
+        no_ratios = self.goal_ratio is None and self.current_ratio is None
+        if not self.measured and not (blank and no_ratios):
+            raise ValueError("an unmeasured region carries no numbers")
+        return self
 
 
 class GapProfile(_Strict):
-    analyzer: Literal["geometric", "siamese"]
+    analyzer: Literal["geometric", "siamese_subtract"]
     regions: dict[Region, RegionGap]
+    goal_front_only: bool = False  # the goal had no side view; the UI says so (ADR-025)
     asymmetry: dict[Region, float] | None = None  # left - right, height-normalised
 
     @model_validator(mode="after")
@@ -200,6 +215,12 @@ class AnalyzeRequest(_Strict):
     goal: Scan
     current: Scan
     profile: UserProfile
+
+    @model_validator(mode="after")
+    def _current_has_a_side_view(self):
+        if not {"left", "right"} & self.current.views.keys():
+            raise ValueError("the current scan needs a side view: left or right")
+        return self
 
 
 class AnalyzeResponse(_Strict):

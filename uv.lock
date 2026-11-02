@@ -6,10 +6,10 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version < '3.13' and sys_platform == 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'emscripten'",
-    "python_full_version < '3.13' and sys_platform == 'emscripten'",
     "python_full_version == '3.13.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.13' and sys_platform == 'win32'",
+    "python_full_version < '3.13' and sys_platform == 'emscripten'",
     "python_full_version < '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
@@ -964,6 +964,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "numpy" },
+    { name = "onnxruntime" },
     { name = "physique-schemas" },
     { name = "pillow" },
     { name = "scipy" },
@@ -985,7 +986,6 @@ ml = [
 ]
 train = [
     { name = "onnx" },
-    { name = "onnxruntime" },
     { name = "pyyaml" },
     { name = "torch" },
     { name = "torchvision" },
@@ -996,6 +996,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "numpy", specifier = ">=2.5.4" },
+    { name = "onnxruntime" },
     { name = "physique-schemas", editable = "packages/schemas" },
     { name = "pillow", specifier = ">=13.0.0" },
     { name = "scipy", specifier = ">=1.18.1" },
@@ -1017,7 +1018,6 @@ ml = [
 ]
 train = [
     { name = "onnx" },
-    { name = "onnxruntime" },
     { name = "pyyaml" },
     { name = "torch" },
     { name = "torchvision" },

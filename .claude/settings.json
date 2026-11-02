@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.openlab.psu.edu)",
+      "WebFetch(domain:apps.dtic.mil)"
+    ]
+  }
+}
