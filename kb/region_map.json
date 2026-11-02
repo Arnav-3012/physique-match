@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "about": "Each Region in physique_schemas.REGIONS -> the free-exercise-db muscle groups the planner trains for it (ADR-039 item 7, ADR-048 section 2). The floor in baselines.json applies per muscle group, so a region with several groups needs every one of them at or above it. Groups use the dataset's own names. `shoulders` is one group (no front/rear split in the dataset), so lateral, front and rear delt work all count toward it.",
+  "one_to_one": ["shoulders", "chest", "lats", "forearm", "calf"],
+  "regions": {
+    "shoulders": {"groups": ["shoulders"], "note": "Lateral and rear work count toward this single group; heavy secondary credit from chest and triceps work."},
+    "chest": {"groups": ["chest"], "note": ""},
+    "upper_back": {"groups": ["middle back", "traps"], "note": "Size is never measured (`measured: false`, ADR-039 item 2); it still gets its baseline volume."},
+    "lats": {"groups": ["lats"], "note": "Shown as 'back width (estimate)' and unranked, or `measured: false` (ADR-037); it still gets its baseline volume."},
+    "waist": {"groups": ["abdominals"], "note": "Trains the abdominal muscle. It does not shrink the waist girth, which follows body fat; the report must not claim it does."},
+    "hips": {"groups": ["glutes", "abductors"], "note": "Few exercises list abductors as primary (8 of 876); the floor is mostly met through secondary credit."},
+    "upper_arm": {"groups": ["biceps", "triceps"], "note": "The girth gap covers both muscles; each gets its own floor."},
+    "forearm": {"groups": ["forearms"], "note": ""},
+    "thigh": {"groups": ["quadriceps", "hamstrings", "adductors"], "note": "Adductors have few primary exercises (13 of 876); mostly secondary credit."},
+    "calf": {"groups": ["calves"], "note": ""}
+  },
+  "untracked": {
+    "lower back": "Not tracked, not prescribed directly. The planner does not forbid compound lifts that hit it.",
+    "neck": "Not tracked, not prescribed directly. The planner does not forbid compound lifts that hit it."
+  }
+}

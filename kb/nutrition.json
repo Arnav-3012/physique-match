@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "about": "Cited protein and energy ranges (ADR-048, Amendment 2). Loaded by services/api/app/nutrition.py; bodycomp.py checks its calorie bands against this file at import. Every number below was read in the source's own text on 2026-11-02; `sources` says how much of each paper. The energy reviews address natural bodybuilders, not the general public, so applying them to recreational lifters is our extrapolation; the app's own calorie limits (docs/privacy-and-safety.md) are stricter, are not derived from these papers, and override the cited ranges.",
+  "sources": {
+    "morton-2018": {"verified_scope": "full", "read": "Results and most of the Discussion verbatim; the end of the Discussion and the Conclusion not read verbatim", "tbd_after_demo": "read the rest"},
+    "issn-protein-2017": {"verified_scope": "full", "read": "whole article body verbatim; references not read"},
+    "helms-2014": {"verified_scope": "partial", "read": "first 39,381 of 285,839 characters", "tbd_after_demo": "read the tail (kept in the plan, not deleted)"},
+    "iraki-2019": {"verified_scope": "partial", "read": "first 39,381 of 207,606 characters", "tbd_after_demo": "read the tail (kept in the plan, not deleted)"}
+  },
+  "protein": {
+    "label": "typical range",
+    "g_per_kg_day": [1.6, 2.2],
+    "unit": "g per kg of total body weight per day",
+    "applies_when": "body weight is known (grams = range x weight_kg); no range is shown without it",
+    "also_listed": [
+      {"source_id": "issn-protein-2017", "g_per_kg_day": [1.4, 2.0], "text": "One position stand lists 1.4-2.0 g per kg per day as sufficient for most exercising people."}
+    ],
+    "basis": "Morton 2018: gains in fat-free mass plateaued at 1.62 g/kg/day (95% CI 1.03 to 2.20; not statistically significant, p = 0.079); the authors call about 2.2 a pragmatic estimate. Iraki 2019: 'sufficient protein (1.6-2.2 g/kg/day)'. ISSN 2017 gives 1.4-2.0 g/kg/day, overlapping this range.",
+    "source_ids": ["morton-2018", "iraki-2019", "issn-protein-2017"],
+    "locators": {
+      "morton-2018": "Results, 'Break point analysis'; Discussion, 'Muscle mass'",
+      "iraki-2019": "Abstract; section 3.1 'Daily Intake'",
+      "issn-protein-2017": "Abstract, position statement; 'Recommended intake' key points"
+    },
+    "agent_text": "A typical protein range for people who lift weights is about 1.6 to 2.2 grams per kilogram of total body weight per day (one position stand lists 1.4 to 2.0). It is an average from research, not a personal prescription."
+  },
+  "protein_per_meal": {
+    "note": "The sources differ, so no single number is prescribed: Iraki 2019 gives 0.40-0.55 g/kg per meal over 3-6 meals; ISSN 2017 gives about 0.25 g/kg or 20-40 g per dose, every 3-4 hours.",
+    "source_ids": ["iraki-2019", "issn-protein-2017"]
+  },
+  "energy": {
+    "label": "typical range",
+    "gain_surplus_pct_above_maintenance": [10, 20],
+    "gain_pct_bodyweight_per_week_novice_intermediate": [0.25, 0.5],
+    "loss_pct_bodyweight_per_week": [0.5, 1.0],
+    "population": "natural bodybuilders (off-season gaining phase; contest-preparation loss phase)",
+    "source_ids": ["iraki-2019", "helms-2014"],
+    "locators": {
+      "iraki-2019": "Section 2 'Positive Energy Balance'; Abstract (gain rate). Section 2 also writes the gain rate as '0.25-0.5 kg per week', inconsistent with the abstract's % of bodyweight; the abstract is used",
+      "helms-2014": "Abstract; section 'Caloric intake for competition'"
+    },
+    "app_overrides": {
+      "bulk": {"pct_vs_maintenance": [5, 10], "relation": "stricter_than_cited", "reason": "The app caps a surplus at 10% of daily needs (privacy-and-safety.md); the cited 10-20% is for bodybuilders. The app's cap overrides the cited range."},
+      "cut": {"pct_vs_maintenance": [-20, -10], "relation": "not_cited", "reason": "The cited loss quantity is a weekly rate of body weight (0.5-1%/week), not a percentage of maintenance. The deficit band is the app's own design limit; the weekly rate is enforced by the 1%/week cap checked against the cited range."},
+      "recomp": {"pct_vs_maintenance": [-10, 0], "relation": "not_cited", "reason": "No cited counterpart; the app's own band."},
+      "maintain": {"pct_vs_maintenance": [-5, 5], "relation": "not_cited", "reason": "No cited counterpart; the app's own band."}
+    },
+    "note": "Advanced lifters should aim for the lower end of the surplus or be more conservative (Iraki 2019); no numeric advanced rate is given."
+  },
+  "planner_rules": {
+    "protein_point_pick": "not allowed: the planner shows the whole cited range and does not pick a value inside it, unless a rule is added and labelled as OUR rule, not a cited number",
+    "loss_rate_scaling_by_leanness": "not allowed: the weekly loss cap is not scaled by leanness, unless a rule is added and labelled as OUR rule, not a cited number"
+  },
+  "not_used": [
+    {
+      "value": "2.3-3.1 g/kg/day",
+      "source_ids": ["issn-protein-2017", "helms-2014"],
+      "reason": "For lean, resistance-trained people during an energy deficit. The two papers state the unit differently (the ISSN abstract per kg body weight, Helms per kg of lean body mass) and we do not know the user's lean mass. Not prescribed; a later decision."
+    }
+  ],
+  "tbd_after_demo": [
+    {
+      "item": "High-BMI handling",
+      "what": "For a high BMI, show the per-kg range without a computed total. The BMI threshold is OUR rule, not a cited number, and is labelled as such. Until then the total is computed from total body weight for everyone."
+    }
+  ],
+  "safety_text": "If you have kidney disease or any other medical condition, talk to a doctor or dietitian before changing your protein or calorie intake. This is not medical advice."
+}

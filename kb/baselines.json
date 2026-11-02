@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "meaning": "Typical minimum (ADR-048 section 2, amended): the volume a cited meta-regression calls sufficient for detectable hypertrophy on average. It comes from mostly young adults over about 10 weeks. It is never described as 'your minimum' and it is not a ceiling. The planner never goes below it for any muscle group it tracks, whatever the gap status of the region (ADR-039 item 7). The floor applies per muscle group: a region with several groups needs every one of them at or above the floor.",
+  "label": "typical minimum",
+  "agent_text": "About 4 weekly sets per muscle group is the typical minimum that produced detectable muscle growth in studies of mostly young adults. It is an average from research, not a prediction or requirement for you.",
+  "unit": "fractional weekly sets per muscle group",
+  "counting": {
+    "primary": 1.0,
+    "secondary": 0.5,
+    "source_id": "pelland-2024-preprint",
+    "locator": "Abstract (Objective); section 4.4 and Figure 3 (PDF pp. 2, 17, 18)",
+    "assumption": "OUR ASSUMPTION, stated once here: a set counts 1 for each muscle in the exercise's `primaryMuscles` and 0.5 for each in `secondaryMuscles` (free-exercise-db). The paper counts a set as 1 when the muscle is the likely primary force generator and 0.5 when it contributes but is not (its 'fractional' method, which had the strongest evidence for hypertrophy: 2 x log Bayes factor 9.48 vs 'total', 10.29 vs 'direct'). The dataset's primary/secondary lists were not written with that definition, so the mapping is a heuristic."
+  },
+  "session_cap": {
+    "kind": "soft planner constraint",
+    "value": 11,
+    "unit": "fractional sets per muscle group per session",
+    "source_id": "remmert-2025-preprint",
+    "locator": "Abstract (Results, Conclusions), PDF p. 2",
+    "agent_text": "Beyond about 11 sets for one muscle group in a single session, extra sets showed no clear extra growth in the research; the plan spreads sets across sessions instead. This is a planning guideline, not a hard rule.",
+    "note": "A point of undetectable outcome superiority (PUOS) from a preprint that is not peer reviewed. The authors say it should be interpreted cautiously because there is little data at very high per-session volumes. The planner treats it as a soft constraint."
+  },
+  "groups": {
+    "shoulders": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "chest": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "middle back": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "traps": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "lats": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "abdominals": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "glutes": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "abductors": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "biceps": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "triceps": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "forearms": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "quadriceps": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "hamstrings": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "adductors": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"},
+    "calves": {"min_sets_per_week": 4, "source_id": "pelland-2024-preprint", "locator": "Table 2A, 'Minimum Effective Dose' (PDF p. 24)"}
+  }
+}
