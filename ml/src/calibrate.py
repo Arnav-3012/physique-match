@@ -17,21 +17,35 @@ import numpy as np
 from ml.src.data.regions import LABELLED_REGIONS
 
 
+def _sigmas(full: np.ndarray, front: np.ndarray, y: np.ndarray) -> dict[str, np.ndarray]:
+    """Per column of (subjects, columns) arrays: residual stds and the true-gap std."""
+    off_diagonal = ~np.eye(len(y), dtype=bool)
+    pair_gaps = (y[:, None, :] - y[None, :, :])[off_diagonal]  # (ordered pairs, columns)
+    return {
+        "sigma_full": (full - y).std(axis=0, ddof=1),
+        "sigma_front": (front - y).std(axis=0, ddof=1),
+        "sigma_prior": pair_gaps.std(axis=0),
+    }
+
+
 def calibrate(full: np.ndarray, front: np.ndarray, y: np.ndarray) -> dict[str, dict[str, float]]:
     """full, front, y: (subjects, regions) predictions and truth, measurement / height."""
-    off_diagonal = ~np.eye(len(y), dtype=bool)
-    pair_gaps = (y[:, None, :] - y[None, :, :])[off_diagonal]  # (ordered pairs, regions)
-    sigma_prior = pair_gaps.std(axis=0)
-    sigma_full = (full - y).std(axis=0, ddof=1)
-    sigma_front = (front - y).std(axis=0, ddof=1)
+    s = _sigmas(full, front, y)
     return {
-        region: {
-            "sigma_full": float(sigma_full[k]),
-            "sigma_front": float(sigma_front[k]),
-            "sigma_prior": float(sigma_prior[k]),
-        }
+        region: {name: float(v[k]) for name, v in s.items()}
         for k, region in enumerate(LABELLED_REGIONS)
     }
+
+
+def index_sigmas(full: np.ndarray, front: np.ndarray, y: np.ndarray) -> dict[str, float]:
+    """The same three numbers for the frame V-taper index, shoulders / waist (ADR-038): residual
+    of the predicted index against the true one, and the std of the true index gap."""
+    shoulders, waist = (LABELLED_REGIONS.index(r) for r in ("shoulders", "waist"))
+
+    def index(a: np.ndarray) -> np.ndarray:
+        return (a[:, shoulders] / a[:, waist])[:, None]
+
+    return {name: float(v[0]) for name, v in _sigmas(index(full), index(front), index(y)).items()}
 
 
 def reliability(sigma_goal, sigma_current, sigma_prior):

@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from ml.src.calibrate import calibrate, reliability
+from ml.src.calibrate import calibrate, index_sigmas, reliability
 from ml.src.data.regions import LABELLED_REGIONS
 
 N_REGIONS = len(LABELLED_REGIONS)
@@ -69,6 +69,22 @@ def test_front_only_goal_is_never_more_reliable_than_a_full_one():
         full = reliability(s["sigma_full"], s["sigma_full"], s["sigma_prior"])
         front = reliability(s["sigma_front"], s["sigma_full"], s["sigma_prior"])
         assert front <= full
+
+
+def test_index_sigmas_are_those_of_shoulders_over_waist():
+    full, front, y = fake_split(n=40)
+    s, w = LABELLED_REGIONS.index("shoulders"), LABELLED_REGIONS.index("waist")
+
+    def index(a):
+        return a[:, s] / a[:, w]
+
+    gaps = [index(y)[i] - index(y)[j] for i in range(40) for j in range(40) if i != j]
+    out = index_sigmas(full, front, y)
+    assert list(out) == ["sigma_full", "sigma_front", "sigma_prior"]
+    assert out["sigma_full"] == pytest.approx((index(full) - index(y)).std(ddof=1))
+    assert out["sigma_front"] == pytest.approx((index(front) - index(y)).std(ddof=1))
+    assert out["sigma_prior"] == pytest.approx(np.std(gaps))
+    assert out["sigma_full"] < out["sigma_front"]  # fake_split: the front noise is 3x larger
 
 
 @pytest.mark.skipif(not META.exists(), reason="run ml.src.export_onnx first")
