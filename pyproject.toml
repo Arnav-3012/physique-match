@@ -12,6 +12,8 @@ dependencies = [
     "pillow>=13.0.0",
     "scipy>=1.18.1",
     "onnxruntime",
+    "rank-bm25>=0.2.2",
+    "tokenizers>=0.23.3",
 ]
 
 [dependency-groups]
@@ -57,5 +59,11 @@ extend-exclude = ["ml/data", "synth/out"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+"synth/spike.py" = ["E501"]  # one-off Blender diagnostics script with long log lines
+"synth/render.py" = ["E501"]  # Blender scripts: long log and field lines
+"synth/rig.py" = ["E501"]
+"synth/probe.py" = ["E501"]
+
 [tool.ruff.lint.isort]
-known-first-party = ["app", "physique_schemas", "ml"]
+known-first-party = ["app", "physique_schemas", "ml", "kb", "evals", "synth"]
