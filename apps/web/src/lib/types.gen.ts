@@ -76,8 +76,17 @@ export type GoalIndex = number | null;
 export type CurrentIndex = number | null;
 export type Delta1 = number | null;
 export type Reliability = number | null;
+export type AtAthleteUpper = number | null;
+export type AtFloor = number | null;
+export type Support = number;
+export type Extrapolated = boolean;
+export type LabelCase = 1 | 2 | 3;
+export type Text = string;
+export type Zone = (1 | 2 | 3) | null;
 export type Measured1 = boolean;
 export type Reason1 = string | null;
+export type Measured2 = boolean;
+export type Reason2 = string | null;
 export type Low = number;
 export type High = number;
 export type Method = string;
@@ -229,8 +238,33 @@ export interface VTaper {
   current_index?: CurrentIndex;
   delta?: Delta1;
   reliability?: Reliability;
+  ceiling?: Ceiling | null;
+  measured?: Measured2;
+  reason?: Reason2;
+}
+/**
+ * Reachable frame ceiling, ADR-040: the V-taper index the user's own shoulders allow at a
+ * leaner waist, from RFM inverted at `BF_ATHLETE_UPPER` and `BF_FLOOR`. Applied in the route
+ * (it needs the user's sex), like `lats`.
+ */
+export interface Ceiling {
+  at_athlete_upper?: AtAthleteUpper;
+  at_floor?: AtFloor;
+  reachable?: ZoneLabel | null;
+  near_floor?: ZoneLabel | null;
+  zone?: Zone;
   measured?: Measured1;
   reason?: Reason1;
+}
+/**
+ * ADR-041 / ADR-042: the exact wording for a zone, chosen by the ANSUR support at its end.
+ * The report and the agent use `text` as is; case 3 carries no "reachable" claim.
+ */
+export interface ZoneLabel {
+  support: Support;
+  extrapolated: Extrapolated;
+  label_case: LabelCase;
+  text: Text;
 }
 /**
  * Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).

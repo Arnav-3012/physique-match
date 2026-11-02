@@ -145,6 +145,94 @@
       "title": "BodyFatRange",
       "type": "object"
     },
+    "Ceiling": {
+      "additionalProperties": false,
+      "description": "Reachable frame ceiling, ADR-040: the V-taper index the user's own shoulders allow at a\nleaner waist, from RFM inverted at `BF_ATHLETE_UPPER` and `BF_FLOOR`. Applied in the route\n(it needs the user's sex), like `lats`.",
+      "properties": {
+        "at_athlete_upper": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "At Athlete Upper"
+        },
+        "at_floor": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "At Floor"
+        },
+        "reachable": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ZoneLabel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "near_floor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ZoneLabel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "zone": {
+          "anyOf": [
+            {
+              "enum": [
+                1,
+                2,
+                3
+              ],
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Zone"
+        },
+        "measured": {
+          "default": true,
+          "title": "Measured",
+          "type": "boolean"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "title": "Ceiling",
+      "type": "object"
+    },
     "DefinitionScores": {
       "additionalProperties": false,
       "description": "On-device model output; only these numbers leave the browser (ADR-013).",
@@ -798,6 +886,17 @@
           "default": null,
           "title": "Reliability"
         },
+        "ceiling": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Ceiling"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "measured": {
           "default": true,
           "title": "Measured",
@@ -843,6 +942,42 @@
         "keypoints"
       ],
       "title": "ViewData",
+      "type": "object"
+    },
+    "ZoneLabel": {
+      "additionalProperties": false,
+      "description": "ADR-041 / ADR-042: the exact wording for a zone, chosen by the ANSUR support at its end.\nThe report and the agent use `text` as is; case 3 carries no \"reachable\" claim.",
+      "properties": {
+        "support": {
+          "minimum": 0,
+          "title": "Support",
+          "type": "integer"
+        },
+        "extrapolated": {
+          "title": "Extrapolated",
+          "type": "boolean"
+        },
+        "label_case": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "title": "Label Case",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "support",
+        "extrapolated",
+        "label_case",
+        "text"
+      ],
+      "title": "ZoneLabel",
       "type": "object"
     }
   },

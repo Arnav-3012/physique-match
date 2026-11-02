@@ -16,6 +16,7 @@ from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from app import security
+from app.analyzer.ceiling import with_ceiling
 from app.analyzer.geometric import GeometricAnalyzer
 from app.analyzer.lats import with_lats
 from app.analyzer.siamese_subtract import ONNX_PATH, SiameseSubtractAnalyzer
@@ -51,6 +52,7 @@ def _run(req: AnalyzeRequest) -> AnalyzeResponse:
     gap, warnings = with_lats(
         analyzer.compare(req.goal, req.current), req.profile.sex, req.goal_profile.sex
     )
+    gap = with_ceiling(gap, req.profile.sex)
     # lean: the current scan is featurised twice (compare + waist); cache if latency matters
     needs_waist = req.profile.tape_waist_cm is None and req.profile.sex != "not_specified"
     waist_g = silhouette_waist_g(req.current) if needs_waist else None

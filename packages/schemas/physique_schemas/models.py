@@ -86,6 +86,41 @@ class RegionGap(_Strict):
         return self
 
 
+class ZoneLabel(_Strict):
+    """ADR-041 / ADR-042: the exact wording for a zone, chosen by the ANSUR support at its end.
+    The report and the agent use `text` as is; case 3 carries no "reachable" claim."""
+
+    support: Annotated[int, Field(ge=0)]  # ANSUR subjects of the user's sex at or below the end
+    extrapolated: bool  # the end sits below every ANSUR subject of that sex
+    label_case: Literal[1, 2, 3]
+    text: str
+
+
+class Ceiling(_Strict):
+    """Reachable frame ceiling, ADR-040: the V-taper index the user's own shoulders allow at a
+    leaner waist, from RFM inverted at `BF_ATHLETE_UPPER` and `BF_FLOOR`. Applied in the route
+    (it needs the user's sex), like `lats`."""
+
+    at_athlete_upper: float | None = None  # the lower ceiling: "reachable on frame alone"
+    at_floor: float | None = None  # the higher ceiling: "reachable only near the body-fat floor"
+    reachable: ZoneLabel | None = None  # zone 1 wording, support at the athlete-upper end
+    near_floor: ZoneLabel | None = None  # zone 2 wording, support at the floor end
+    zone: Literal[1, 2, 3] | None = None  # the goal's zone; filled by M2 step 3, no schema change
+    measured: bool = True
+    reason: str | None = None
+
+    @model_validator(mode="after")
+    def _numbers_iff_measured(self):
+        parts = (self.at_athlete_upper, self.at_floor, self.reachable, self.near_floor)
+        if self.measured and None in parts:
+            raise ValueError("a measured ceiling needs both ends and both labels")
+        if self.measured and self.reason is not None:
+            raise ValueError("only an unmeasured ceiling has a reason")
+        if not self.measured and any(p is not None for p in (*parts, self.zone)):
+            raise ValueError("an unmeasured ceiling carries no numbers")
+        return self
+
+
 class VTaper(_Strict):
     """Frame V-taper (estimate), ADR-038: index = shoulders / waist, each B's measurement / height.
     About .40, not the gym ratio: no ideal line. Shown, not ranked. `delta` = goal - current."""
@@ -95,6 +130,7 @@ class VTaper(_Strict):
     delta: Annotated[float, Field(ge=-1, le=1)] | None = None
     # None until the `v_taper` block (val residuals) is in gap_regressor.json (ADR-038).
     reliability: Unit | None = None
+    ceiling: Ceiling | None = None  # None until the route adds it (ADR-040)
     measured: bool = True  # False = shoulders or waist was not measured; the numbers are all None
     reason: str | None = None
 
