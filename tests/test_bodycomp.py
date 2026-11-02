@@ -2,7 +2,7 @@ from itertools import product
 
 import pytest
 
-from app.bodycomp import body_comp, body_fat, rfm, rmr
+from app.bodycomp import NOTE_ED, NOTE_NO_SEX, body_comp, body_fat, rfm, rmr
 from physique_schemas.models import UserProfile
 
 
@@ -75,6 +75,34 @@ def test_normal_cut_gives_maintain_and_cut():
 def test_silhouette_waist_is_used_without_a_tape_and_marked():
     bc = body_comp(profile(tape_waist_cm=None), waist_g=0.5)
     assert "silhouette" in bc.body_fat.method and bc.body_fat.confidence == "low"
+
+
+def test_unset_sex_gives_no_body_fat_and_no_calories_and_no_error():
+    """ADR-037 Amendment 4: RFM and Mifflin both carry a sex term, so neither is guessed."""
+    bc = body_comp(profile(sex="not_specified"))
+    assert bc.body_fat is None and bc.energy == []
+    assert bc.rmr_kcal is None and bc.tdee_kcal is None and bc.note == NOTE_NO_SEX
+
+
+def test_unset_sex_needs_no_waist_and_keeps_the_eating_disorder_note():
+    bc = body_comp(profile(sex="not_specified", tape_waist_cm=None, ed_history=True))
+    assert bc.body_fat is None and bc.note == f"{NOTE_ED} {NOTE_NO_SEX}"
+
+
+def test_rmr_never_guesses_a_sex_term():
+    with pytest.raises(KeyError):
+        rmr(profile(sex="not_specified"))
+
+
+@pytest.mark.parametrize("goal", ["cut", "recomp", "bulk"])
+def test_body_fat_never_changes_the_mode_only_the_deficit_opt_out(goal):
+    """The mode is the user's `goal` field (ADR-037 Amendment 4). Across lean to heavy waists the
+    targets offered are maintain and that goal, never another mode, and the profile is untouched."""
+    for waist in (55, 66, 75, 90, 110, 140):
+        p = profile(goal=goal, weight_kg=85, height_cm=195, tape_waist_cm=waist)
+        offered = {t.goal for t in body_comp(p).energy}
+        assert offered <= {"maintain", goal} and "maintain" in offered
+        assert p.goal == goal
 
 
 def test_no_waist_at_all_is_an_error_not_a_guess():

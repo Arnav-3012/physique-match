@@ -1,0 +1,131 @@
+{
+ "additive_sex": {
+  "verdict": "unranked",
+  "gate_passed": true,
+  "R2_min": 0.408323011574818,
+  "dR2_min": 0.048328376715068955,
+  "dR2_min_ci95": [
+   0.04080439029752985,
+   0.05534803457800069
+  ],
+  "rule": "dR2_min >= 0.02 and CI lower bound > 0; tiers on R2_min (0.7, 0.5)",
+  "target": "interscyei / stature",
+  "shoulder_column": "biacromialbreadth",
+  "inputs": [
+   "chest",
+   "shoulders",
+   "waist",
+   "is_male"
+  ],
+  "intercept": 0.01883187824965496,
+  "coef": {
+   "chest": 0.16374320846995954,
+   "shoulders": 0.4026167939294618,
+   "waist": 0.0471990634361388,
+   "is_male": 0.007286558249927473
+  },
+  "alpha": 100.0,
+  "outer_alphas": {
+   "chest": [
+    100.0,
+    100.0,
+    1e-06,
+    31.622776601683793,
+    1e-06
+   ],
+   "full": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0
+   ]
+  },
+  "noise": {
+   "sigma_full": [
+    0.01820683293044567,
+    0.005596426781266928,
+    0.01941004954278469
+   ],
+   "sigma_front": [
+    0.021474527195096016,
+    0.0058304849080741405,
+    0.02057085745036602
+   ]
+  },
+  "reliability": {
+   "resid_std_full": 0.014658215657795242,
+   "resid_std_front": 0.014793385489020342,
+   "sigma_prior": 0.028483478914930672
+  },
+  "per_sex": {
+   "male": {
+    "r2_chest_noisy": 0.4248802158714783,
+    "r2_chest_front": 0.4075512924299012,
+    "r2_chest_stress": 0.36950348921498277,
+    "r2_full_noisy": 0.47320859258654724,
+    "r2_full_front": 0.4637749080209811,
+    "r2_full_stress": 0.4295249614214557,
+    "dr2_noisy": 0.048328376715068955,
+    "r2_clean_shipped": 0.5080640407563243,
+    "dr2_clean_shipped": 0.038887475324356324,
+    "r2_clean_ceiling": 0.5207580905217908,
+    "dr2_clean_ceiling": 0.03850695480876898,
+    "r2_own_sex_fit_noisy": 0.47326429437312056,
+    "mae_full_noisy": 0.011910475015352022,
+    "mae_full_noisy_cm_at_175": 2.084333127686604
+   },
+   "female": {
+    "r2_chest_noisy": 0.33888897118244155,
+    "r2_chest_front": 0.31733155647636824,
+    "r2_chest_stress": 0.269989105153573,
+    "r2_full_noisy": 0.408323011574818,
+    "r2_full_front": 0.3965211021220323,
+    "r2_full_stress": 0.3537486035731984,
+    "dr2_noisy": 0.06943404039237644,
+    "r2_clean_shipped": 0.451863136733198,
+    "dr2_clean_shipped": 0.05794596799633556,
+    "r2_clean_ceiling": 0.4504023766771128,
+    "dr2_clean_ceiling": 0.06747629740007888,
+    "r2_own_sex_fit_noisy": 0.4098807061503602,
+    "mae_full_noisy": 0.011214626392909599,
+    "mae_full_noisy_cm_at_175": 1.9625596187591798
+   }
+  },
+  "pooled_r2": {
+   "chest": 0.4765499919411236,
+   "full": 0.5239332240039802
+  },
+  "slopes_raw": {
+   "pooled_additive": {
+    "chest": 0.16374320846995954,
+    "shoulders": 0.4026167939294618,
+    "waist": 0.0471990634361388
+   },
+   "male_only": {
+    "chest": 0.1772174755130755,
+    "shoulders": 0.4050000781270362,
+    "waist": 0.04222198199229855
+   },
+   "female_only": {
+    "chest": 0.1405023827550656,
+    "shoulders": 0.36282107737597513,
+    "waist": 0.05395635991033768
+   }
+  },
+  "in_sample_clean_r2": 0.564515095586927,
+  "diagnostics": {
+   "shoulder_coef_noise_fit": 0.4026167939294618,
+   "shoulder_coef_clean_fit": 0.4875235642970837
+  },
+  "data": {
+   "ANSUR_II_FEMALE_Public.csv": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a",
+   "ANSUR_II_MALE_Public.csv": "0547aea0170e5293de519389981135e75803f02e6d40c77ace740decc0caac64"
+  },
+  "seed": 0,
+  "n": {
+   "male": 4082,
+   "female": 1986
+  }
+ }
+}

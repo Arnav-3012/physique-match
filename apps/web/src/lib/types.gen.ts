@@ -52,7 +52,7 @@ export type Visibility = number;
 export type HeightCm = number;
 export type WeightKg = number;
 export type Age = number;
-export type Sex = "male" | "female";
+export type Sex = "male" | "female" | "not_specified";
 export type Activity = "sedentary" | "light" | "moderate" | "active" | "very_active";
 export type Level = "beginner" | "intermediate" | "advanced";
 export type Goal = "cut" | "recomp" | "bulk";
@@ -60,12 +60,14 @@ export type DaysPerWeek = number;
 export type Equipment = string[];
 export type EdHistory = boolean | null;
 export type TapeWaistCm = number | null;
+export type Sex1 = "male" | "female" | "not_specified";
 export type Analyzer = "geometric" | "siamese_subtract";
 export type Delta = number;
 export type Confidence = number;
 export type GoalRatio = number | null;
 export type CurrentRatio = number | null;
 export type Measured = boolean;
+export type Reason = string | null;
 export type GoalFrontOnly = boolean;
 export type Asymmetry = {
   [k: string]: number;
@@ -83,6 +85,7 @@ export type ProteinGLow = number;
 export type ProteinGHigh = number;
 export type Energy = EnergyTarget[];
 export type Note = string;
+export type Warnings = string[];
 export type Abs = number;
 export type Chest = number;
 export type Shoulders = number;
@@ -146,6 +149,7 @@ export interface AnalyzeRequest {
   goal: Scan;
   current: Scan;
   profile: UserProfile;
+  goal_profile?: GoalProfile;
 }
 /**
  * Front is required: a goal photo may have nothing else (ADR-025). A current scan also needs a
@@ -171,7 +175,7 @@ export interface UserProfile {
   height_cm: HeightCm;
   weight_kg: WeightKg;
   age: Age;
-  sex: Sex;
+  sex?: Sex;
   activity: Activity;
   level: Level;
   goal: Goal;
@@ -180,9 +184,17 @@ export interface UserProfile {
   ed_history?: EdHistory;
   tape_waist_cm?: TapeWaistCm;
 }
+/**
+ * What the user says about the goal physique. Never filled from the photo or defaulted to
+ * the user's sex (ADR-037 Amendment 3): `lats` needs both sexes set and equal.
+ */
+export interface GoalProfile {
+  sex?: Sex1;
+}
 export interface AnalyzeResponse {
   gap: GapProfile;
   body_comp: BodyComp;
+  warnings?: Warnings;
 }
 export interface GapProfile {
   analyzer: Analyzer;
@@ -199,12 +211,15 @@ export interface RegionGap {
   goal_ratio?: GoalRatio;
   current_ratio?: CurrentRatio;
   measured?: Measured;
+  reason?: Reason;
 }
 /**
  * Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).
+ * `body_fat` is None when the user's sex is unset: RFM has a sex term and is not guessed
+ * (ADR-037 Amendment 4); `note` says why.
  */
 export interface BodyComp {
-  body_fat: BodyFatRange;
+  body_fat?: BodyFatRange | null;
   rmr_kcal?: RmrKcal;
   tdee_kcal?: TdeeKcal;
   energy?: Energy;

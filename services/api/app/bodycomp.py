@@ -41,6 +41,10 @@ NOTE_LOW = (
     "Your estimated body fat or BMI is already low, so no calorie deficit is suggested. "
     "The plan focuses on strength at maintenance; a health professional can advise on weight."
 )
+NOTE_NO_SEX = (
+    "Body fat and calorie numbers need your sex, because the formulas differ by sex. "
+    "Set it in your profile to see them; your gaps and plan are unchanged."
+)
 
 
 def silhouette_waist_g(scan: Scan) -> float:
@@ -56,7 +60,8 @@ def rfm(height_cm: float, waist_cm: float, sex: str) -> float:
 
 def rmr(p: UserProfile) -> float:
     """Mifflin-St Jeor resting metabolic rate, kcal/day."""
-    return 10 * p.weight_kg + 6.25 * p.height_cm - 5 * p.age + (5 if p.sex == "male" else -161)
+    sex_term = {"male": 5, "female": -161}[p.sex]  # KeyError on not_specified: never guessed
+    return 10 * p.weight_kg + 6.25 * p.height_cm - 5 * p.age + sex_term
 
 
 def waist_estimate(p: UserProfile, waist_g: float | None) -> tuple[float, float, str]:
@@ -116,6 +121,9 @@ def energy_targets(p: UserProfile, rmr_kcal: float, tdee: float, deficit_ok: boo
 
 def body_comp(p: UserProfile, waist_g: float | None = None) -> BodyComp:
     """`waist_g` = the current scan's scale-free silhouette waist girth (features.waist_g)."""
+    if p.sex == "not_specified":  # RFM, the waist model and Mifflin all have a sex term (ADR-037)
+        notes = ([NOTE_ED] if p.ed_history else []) + [NOTE_NO_SEX]
+        return BodyComp(body_fat=None, note=" ".join(notes))
     waist, sd, source = waist_estimate(p, waist_g)
     bf = body_fat(p, waist, sd, source)
     if p.ed_history:

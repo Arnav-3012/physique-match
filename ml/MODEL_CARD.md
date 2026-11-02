@@ -7,7 +7,7 @@
 ## What it does
 Takes a body silhouette (front view, plus a side view if there is one) and predicts 8 body proportions, each a measurement divided by height: shoulders, chest, waist, hips, upper arm, forearm, thigh, calf. The API runs it once on a goal silhouette and once on the user's own, then subtracts. The result is a **proportion gap per region**.
 
-A goal needs a front view only. A current scan needs a front view and one side view (left, or right mirrored). Regions whose view is missing, `upper_back` and `lats` without a back view on both scans, are returned as not measured, not as a zero.
+A goal needs a front view only. A current scan needs a front view and one side view (left, or right mirrored). A region that can't be measured is returned as not measured, with a reason, not as a zero. `upper_back` is always one (no size number from any view, ADR-039). `lats` is added by the API from this model's chest, shoulders and waist, as "back width (estimate)", and only when the user's sex and the goal's sex are both set and equal (see Limits).
 
 It estimates outline-based proportions only. It can't see muscle versus fat, and it knows nothing about health, fitness or how a body should look.
 
@@ -78,7 +78,9 @@ These are optimistic. Val also selected the epoch, and Test-B error ran 31–55%
 - **Goal photos** are often posed, lit, pumped or edited, and this model takes the outline at face value. Scores from a goal photo are appearance-based.
 - **Forearm** may reflect general body size more than the forearm itself: its error matches the ridge's, and the silhouette's own forearm feature is weak.
 - **No subgroup results yet** by sex or BMI (P8). BodyM doesn't represent all bodies, and this model hasn't been checked across them.
-- **`upper_back` and `lats`** have no labels and come from the geometric analyzer, at low confidence, and only when both scans have a back view; otherwise they're reported as not measured.
+- **Back width (API key `lats`) is an estimate, not a measurement, and not a measure of lat muscle.** It is a ridge fitted on ANSUR II (4,082 men, 1,986 women; target = the tape distance between the rear armpit folds, over stature) from chest, shoulder and waist ratios plus an additive sex term, applied to this model's outputs. BodyM has no back-width label, so it can't be fitted or checked there. Out-of-fold R² with inputs as noisy as this model's: .47 (men), .41 (women); the extra signal over chest alone is dR² .048 (CI .041 to .055), so it passed its gate, but R² under .5 made it **unranked** (shown, never in the priority ranking). Even with perfect inputs the women's R² is .45. Reliability is about .27 for goal and current. Two disclosed weaknesses: BodyM's shoulder breadth runs about 10% below ANSUR's closest column (biacromial), so this model's shoulder gaps look about 0.9x too small to the ridge, and the ridge's shoulder coefficient is 17% lower for being fitted on noisy inputs. Both are a scale mismatch the fit can't see.
+- **Sex fields.** `lats` needs the user's sex and the goal's sex, both typed by the user (never inferred, never defaulted), and equal; then the sex term cancels in the gap. If they differ or either is unset, it is not measured and the reason is shown; a different-sex goal also gets a warning that absolute size gaps may not be reachable. This model itself takes no sex input, and the other seven regions are identical with or without it (tested). Unset sex also removes body-fat % and calorie targets, which need it.
+- **`upper_back`** has no size output at all: "Not measurable from a front photo; a back silhouette adds no size information." The back-view fits of the geometric analyzer were retired.
 - **Clothing:** trained on BodyM's silhouettes. Loose clothing changes the outline and isn't corrected for.
 
 ## Performance (local proxy, M4 Pro, ONNX Runtime CPU, 1 thread)
@@ -124,7 +126,7 @@ Comparing a goal silhouette with the user's own scans, and a rough waist estimat
 
 ## Limits
 - BodyM subjects wear tight clothing in an A-pose; real users wear shorts and loose tops. On three browser captures, shorts hid the crotch row (row finder falls back to a prior, confidence drops) and loose tops enlarged the silhouette area by 15 to 25%.
-- **Forearm is not predicted** (rho about 0.3) and gets near-zero confidence. `upper_back` and `lats` have no BodyM labels and are fixed at confidence 0.3. Left/right asymmetry is not implemented.
+- **Forearm is not predicted** (rho about 0.3) and gets near-zero confidence. `upper_back` and `lats` have no BodyM labels; the back-view values this analyzer once gave them (fixed confidence 0.3) are retired and both are now not measured (ADR-037 Amendment 2). Left/right asymmetry is not implemented.
 - The silhouette adds little beyond height, weight and sex on chest, hips and thigh in the wild (Test-B).
 - A cropped body (feet or head out of frame) breaks the height normalisation behind every feature.
 - The files we used carry no age or ethnicity. Male share: 60% (train), 53% (Test-A), 39% (Test-B). Subgroup error by sex and BMI band is planned for P8.

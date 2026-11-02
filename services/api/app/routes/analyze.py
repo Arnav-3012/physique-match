@@ -17,6 +17,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app import security
 from app.analyzer.geometric import GeometricAnalyzer
+from app.analyzer.lats import with_lats
 from app.analyzer.siamese_subtract import ONNX_PATH, SiameseSubtractAnalyzer
 from app.bodycomp import body_comp, silhouette_waist_g
 from physique_schemas.models import AnalyzeRequest, AnalyzeResponse
@@ -47,10 +48,13 @@ analyzer = make_analyzer()
 
 
 def _run(req: AnalyzeRequest) -> AnalyzeResponse:
-    gap = analyzer.compare(req.goal, req.current)
+    gap, warnings = with_lats(
+        analyzer.compare(req.goal, req.current), req.profile.sex, req.goal_profile.sex
+    )
     # lean: the current scan is featurised twice (compare + waist); cache if latency matters
-    waist_g = None if req.profile.tape_waist_cm is not None else silhouette_waist_g(req.current)
-    return AnalyzeResponse(gap=gap, body_comp=body_comp(req.profile, waist_g))
+    needs_waist = req.profile.tape_waist_cm is None and req.profile.sex != "not_specified"
+    waist_g = silhouette_waist_g(req.current) if needs_waist else None
+    return AnalyzeResponse(gap=gap, body_comp=body_comp(req.profile, waist_g), warnings=warnings)
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)

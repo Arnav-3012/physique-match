@@ -5,7 +5,6 @@ from test_analyzer import KEYPOINTS, mask_b64, png_b64, scan
 from test_features import side_figure
 from test_rows import figure
 
-from app.analyzer.geometric import GeometricAnalyzer
 from app.analyzer.siamese_subtract import ONNX_PATH, SiameseSubtractAnalyzer
 from ml.src.calibrate import reliability
 from ml.src.data.regions import LABELLED_REGIONS
@@ -106,24 +105,15 @@ def test_a_right_side_view_gives_the_same_gap_as_the_left_one(analyzer, base, wi
     assert right.goal_front_only is False
 
 
-def test_regions_without_their_view_are_not_measured_not_zero_confidence(analyzer, base):
-    gap = analyzer.compare(scan(*base), scan(*base))
+def test_back_regions_are_not_measured_here_whatever_the_views(analyzer, base, wide):
+    """upper_back stays unmeasured (ADR-037 Amendment 2); lats is filled in later."""
+    without = analyzer.compare(scan(*wide), scan(*base))
+    with_back = analyzer.compare(scan(*wide, wide[0]), scan(*base, base[0]))
+    assert with_back == without
     for region in ("upper_back", "lats"):
-        r = gap.regions[region]
+        r = without.regions[region]
         assert r.measured is False and r.delta == 0 == r.confidence and r.goal_ratio is None
-    assert all(gap.regions[r].measured for r in LABELLED_REGIONS)
-
-
-def test_back_view_regions_come_from_the_geometric_analyzer(analyzer, base, wide):
-    goal, current = scan(*wide, wide[0]), scan(*base, base[0])
-    gap = analyzer.compare(goal, current)
-    assert gap.regions["lats"] == GeometricAnalyzer().compare(goal, current).regions["lats"]
-    assert gap.regions["lats"].measured and gap.regions["lats"].confidence > 0
-
-
-def test_a_back_view_on_only_one_scan_is_not_enough(analyzer, base):
-    gap = analyzer.compare(scan(*base, base[0]), scan(*base))
-    assert gap.regions["lats"].measured is False
+    assert all(without.regions[r].measured for r in LABELLED_REGIONS)
 
 
 def test_an_unmeasured_region_cannot_carry_numbers():

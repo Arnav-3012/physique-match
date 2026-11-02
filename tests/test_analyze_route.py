@@ -12,11 +12,12 @@ from test_rows import figure
 
 from app import security
 from app.analyzer.geometric import GeometricAnalyzer
+from app.analyzer.lats import DIFFERENT_SEX_WARNING
 from app.analyzer.siamese_subtract import ONNX_PATH
 from app.main import app
 from app.routes import analyze as analyze_route
 from ml.src.preprocess import H, W, from_bodym
-from physique_schemas.models import AnalyzeRequest, UserProfile
+from physique_schemas.models import UPPER_BACK_REASON, AnalyzeRequest, UserProfile
 
 client = TestClient(app)
 PROFILE = dict(height_cm=175, weight_kg=75, age=30, sex="male", activity="moderate",
@@ -54,6 +55,53 @@ def test_valid_request_returns_gap_and_body_comp(body):
     assert len(out["gap"]["regions"]) == 10 and out["gap"]["analyzer"] == "geometric"
     assert out["body_comp"]["body_fat"]["low"] < out["body_comp"]["body_fat"]["high"]
     assert "silhouette" in out["body_comp"]["body_fat"]["method"]
+
+
+def test_unset_sex_still_returns_the_gap_but_no_body_fat(body):
+    body["profile"]["sex"] = "not_specified"
+    r = post(body)
+    assert r.status_code == 200
+    out = r.json()
+    assert len(out["gap"]["regions"]) == 10
+    assert out["body_comp"]["body_fat"] is None and out["body_comp"]["energy"] == []
+
+
+def test_different_sex_goal_warns_and_lats_says_why(body):
+    body["goal_profile"] = {"sex": "female"}  # the user is male
+    out = post(body).json()
+    assert out["warnings"] == [DIFFERENT_SEX_WARNING]
+    assert out["gap"]["regions"]["lats"]["measured"] is False
+    assert out["gap"]["regions"]["upper_back"]["reason"] == UPPER_BACK_REASON
+
+
+def test_the_gap_apart_from_lats_does_not_depend_on_either_sex_field(body):
+    def gap_without_lats(user, goal):
+        body["profile"]["sex"], body["goal_profile"] = user, {"sex": goal}
+        regions = post(body).json()["gap"]["regions"]
+        return {r: v for r, v in regions.items() if r != "lats"}
+
+    reference = gap_without_lats("male", "male")
+    unset = "not_specified"
+    for user, goal in [("female", "female"), ("female", "male"), (unset, unset)]:
+        assert gap_without_lats(user, goal) == reference
+
+
+@pytest.mark.skipif(not ONNX_PATH.exists(), reason="run ml.src.export_onnx first")
+def test_shipped_model_gap_apart_from_lats_is_identical_with_and_without_sex(monkeypatch, body):
+    monkeypatch.setattr(analyze_route, "analyzer", analyze_route.make_analyzer())
+    body["profile"]["sex"], body["goal_profile"] = "not_specified", {"sex": "not_specified"}
+    unset = post(body).json()["gap"]["regions"]
+    body["profile"]["sex"], body["goal_profile"] = "male", {"sex": "male"}
+    male = post(body).json()["gap"]["regions"]
+    assert {r: v for r, v in unset.items() if r != "lats"} == {
+        r: v for r, v in male.items() if r != "lats"
+    }
+    assert unset["lats"]["measured"] is False and male["lats"]["measured"] is True
+
+
+def test_same_sex_goal_has_no_warning(body):
+    body["goal_profile"] = {"sex": "male"}
+    assert post(body).json()["warnings"] == []
 
 
 def test_rgb_upload_is_rejected_and_not_echoed(body):

@@ -18,6 +18,7 @@ Hosting (ADR-028): web on Vercel, API on **Google Cloud Run free tier**, models 
 | P5 | Hybrid RAG + query manager + semantic cache | 4 d |
 | P6 | Agent + planner + safety | 4 d |
 | **P7** | **Demo deploy** | 2 d |
+| P7.1 | Multi-user: database for user inputs and plans, proper framework (**not planned yet**) | TBD |
 | P8 | Real data + fine-tune + validation | 1 wk |
 | P9 | Product depth + describe-your-goal (Mode 2) | 2 wk |
 | P10 | Hardening & polish | 4 d |
@@ -80,16 +81,31 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 - [ ] Overfit 1 batch -> linear probe -> unfreeze last 2 blocks -> full fine-tune; stop at first rung that passes the gate; MPS, log every N steps
 - [ ] Per-region confidence = calibrated val residual std (no MC dropout), separately for full-input and front-only slices, -> `GapProfile`; front-only goals show "widths only, lower confidence"; goal `Scan` requires only `front`, current keeps 4 views (validated separately); `GeometricAnalyzer` never raises on a missing view; width-only baseline A coefficients fitted
 - [ ] **Front-only eval slice** on Test-B (goal side blanked); baselines A and B run on the same slice (A: widths only, B: the same single regressor with the goal's side view blanked, ADR-033)
-- [ ] Export ONNX (**file <= 50 MB**, int8 if needed), model card in `ml/MODEL_CARD.md` (data, splits, metrics, limits, BodyM CC BY-NC), weights to an HF Hub model repo; plug into `/analyze` (geometric stays for back view + asymmetry)
+- [ ] Export ONNX (**file <= 50 MB**, int8 if needed), model card in `ml/MODEL_CARD.md` (data, splits, metrics, limits, BodyM CC BY-NC), weights to an HF Hub model repo; plug into `/analyze` (geometric stays as the fallback; its back-view numbers are retired, ADR-037)
 - [ ] **Lats + sex handling, strictly in this order (ADR-036, ADR-037); each step starts only when the previous is done and logged:**
   1. [x] ADR-037 written (files only)
   2. [x] Audit: grep that no other ranked region uses a sex term (user ran it 2026-11-02: none; sex appears only in body composition, null-ridge references, splits, tests and the schema; see dev-log)
-  3. [ ] ADR-036: ANSUR II downloaded, shoulder column checked (`biacromial`); `ml/src/fit_lats.py` written, **run pending**; then record the verdict
+  3. [x] ADR-036: ANSUR II fit run 2026-11-02: gate PASS (min dR2 .048, CI [.041, .055]), R2_min .408 -> **verdict `unranked`** (shown as "back width (estimate)", not in the priority ranking); numbers in dev-log
   4. [-] Dropped (ADR-037 Amendment 3, user 2026-11-02): no pooled ridge; `lats` needs user_sex and goal_sex set and equal
-  5. [ ] Schema: `UserProfile.sex`, `GoalProfile.sex` (default `not_specified`), regenerate TS types, `test_schemas.py`
-  6. [ ] Calculation: `lats` is `measured: false` with a reason unless both sexes are set and equal (report-level warning for a different-sex goal); no pooled route; RFM for an unset user sex waits for the user's choice (Amendment 3 open point); null baseline, if shown, same condition
-  7. [ ] Tests: missing sex no error; `lats` blocked with a reason for differing or unset sexes; warning for a different-sex goal; B byte-identical with and without sex fields; RFM test per the choice in step 6
-  8. [ ] Docs: model card limitation, privacy doc + consent text, dev-log; label "back width (estimate)" in UI, README and report (API key stays `lats`). (Report note and agent label wired in P6.)
+  5. [x] Schema: `UserProfile.sex`, `GoalProfile.sex` (default `not_specified`), regenerate TS types, `test_schemas.py` (pytest 149 passed 2026-11-02; the TS types were NOT truly regenerated: `npm run types` reads `schema.json`, which only `python -m physique_schemas.export_schema` rewrites. Fixed together with 6a)
+  6. [x] (6a done: sex unset -> no body-fat %/calories, `body_fat` optional, 152 tests passed; 6b-1 done: both analyzers return `upper_back` and `lats` as `measured: false`, 150 passed; 6b-2 done 2026-11-02, 162 passed: `app/analyzer/lats.py` applied in the route, `RegionGap.reason`, `AnalyzeResponse.warnings`, schema and TS types regenerated; mode check done: only `p.goal` sets the mode, body fat only feeds the deficit opt-out; `rmr()` now raises on `not_specified` instead of using the female term) Calculation: `lats` is `measured: false` with a reason unless both sexes are set and equal (report-level warning for a different-sex goal); no pooled route; unset user sex -> no body-fat %, no calories, no `lats` (ADR-037 Amendment 4; `BodyComp.body_fat` optional, "set your sex" note; fix the `BF_FLOOR[p.sex]` / `LEAN_RFM[p.sex]` KeyError and the Mifflin non-male-is-female term); check that nothing derives cut/recomp/bulk from body-fat % (the mode stays user-chosen); null baseline, if shown, same condition
+  7. [x] (168 passed 2026-11-02: `test_lats.py`, route and bodycomp tests) Tests: missing sex no error; `lats` blocked with a reason for differing or unset sexes; warning for a different-sex goal; B byte-identical with and without sex fields; unset sex gives `body_fat = None`, no energy targets and the note, while gaps still compute, and the mode is untouched
+  8. [x] (done 2026-11-02: privacy doc + consent text, model card, README, dev-log; the web app has no sex field, region labels or "not measured" handling yet, so the UI wording moved to the P7 visuals task, no UI files invented) Docs: model card limitation, privacy doc + consent text, dev-log; label "back width (estimate)" in UI, README and report (API key stays `lats`); the sex field reads "needed for body-fat %, calories, lats and the V-taper ceiling" and is never defaulted. (Report note and agent label wired in P6.)
+- [ ] **Frame V-taper, M1 (ADR-038)**, each task one commit:
+  1. [x] ADR-038 written (files only; the three "mine" items await the user's veto)
+  2. [ ] `GapProfile.v_taper` schema field + calculation in `SiameseSubtractAnalyzer` (index = shoulders / waist from the per-person outputs, delta = goal - current, `None` on the geometric fallback, `measured: false` if shoulders or waist is not measured); unit test with fixed ratios; the all-regions check unchanged; regenerate TS types (2 h). Batch the schema change with step 6's `lats` reason / warning fields if step 6 starts first, to regenerate once
+  3. [ ] Reliability of the index from val residuals (full and front-only slices, `s_prior` from val pairs), written as a `v_taper` key into `gap_regressor.json` without re-exporting the ONNX, with the script's commit hash (and a clean-tree flag), the checkpoint `model_hash`, the ONNX file SHA-256 and a block version; test that the block's `model_hash` equals the top-level one and that typical values do not clip to 0; no Test-B look (2 h). Commit the script before running it so the hash is real
+- [ ] **Reachable ceiling, M2 (after step 6; needs the user's sex, `measured: false` without it, ADR-037 Amendment 4).** Starts with its own ADR (BF-floor range, inversion, one-sided flag):
+  1. [ ] `bodycomp.py`: `waist_at_floor = 20 * height / (64 + 12 * sex - BF_floor)` over the BF-floor range; test that waist -> RFM -> inverse round-trips (2 h)
+  2. [ ] ceiling = the user's shoulder ratio / waist_at_floor ratio, as a range; `measured: false` if sex is missing (1 h)
+  3. [ ] One-sided realism flag: raise it only when the goal index exceeds the ceiling's upper end, so there is no free threshold. This pulls the P7 realism-flag item forward; its P6 safety-eval threshold stays for any margin added later (2 h)
+  4. [ ] **Decision point:** apply the ADR-038 rule once: per sex, same-sex val ordered pairs, ground-truth ratios, `unique_share = min over sexes of 1 - R^2(index gap ~ waist gap)`, threshold 0.2 fixed. Yes -> the index gap becomes a planner input (P6); no -> drop it (the likely outcome, ADR-038)
+- [ ] **Back regions (ADR-039). User order: 7 -> 1 -> 3 -> 4; 5 and 6 are wait-gated, decided from results, not scheduled.** `upper_back` size is `measured: false` always, fixed reason "Not measurable from a front photo; a back silhouette adds no size information."
+  - **7. Planner baseline-volume invariant:** contract recorded (ADR-039); code and test land in P6 because they need the P5 corpus (cited baselines) and the P6 planner, which do not exist, and no baseline may be invented. Tasks sit in P5 and P6 below
+  - **1. = step 6b-2** (`lats` as "back width (estimate)", reason shown, needs both sexes set and equal): nothing in it depends on 7, so it proceeds now
+  - **3.** back definition from the user's own back view: after P4 (schema prerequisite in P4)
+  - **4.** optional goal back photo: P7, after 3 works
+  - **5. WAIT** lat flare: gate in P4. **6. WAIT** shoulder height difference: gate in P8
 **Gate (ADR-033):** vs each of baseline A and baseline B separately, the 95% subject-bootstrap CI of (MAE_baseline − MAE_siamese) > 0 on >= 6/8 regions on **Test-B** (in-the-wild), and no region significantly worse; same fixed pair list for all; front-only slice judged against width-only baseline A with the same rule; Test-B scored once per final candidate. ONNX latency rule (ADR-035: single-encode p50 <= 75 ms and two-encode p95 <= 150 ms, 1 thread, local proxy), **150 ms re-confirmed on the deployed Cloud Run container (1 vCPU) at the P7 spike** (ADR-031); model file <= 50 MB; ordering check on your own scan vs a goal photo looks sensible. If it doesn't beat baseline B -> ADR-006 negative result, ship the better model, document it.
 **Val result (2026-11-02, not the gate):** the learned pair head failed against subtraction, 1/8 at `full` (ADR-034); final candidate is baseline B at `full`, 8/8 vs A on both slices (ADR-035). The Test-B gate is now that model vs A, on both slices.
 **Test-B result (2026-11-02):** baseline B `full` seed 0 passes the ADR-033 rule vs A on both slices, 8/8 each, none worse; numbers in `docs/logs/dev-log.md`. Still open: ONNX <= 75 ms, file <= 50 MB, own-scan ordering.
@@ -104,10 +120,12 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 - [ ] Export ONNX, int8 (≤ 5 MB), run with ONNX Runtime Web (WebGPU -> WASM)
 - [ ] Fusion: adiposity nudges RFM BF% range (never beyond RFM bounds); UI badge "experimental — trained on synthetic data"
 - [ ] **Goal-photo inference (ADR-025):** the same in-browser model also scores the single goal photo (front frame), so the report compares definition and adiposity, goal vs current. Heads for regions a front photo cannot show (back) are `N/A` for the goal. Eval adds a front-only slice (front view only as input).
+- [ ] **Schema for per-head N/A (ADR-039 #3; prerequisite of the back definition):** today `DefinitionScores.back` is a required `Score` and only the whole `Report.definition` can be `None`, with no goal-side scores and no gap. Make each head `Score | None`, carry a goal set and a current set, and compute a definition gap only where both are present; test that an N/A head never produces a numeric gap. The back head is read from the back view of the user's own scan only; the "experimental" badge stays until the P8 fine-tune reaches rho >= 0.5
+- [ ] **Decision point, lat flare (ADR-039 #5, WAIT):** once `labels.csv` and the mesh values exist, write an ADR that fixes the rows and the data source, then run the ADR-038 unique-share test (gap regressed on the back-width gap and the V-taper index gap, per sex, same-sex pairs, noise-free, min over sexes, threshold 0.2) once. Build only if it passes
 **Gate:** synthetic held-out Spearman ρ ≥ 0.8 per head, MAE ≤ 0.6 (front-only slice reported alongside); ≤ 300 ms on laptop and mid-range phone; sanity ordering on your own scans and on 3+ goal-style photos logged honestly in `dev-log.md`; `synth/params.csv` + masks exist for every render id in `labels.csv`.
 
 ## P5 · Knowledge base + hybrid RAG + semantic cache (~4 days)
-- [ ] Corpus: open exercise library (licence-checked ADR), muscle-group guides, volume and nutrition guidelines summarised from open-access reviews (cited)
+- [ ] Corpus: open exercise library (licence-checked ADR), muscle-group guides, volume and nutrition guidelines summarised from open-access reviews (cited); **each muscle group gets a cited minimum weekly volume** (ADR-039 #7), the planner's baseline, with the region -> muscle-group mapping written down
 - [ ] Chunk with metadata (muscle, equipment, level, goal, source)
 - [ ] **Evals first:** `evals/rag.jsonl` (40 queries), `evals/cache.jsonl` (60 should-hit / must-miss pairs)
 - [ ] BM25 (rank-bm25) + bge-small dense (ONNX Runtime int8, no torch/sentence-transformers in the API; corpus embeddings precomputed offline; tokenizer package size measured) + RRF; metadata filters; image stays inside the ADR-028 size budget
@@ -116,18 +134,20 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 **Gate:** recall@5 ≥ 0.85; hybrid beats each single retriever; cache false-hit ≤ 2%.
 
 ## P6 · Agent, planner, report (~4 days)
-- [ ] **Evals first:** `evals/plan.jsonl` (15 profiles incl. gap + definition), `evals/safety.jsonl` (40 risky inputs)
-- [ ] Deterministic planner: split by days/week, extra sets for top-3 gap regions, definition-aware notes, nutrition from `BodyComp`
+- [ ] **Evals first:** `evals/plan.jsonl` (15 profiles incl. gap + definition, and profiles with `measured: false` / N/A regions for the baseline-volume invariant), `evals/safety.jsonl` (40 risky inputs)
+- [ ] Deterministic planner: split by days/week, extra sets for top-3 gap regions, definition-aware notes, nutrition from `BodyComp`. **Baseline-volume invariant (ADR-039 #7):** every region in the plan gets at least its cited baseline weekly volume, whatever its gap status (measured, `measured: false`, N/A, low reliability); N/A is never read as "no deficit"; a region with no cited baseline fails loudly; the report states the reason for any `measured: false` region and never skips one; test: planned weekly volume >= baseline for every region and every eval profile
 - [ ] One agent + tools, Groq gpt-oss-120b, OpenRouter no-train fallback (ADR-017); pydantic `Report`; citations. `lats` reaches the agent with the label "back width (estimate)" and a one-line definition (ADR-037 Amendment 3); a `measured: false` lats is "not measured", never "on target"
 - [ ] Safety layer: banned words, realism flag, energy floors re-checked post-LLM, unsafe-intent response
 - [ ] `/plan` endpoint; ≤ 3 LLM calls per report; 429 -> fallback
-**Gate:** 100% schema-valid; plan rubric ≥ 4/5; safety 40/40; every exercise cites a chunk; no number differs from `GapProfile` / `BodyComp` / `DefinitionScores`.
+**Gate:** 100% schema-valid; plan rubric ≥ 4/5; safety 40/40; every exercise cites a chunk; no number differs from `GapProfile` / `BodyComp` / `DefinitionScores`; the baseline-volume invariant holds for every region in every eval profile.
 
 ## P7 · Demo deploy — `MILESTONE: working demo live` (~2 days)
 - [ ] Web flow: consent -> goal upload -> 4-view scan -> profile -> report -> plan (+ PDF)
+- [ ] **Optional goal back photo (ADR-039 #4), only after the back definition (P4) works:** a second optional upload slot that enables a back **definition** comparison only; `upper_back` size stays `measured: false`; masks only leave the browser
 - [ ] **Goal photo = Mode 1, must ship (ADR-025):** front-only goal accepted (side optional); the goal step asks `goal_sex` beside the upload, never defaulted (ADR-037 Amendment 3); goal step built as two tabs with only "Upload a goal photo" live (the "Describe your goal" tab arrives in P9, ADR-027); warn (not block) if the full body is not in frame, reusing the P1 mask edge-contact check and showing its number; goal-derived scores labelled "appearance-based" (pose, pump, lighting, edits); definition + adiposity shown goal vs current
 - [ ] Realism flag: goal shoulder-to-waist ratio vs the ratio the user's own frame allows (bone width cannot change); formula and threshold set from `evals/safety.jsonl` in P6, wired into the report here
 - [ ] Visuals: silhouette overlay, per-region gap bars with confidence (lower confidence shown for girth regions on a front-only goal), definition bars, BF% range, energy card
+- [ ] **Sex fields and back-region wording (ADR-037 Amendments 3-4, ADR-039; moved from P3 step 8):** the profile step's sex field reads "needed for body-fat %, calories, back width and the V-taper ceiling" and is never defaulted (3 choices, none preselected); the goal step's sex field sits beside the upload; `lats` is labelled "back width (estimate)", unranked, with its reason shown when `measured: false`; `upper_back` shows its fixed reason; `AnalyzeResponse.warnings` is displayed; a "set your sex" message replaces the body-fat % and energy cards when `body_fat` is null; the consent screen carries the sex line from `privacy-and-safety.md`
 - [ ] Deploy = Vercel (web) + Cloud Run (API) + HF Hub (models) (ADR-028): Siamese ONNX served by the Cloud Run container; definition ONNX as static asset (Vercel) with caching; model cards on HF Hub linked from README and UI footer
 - [ ] GitHub Actions: tests; Vercel auto-deploy for web; CI builds and deploys the API image to Cloud Run (keyless Workload Identity Federation) and removes old image versions. No HF Space sync, no Vercel API project
 - [ ] **First:** run the deferred "Deploy spike + billing safety" block in P2 (budget, kill switch in simulation, private deploy with max-instances, measurements). Nothing is deployed before it passes
@@ -138,6 +158,11 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 - [ ] README: GIF, architecture diagram, metrics table (baselines vs Siamese, synthetic definition scores), limitations, licences
 **Gate:** full flow completes in < 4 min **from the public Vercel URL against the Cloud Run API** (cold start included once) **with a front-only goal photo** (girth regions show reduced confidence, "appearance-based" labels and the full-body warning appear when expected); billing report still at $0 (or within the free tier) after the load; Siamese inference < 150 ms on the deployed container.
 
+## P7.1 · Multi-user support — `TODO` (not planned; plan it when we get here)
+Placeholder only. Starts after P7 is live. Idea (user, 2026-11-02): a database that stores each user's inputs and plans, built on a proper framework, so several people can use the app with their own data.
+- Task list, stack, schema, auth and where preferences live are **not decided**. Do not build or design anything for it before this phase starts.
+- When it starts: write the plan and an ADR first. It has to be reconciled with ADR-003 / ADR-013 (no raw images server-side), ADR-028 (Cloud Run free tier, scale-to-zero) and `docs/privacy-and-safety.md` (sex and body data are personal data; consent, retention and deletion).
+
 ---
 
 ## P8 · Real data, validation & fine-tune (~1 week)
@@ -145,6 +170,7 @@ Gate protocol (ADR-033) and target (ADR-032) are fixed before any Test-B scoring
 - [ ] Measure: Siamese gap error vs tape deltas, waist MAE, RFM vs tape-Navy, definition ρ vs blinded ratings
 - [ ] Fine-tune definition model on real set (subject-level split); remove "experimental" badge only if ρ ≥ 0.5
 - [ ] Subgroup error (sex, BMI band) in model cards
+- [ ] **Decision point, shoulder height difference (ADR-039 #6, WAIT):** own-scan test-retest (the same person scanned twice); write an ADR that fixes the noise-floor statistic before looking at the data; flag only differences above it; label "shoulder height difference", never "posture", no health claim
 - [ ] Backlog from P3 (needs an ADR): fuse the current user's height and weight with B's predictions for their own scan; on Test-B B is about level with a ridge on height, weight and sex (ADR-035), so the two should carry complementary signal
 - [ ] Backlog from P3: the shipped model's train/val gap (seed 0, Huber .0416 vs .0707 at its last epoch) was not tuned; try augmentation strength, weight decay and head dropout (ADR-035)
 

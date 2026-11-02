@@ -105,6 +105,8 @@ In-the-wild BodyM, 351 subjects, 122,850 ordered pairs, scored once, on the ship
 - Error rose 31-55% from val to Test-B, so expect browser masks to be harder than val suggests. No real-world validation yet (P8).
 
 ## Limitations (stated up front)
+- **Back width (estimate).** A photo can't see your back from the front, so this is inferred from chest, shoulder and waist ratios with a fit on ANSUR II (US Army body measurements), not measured, and it is not a measure of lat muscle. It explains under half of the real variation (R² .41 to .47), so it is shown but never enters the priority ranking. It needs your sex and the goal's sex, set by you and equal; otherwise it says why it's missing. `upper_back` size is never shown.
+- **Sex is optional and never guessed.** Leave it unset and you lose body-fat %, calorie targets and back width; the gaps and the training plan still work, and cut / recomp / bulk is always your choice.
 - Silhouettes measure shape/size, not muscle vs. fat. Body-fat % is a formula-based range (RFM), refined by an optional on-device definition model trained on synthetic data.
 - Goal photos are often edited, posed or enhanced; realism flag tempers targets.
 - BodyM is CC BY-NC: this is a non-commercial research/portfolio project.

@@ -56,18 +56,20 @@ def test_gap_is_antisymmetric_and_points_the_right_way(base, wide):
         assert ab.regions[region].delta == pytest.approx(-ba.regions[region].delta)
 
 
-def test_confidence_follows_validated_rho_and_missing_back(base, wide):
+def test_confidence_follows_validated_rho(base, wide):
     gap = GeometricAnalyzer().compare(scan(*wide), scan(*base))
     assert gap.regions["waist"].confidence > 0.9  # rho_val .92, rows found on the figure
     assert gap.regions["forearm"].confidence < 0.1  # rho_val .32
-    for region in ("upper_back", "lats"):  # no back view: not measured, not just zero confidence
-        assert gap.regions[region].measured is False and gap.regions[region].confidence == 0
     assert gap.regions["waist"].measured
 
 
-def test_back_view_enables_unvalidated_regions_at_low_confidence(base, wide):
-    gap = GeometricAnalyzer().compare(scan(*wide, wide[0]), scan(*base, base[0]))
-    assert 0 < gap.regions["lats"].confidence <= 0.3 and gap.regions["lats"].measured
+def test_back_regions_are_retired_with_or_without_a_back_view(base, wide):
+    """ADR-037: no back-view size number; not measured, not just zero confidence."""
+    for goal, current in ((scan(*wide), scan(*base)), (scan(*wide, wide[0]), scan(*base, base[0]))):
+        gap = GeometricAnalyzer().compare(goal, current)
+        for region in ("upper_back", "lats"):
+            r = gap.regions[region]
+            assert r.measured is False and r.delta == 0 == r.confidence
 
 
 def test_front_only_goal_uses_width_fits_and_never_raises(base, wide):

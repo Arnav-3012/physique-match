@@ -7,6 +7,7 @@ from physique_schemas import (
     DefinitionScores,
     EnergyTarget,
     GapProfile,
+    GoalProfile,
     Scan,
     UserProfile,
 )
@@ -128,3 +129,21 @@ def test_user_must_be_18_plus():
     profile(age=18)
     with pytest.raises(ValidationError):
         profile(age=17)
+
+
+def test_sex_is_optional_and_never_defaulted_from_the_other_profile():
+    """ADR-037: a missing sex is `not_specified`, not an error and not copied from the user."""
+    assert UserProfile(**profile().model_dump(exclude={"sex"})).sex == "not_specified"
+    assert GoalProfile().sex == "not_specified"
+    assert profile(sex="female").sex == "female"
+    with pytest.raises(ValidationError):
+        profile(sex="other")
+    with pytest.raises(ValidationError):
+        GoalProfile(sex="other")
+    with pytest.raises(ValidationError):  # extra="forbid" holds for the new model too
+        GoalProfile(sex="male", height_cm=180)
+
+
+def test_analyze_request_goal_profile_defaults_to_not_specified():
+    field = AnalyzeRequest.model_fields["goal_profile"]
+    assert field.get_default(call_default_factory=True).sex == "not_specified"

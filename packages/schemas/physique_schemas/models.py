@@ -14,7 +14,7 @@ Region = Literal[
     "hips", "upper_arm", "forearm", "thigh", "calf",
 ]  # fmt: skip
 EnergyGoal = Literal["cut", "recomp", "bulk", "maintain"]
-Sex = Literal["male", "female"]
+Sex = Literal["male", "female", "not_specified"]  # user-entered, never inferred (ADR-037)
 Level = Literal["beginner", "intermediate", "advanced"]
 Activity = Literal["sedentary", "light", "moderate", "active", "very_active"]
 
@@ -23,6 +23,9 @@ N_KEYPOINTS = 33  # MediaPipe Pose Landmarker
 MAX_PAYLOAD_B64 = 700_000  # ~512 KB of PNG bytes after base64 (architecture.md section 5)
 MAX_VIEW_B64 = MAX_PAYLOAD_B64 // 2  # one view may be large; the Scan total is what's capped
 KCAL_TOLERANCE = 0.5
+UPPER_BACK_REASON = (  # fixed text, ADR-039 item 2
+    "Not measurable from a front photo; a back silhouette adds no size information."
+)
 
 Score = Annotated[int, Field(ge=1, le=5)]
 Unit = Annotated[float, Field(ge=0, le=1)]
@@ -70,6 +73,7 @@ class RegionGap(_Strict):
     # False = the view this region needs was missing. The report says "not measured"; delta and
     # confidence are 0 placeholders and must not be read as a result.
     measured: bool = True
+    reason: str | None = None  # why it is not measured; shown in the report (ADR-037, ADR-039)
 
     @model_validator(mode="after")
     def _unmeasured_carries_no_numbers(self):
@@ -77,6 +81,8 @@ class RegionGap(_Strict):
         no_ratios = self.goal_ratio is None and self.current_ratio is None
         if not self.measured and not (blank and no_ratios):
             raise ValueError("an unmeasured region carries no numbers")
+        if self.measured and self.reason is not None:
+            raise ValueError("only an unmeasured region has a reason")
         return self
 
 
@@ -125,9 +131,11 @@ class EnergyTarget(_Strict):
 
 
 class BodyComp(_Strict):
-    """Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors)."""
+    """Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).
+    `body_fat` is None when the user's sex is unset: RFM has a sex term and is not guessed
+    (ADR-037 Amendment 4); `note` says why."""
 
-    body_fat: BodyFatRange
+    body_fat: BodyFatRange | None = None
     rmr_kcal: float | None = None
     tdee_kcal: float | None = None
     energy: list[EnergyTarget] = []
@@ -166,7 +174,7 @@ class UserProfile(_Strict):
     height_cm: Annotated[float, Field(ge=120, le=230)]
     weight_kg: Annotated[float, Field(ge=30, le=300)]
     age: Annotated[int, Field(ge=18, le=100)]  # 18+ gate
-    sex: Sex
+    sex: Sex = "not_specified"
     activity: Activity
     level: Level
     goal: Literal["cut", "recomp", "bulk"]
@@ -174,6 +182,13 @@ class UserProfile(_Strict):
     equipment: list[str] = []
     ed_history: bool | None = None  # True -> training plan only, no calorie numbers
     tape_waist_cm: Annotated[float, Field(ge=40, le=200)] | None = None
+
+
+class GoalProfile(_Strict):
+    """What the user says about the goal physique. Never filled from the photo or defaulted to
+    the user's sex (ADR-037 Amendment 3): `lats` needs both sexes set and equal."""
+
+    sex: Sex = "not_specified"
 
 
 # --- Report ---------------------------------------------------------------
@@ -215,6 +230,7 @@ class AnalyzeRequest(_Strict):
     goal: Scan
     current: Scan
     profile: UserProfile
+    goal_profile: GoalProfile = Field(default_factory=GoalProfile)
 
     @model_validator(mode="after")
     def _current_has_a_side_view(self):
@@ -226,3 +242,4 @@ class AnalyzeRequest(_Strict):
 class AnalyzeResponse(_Strict):
     gap: GapProfile
     body_comp: BodyComp
+    warnings: list[str] = []  # report-level, e.g. a different-sex goal (ADR-037 Amendment 3)

@@ -12,6 +12,9 @@
         },
         "profile": {
           "$ref": "#/$defs/UserProfile"
+        },
+        "goal_profile": {
+          "$ref": "#/$defs/GoalProfile"
         }
       },
       "required": [
@@ -30,6 +33,14 @@
         },
         "body_comp": {
           "$ref": "#/$defs/BodyComp"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
         }
       },
       "required": [
@@ -41,10 +52,18 @@
     },
     "BodyComp": {
       "additionalProperties": false,
-      "description": "Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).",
+      "description": "Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).\n`body_fat` is None when the user's sex is unset: RFM has a sex term and is not guessed\n(ADR-037 Amendment 4); `note` says why.",
       "properties": {
         "body_fat": {
-          "$ref": "#/$defs/BodyFatRange"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BodyFatRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "rmr_kcal": {
           "anyOf": [
@@ -84,9 +103,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "body_fat"
-      ],
       "title": "BodyComp",
       "type": "object"
     },
@@ -311,6 +327,24 @@
       "title": "GapProfile",
       "type": "object"
     },
+    "GoalProfile": {
+      "additionalProperties": false,
+      "description": "What the user says about the goal physique. Never filled from the photo or defaulted to\nthe user's sex (ADR-037 Amendment 3): `lats` needs both sexes set and equal.",
+      "properties": {
+        "sex": {
+          "default": "not_specified",
+          "enum": [
+            "male",
+            "female",
+            "not_specified"
+          ],
+          "title": "Sex",
+          "type": "string"
+        }
+      },
+      "title": "GoalProfile",
+      "type": "object"
+    },
     "Keypoint": {
       "additionalProperties": false,
       "properties": {
@@ -457,6 +491,18 @@
           "default": true,
           "title": "Measured",
           "type": "boolean"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
         }
       },
       "required": [
@@ -594,9 +640,11 @@
           "type": "integer"
         },
         "sex": {
+          "default": "not_specified",
           "enum": [
             "male",
-            "female"
+            "female",
+            "not_specified"
           ],
           "title": "Sex",
           "type": "string"
@@ -675,7 +723,6 @@
         "height_cm",
         "weight_kg",
         "age",
-        "sex",
         "activity",
         "level",
         "goal",
