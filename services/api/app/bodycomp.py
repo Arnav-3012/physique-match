@@ -33,6 +33,13 @@ ZONE2_TEXT = {  # ADR-042: same rule, applied at the BF_FLOOR end
     2: "Reachable only near the body-fat floor (estimate), thin reference data",
     3: ZONE1_TEXT[3],
 }
+ZONE3_TEXT = {  # ADR-040 zone 3; key = the floor end is extrapolated (ADR-042), adds the caveat
+    False: "Needs more than frame, such as deltoid or lat mass, which a silhouette cannot measure",
+    True: (
+        "Needs more than frame, such as deltoid or lat mass, which a silhouette cannot measure; "
+        "the ceiling itself is outside the range our data covers, so this cannot be verified"
+    ),
+}
 MIN_BMI = 18.5
 # Standard activity multipliers on RMR; not validated here.
 ACTIVITY = {"sedentary": 1.2, "light": 1.375, "moderate": 1.55, "active": 1.725, "very_active": 1.9}

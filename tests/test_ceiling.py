@@ -1,7 +1,7 @@
 import pytest
 
 from app.analyzer.ceiling import NEEDS_SHOULDERS, SET_YOUR_SEX, with_ceiling
-from app.bodycomp import BF_ATHLETE_UPPER, BF_FLOOR
+from app.bodycomp import BF_ATHLETE_UPPER, BF_FLOOR, ZONE3_TEXT
 from physique_schemas.models import REGIONS, Ceiling, GapProfile, RegionGap, VTaper
 
 
@@ -28,7 +28,48 @@ def test_ceiling_range_and_labels(sex, shoulders, cases):
     assert c.at_floor == pytest.approx(shoulders * (64 + s - BF_FLOOR[sex]) / 20)
     assert c.at_floor > c.at_athlete_upper
     assert (c.reachable.label_case, c.near_floor.label_case) == cases
-    assert c.measured and c.zone is None
+    assert c.measured
+
+
+def ceiling_for(goal_index, sex="male", shoulders=0.2131):
+    v_taper = VTaper(goal_index=goal_index, current_index=0.40, delta=goal_index - 0.40)
+    return with_ceiling(gap(v_taper, shoulders), sex).v_taper.ceiling
+
+
+def test_zones_and_their_boundaries_male():
+    c = ceiling_for(0.50)
+    low, high = c.at_athlete_upper, c.at_floor
+    assert ceiling_for(low).zone == 1  # <= the athlete-upper ceiling
+    assert ceiling_for(low + 1e-6).zone == 2
+    assert ceiling_for(high).zone == 2  # <= the floor ceiling
+    assert ceiling_for(high + 1e-6).zone == 3
+
+
+def test_flag_is_one_sided():
+    assert ceiling_for(0.10).zone == 1  # a small goal is never "too small"
+
+
+def test_zone_text_is_the_exact_wording_of_that_zone():
+    c = ceiling_for(0.50)  # men: zone 1 is case 2 (thin data)
+    assert (c.zone, c.zone_text) == (1, c.reachable.text)
+    assert "thin reference data" in c.zone_text
+    c = ceiling_for(0.57)  # men: zone 2, extrapolated at the floor -> case 3
+    assert (c.zone, c.zone_text) == (2, c.near_floor.text)
+    assert "reachable" not in c.zone_text.lower()
+    c = ceiling_for(0.65)
+    assert (c.zone, c.zone_text) == (3, ZONE3_TEXT[True])
+
+
+def test_female_zones_never_claim_reachable():
+    for goal in (0.50, 0.58, 0.65):  # ceilings .568 / .588
+        c = ceiling_for(goal, "female", 0.2029)
+        assert c.zone == (1 if goal < 0.568 else 2 if goal < 0.588 else 3)
+        assert "reachable" not in c.zone_text.lower()
+
+
+def test_zone_3_caveat_only_when_the_floor_end_is_extrapolated():
+    assert "cannot be verified" in ZONE3_TEXT[True]
+    assert "cannot be verified" not in ZONE3_TEXT[False]
 
 
 def test_worked_values_from_adr_040():

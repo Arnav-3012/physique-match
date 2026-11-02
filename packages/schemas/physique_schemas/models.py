@@ -105,18 +105,24 @@ class Ceiling(_Strict):
     at_floor: float | None = None  # the higher ceiling: "reachable only near the body-fat floor"
     reachable: ZoneLabel | None = None  # zone 1 wording, support at the athlete-upper end
     near_floor: ZoneLabel | None = None  # zone 2 wording, support at the floor end
-    zone: Literal[1, 2, 3] | None = None  # the goal's zone; filled by M2 step 3, no schema change
+    # The goal's zone and its exact wording (ADR-040 flag): 1 reachable on frame alone, 2 only near
+    # the floor, 3 needs more than frame. One-sided: it never says a goal is too small.
+    zone: Literal[1, 2, 3] | None = None
+    zone_text: str | None = None
     measured: bool = True
     reason: str | None = None
 
     @model_validator(mode="after")
     def _numbers_iff_measured(self):
-        parts = (self.at_athlete_upper, self.at_floor, self.reachable, self.near_floor)
+        parts = (
+            self.at_athlete_upper, self.at_floor, self.reachable, self.near_floor,
+            self.zone, self.zone_text,
+        )  # fmt: skip
         if self.measured and None in parts:
-            raise ValueError("a measured ceiling needs both ends and both labels")
+            raise ValueError("a measured ceiling needs both ends, both labels and the zone")
         if self.measured and self.reason is not None:
             raise ValueError("only an unmeasured ceiling has a reason")
-        if not self.measured and any(p is not None for p in (*parts, self.zone)):
+        if not self.measured and any(p is not None for p in parts):
             raise ValueError("an unmeasured ceiling carries no numbers")
         return self
 

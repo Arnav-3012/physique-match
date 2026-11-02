@@ -212,6 +212,18 @@
           "default": null,
           "title": "Zone"
         },
+        "zone_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Zone Text"
+        },
         "measured": {
           "default": true,
           "title": "Measured",

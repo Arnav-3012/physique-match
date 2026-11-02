@@ -83,6 +83,7 @@ export type Extrapolated = boolean;
 export type LabelCase = 1 | 2 | 3;
 export type Text = string;
 export type Zone = (1 | 2 | 3) | null;
+export type ZoneText = string | null;
 export type Measured1 = boolean;
 export type Reason1 = string | null;
 export type Measured2 = boolean;
@@ -253,6 +254,7 @@ export interface Ceiling {
   reachable?: ZoneLabel | null;
   near_floor?: ZoneLabel | null;
   zone?: Zone;
+  zone_text?: ZoneText;
   measured?: Measured1;
   reason?: Reason1;
 }
