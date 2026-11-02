@@ -1,0 +1,20 @@
+{
+ "version": 1,
+ "script_commit": "c1cf6f91630cd296a4de92a2e4c447ab98be4daa",
+ "tree_clean": true,
+ "features_csv_sha256": "effbf267c32e0acc5ca240f8af8eb85e0ea4d8639419a3537d1e1ed3c81d1699",
+ "n_val_subjects": 251,
+ "threshold": 0.2,
+ "sexes": {
+  "female": {
+   "n": 98,
+   "unique_share": 0.14762966089734242
+  },
+  "male": {
+   "n": 153,
+   "unique_share": 0.17062623257787946
+  }
+ },
+ "unique_share": 0.14762966089734242,
+ "keep": false
+}
