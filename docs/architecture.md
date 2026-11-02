@@ -163,3 +163,20 @@ Decision record: ADR-028 (supersedes ADR-022 / ADR-009).
 - **Files:** `app/analyzer/siamese_subtract.py`; `gap_regressor.json` is committed, `gap_regressor.onnx` is gitignored and written by `ml/src/export_onnx.py` (`baked vs fetched` is decided in the P7 spike). With `REQUIRE_MODEL=true` (set in the Dockerfile) the API refuses to start without a loadable ONNX; without it, `/analyze` falls back to the geometric analyzer with a log warning.
 - **Training code:** `ml/src/{train,model,predict,augment,calibrate,evaluate}.py`, `ml/src/data/{dataset,pairs}.py`, `ml/configs/`. The pair-head `Siamese` stays in `model.py` as the ablation. Results and limits: `ml/MODEL_CARD.md`.
 - **Image:** built from the repo root (`docker build -f services/api/Dockerfile .`), allow-list `.dockerignore`, carries `ml/src/{preprocess,calibrate,data/regions}.py` and the schemas package. Not yet built.
+
+## 9. P5 as built: knowledge base and hybrid retrieval, demo scope (ADR-048)
+
+```
+ OFFLINE  kb.build_index                                   RUNTIME  app/rag/ (planner code, no free text)
+ free-exercise-db (876) ─ chunk() ─┐                        region + equipment + level
+ kb/docs/*.md (7) ─ split on #/## ─┴► 893 chunks             └► query.decompose: 1 sub-query per muscle group
+   each chunk ─ bge-small int8 (1 text at a time,                └► Retriever.mask (exercise, plannable, muscle/equipment/level)
+   CLS, L2) ► embeddings.npy (893 x 384)                              ├ BM25 top-20 ─┐
+   manifest.json: corpus_hash = SHA256(chunks +                       └ dense top-20 ┴ RRF k=60 ► top-5 chunk ids
+   model sha + tokenizer sha); corpus.load refuses a mismatch
+```
+- **Chunking:** one chunk per exercise (876), one per `#` / `##` heading section of a guidance doc (17); no fixed size, no overlap. Measured: median 153 tokens, range 25-707, **2 over the model's 512-token input** (`ex:Power_Clean`, `ex:Clean_and_Jerk`; dense retriever sees a truncated text, BM25 the full text; left as is, ADR-048 Amendment 4).
+- **Metadata:** exercise chunks carry muscle, secondary, equipment, level, category, `plannable`; guidance chunks carry muscle, level, goal, source ids (no equipment).
+- **Numbers the planner may not go below** live as data, validated at import or by tests: `kb/baselines.json` (15 groups x 4 fractional weekly sets, soft per-session guide 11), `kb/region_map.json`, `kb/nutrition.json` (protein 1.6-2.2 g/kg/day; calorie bands checked by `check_energy` at import).
+- **Result:** demo query set (33): recall@5 hybrid .903 vs BM25 .833 and dense .841 (run 2); the gap over dense-only is not statistically separable at this size.
+- **Not built (TBD after demo):** the intent router and the semantic cache (steps 2 and 5 of section 4 above), so section 4 still describes the planned `/plan` path, not the built one; cache false-hit gate deferred, not passed.

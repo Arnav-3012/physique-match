@@ -28,6 +28,7 @@ One row per source. A figure goes into `baselines.json` or a document only after
 - Category: strength 584, stretching 123, plyometrics 61, strongman 21, powerlifting 38, cardio 14, olympic weightlifting 35. The planner's default pool is `strength` + `powerlifting` (622 chunks); the rest stay indexed for explicit filters.
 - Secondary muscles are common (for example shoulders 210, glutes 220), which is why the baseline counting rule (primary 1 set, secondary 0.5) matters.
 - Community-written; quality is uneven and not hand-filtered.
+- **Chunk token lengths (user-run 2026-11-02, bge tokenizer, special tokens included):** 893 chunks, shortest 25, median 153, longest 707. Two exceed the model's 512-token input and are truncated for the dense retriever, **`ex:Power_Clean` (707) and `ex:Clean_and_Jerk` (565)**; BM25 sees their full text. Left as is by decision (ADR-048 Amendment 4). Categories (user-run): `Clean_and_Jerk` olympic weightlifting (not `plannable`); `Power_Clean` strength (`plannable`, so it can be returned by default).
 
 ## Verified figures
 One row per number: figure, source id, locator, date checked. All read from the PDF itself on 2026-11-02.

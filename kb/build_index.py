@@ -14,13 +14,14 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from tokenizers import Tokenizer
 
 from kb import ingest_exercises
 
 KB = Path(__file__).parent
 MODEL_DIR = KB.parent / "ml" / "data" / "models" / "bge-small"
 sys.path.insert(0, str(KB.parent / "services" / "api"))
-from app.rag.embed import DIM, MODEL_FILE, TOKENIZER_FILE, Embedder  # noqa: E402
+from app.rag.embed import DIM, MAX_LEN, MODEL_FILE, TOKENIZER_FILE, Embedder  # noqa: E402
 
 
 def sha256(path: Path) -> str:
@@ -76,6 +77,17 @@ def doc_chunks(path: Path) -> list[dict]:
     return chunks
 
 
+def over_limit(chunks: list[dict]) -> dict[str, int]:
+    """Chunks longer than the model's input (id -> tokens, special tokens included).
+
+    The dense retriever never sees their tail (ADR-048 Amendment 4); BM25 sees the full text.
+    A separate tokenizer: the Embedder's has truncation on and would cap every count at MAX_LEN.
+    """
+    tokenizer = Tokenizer.from_file(str(MODEL_DIR / TOKENIZER_FILE))
+    sizes = {c["id"]: len(tokenizer.encode(c["text"]).ids) for c in chunks}
+    return {i: n for i, n in sizes.items() if n > MAX_LEN}
+
+
 def main():
     chunks = ingest_exercises.load()
     for path in sorted((KB / "docs").glob("*.md")):
@@ -105,6 +117,7 @@ def main():
     }
     (KB / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps(manifest, indent=2))
+    print(f"chunks over {MAX_LEN} tokens (tail not embedded): {over_limit(chunks)}")
 
 
 if __name__ == "__main__":
