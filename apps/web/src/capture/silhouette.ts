@@ -1,10 +1,22 @@
 import { CFG } from "./config";
-import { boundingBox } from "./quality";
+import { boundingBox, type Box } from "./quality";
 import { LM, type Kp } from "./types";
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
-function bilinear(p: Float32Array, w: number, h: number, x: number, y: number): number {
+/**
+ * Where a body box lands in an outW x outH frame: padded by bboxMargin of its height on every side, fitted, centred.
+ * The definition model's crop reuses this, so its framing cannot drift from the silhouette's (and from the renders').
+ */
+export function cropFit(box: Box, outW: number, outH: number) {
+  const pad = (box.y1 - box.y0) * CFG.bboxMargin;
+  const [sx0, sy0] = [box.x0 - pad, box.y0 - pad];
+  const [sw, sh] = [box.x1 - box.x0 + 2 * pad, box.y1 - box.y0 + 2 * pad];
+  const scale = Math.min(outW / sw, outH / sh);
+  return { sx0, sy0, scale, offX: (outW - sw * scale) / 2, offY: (outH - sh * scale) / 2 };
+}
+
+export function bilinear(p: Float32Array, w: number, h: number, x: number, y: number): number {
   if (x < -0.5 || y < -0.5 || x > w - 0.5 || y > h - 0.5) return 0;
   const x0 = Math.max(0, Math.floor(x)), y0 = Math.max(0, Math.floor(y));
   const x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1);
@@ -24,11 +36,7 @@ export function buildSilhouette(prob: Float32Array, w: number, h: number, k: Kp[
   const box = boundingBox(prob, w, h, CFG.maskThreshold);
   if (!box) return null;
 
-  const pad = (box.y1 - box.y0) * CFG.bboxMargin;
-  const [sx0, sy0] = [box.x0 - pad, box.y0 - pad];
-  const [sw, sh] = [box.x1 - box.x0 + 2 * pad, box.y1 - box.y0 + 2 * pad];
-  const scale = Math.min(CFG.maskW / sw, CFG.maskH / sh);
-  const [offX, offY] = [(CFG.maskW - sw * scale) / 2, (CFG.maskH - sh * scale) / 2];
+  const { sx0, sy0, scale, offX, offY } = cropFit(box, CFG.maskW, CFG.maskH);
   const outY = (ny: number) => (ny * h - sy0) * scale + offY;
 
   const shoulderY = (k[LM.lShoulder].y + k[LM.rShoulder].y) / 2;

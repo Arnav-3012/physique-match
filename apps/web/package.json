@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "wasm": "rm -rf public/wasm && cp -r node_modules/@mediapipe/tasks-vision/wasm public/wasm",
-    "predev": "npm run wasm",
+    "ort": "rm -rf public/ort && mkdir -p public/ort && cp node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.* public/ort/ && rm -f public/ort/*jsep*",
+    "predev": "npm run wasm && npm run ort",
     "dev": "vite",
-    "prebuild": "npm run wasm",
+    "prebuild": "npm run wasm && npm run ort",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -16,6 +17,7 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.2.0",
     "fast-png": "^8.0.0",
+    "onnxruntime-web": "1.22.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

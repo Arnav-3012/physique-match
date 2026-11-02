@@ -1,0 +1,12 @@
+# CPU smoke while the render runs: DEFINITION_DEVICE=cpu. The render keeps appending to params.csv, so both CSVs
+# here are scratch files made from one snapshot (ml/data is gitignored); synth/labels.csv is not touched:
+#   head -n 1001 synth/out/render/params.csv > ml/data/params_smoke.csv
+#   uv run python -m synth.labels ml/data/params_smoke.csv --out ml/data/labels_smoke.csv
+rung: overfit
+params_csv: ml/data/params_smoke.csv
+labels_csv: ml/data/labels_smoke.csv
+epochs: 80
+batch_size: 32
+log_every: 10
+lr_head: 0.003
+augment: false

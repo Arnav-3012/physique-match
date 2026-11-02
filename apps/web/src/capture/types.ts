@@ -15,6 +15,8 @@ export const LM = {
   rEar: 8,
   lShoulder: 11,
   rShoulder: 12,
+  lIndex: 19,
+  rIndex: 20,
   lHip: 23,
   rHip: 24,
   lKnee: 25,
@@ -31,4 +33,5 @@ export interface ViewCapture {
   sharpness: number;
   issues: string[]; // non-empty = invalid view
   warnings: string[];
+  torsoSkinShare?: number | null; // front view only: how bare the torso looks, 0-1; null = could not tell. Never sent.
 }

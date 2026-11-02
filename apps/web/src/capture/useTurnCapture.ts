@@ -3,6 +3,7 @@ import { CFG } from "./config";
 import { detectPose, getLandmarker } from "./landmarker";
 import { drawScaled, finalizeView, paintPreview, scoreFrame, type Candidate } from "./pipeline";
 import { checkFullBody } from "./quality";
+import { rgbStore } from "./rgbStore";
 import { VIEWS, type Kp, type ViewCapture, type ViewName } from "./types";
 import { absYawDeg, facingCamera, matchesView, shoulderRatio, visibleSide, zYawDeg } from "./yaw";
 
@@ -212,6 +213,8 @@ export function useTurnCapture(
       } finally {
         stream?.getTracks().forEach((t) => t.stop());
         v.srcObject = null;
+        if (preview.current) preview.current.width = 0; // drops the last painted frame (ADR-051)
+        rgbStore.releaseScratch();
       }
     },
     [video, preview],

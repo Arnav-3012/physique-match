@@ -1,0 +1,5 @@
+rung: probe
+epochs: 30
+patience: 6
+lr_head: 0.001
+max_round: 56  # 25% of the 222 rendered rounds; same val, same seed (ADR-047 item 9)

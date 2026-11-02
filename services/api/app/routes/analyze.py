@@ -21,6 +21,8 @@ from app.analyzer.geometric import GeometricAnalyzer
 from app.analyzer.lats import with_lats
 from app.analyzer.siamese_subtract import ONNX_PATH, SiameseSubtractAnalyzer
 from app.bodycomp import body_comp, silhouette_waist_g
+from app.definition_scope import definition_statuses
+from app.errors import safe_detail
 from physique_schemas.models import AnalyzeRequest, AnalyzeResponse
 
 log = logging.getLogger("analyze")
@@ -49,14 +51,18 @@ analyzer = make_analyzer()
 
 
 def _run(req: AnalyzeRequest) -> AnalyzeResponse:
-    gap, warnings = with_lats(
-        analyzer.compare(req.goal, req.current), req.profile.sex, req.goal_profile.sex
-    )
+    gap, warnings = with_lats(analyzer.compare(req.goal, req.current), req.profile.sex, req.goal_profile.sex)
     gap = with_ceiling(gap, req.profile.sex)
     # lean: the current scan is featurised twice (compare + waist); cache if latency matters
     needs_waist = req.profile.tape_waist_cm is None and req.profile.sex != "not_specified"
     waist_g = silhouette_waist_g(req.current) if needs_waist else None
-    return AnalyzeResponse(gap=gap, body_comp=body_comp(req.profile, waist_g), warnings=warnings)
+    return AnalyzeResponse(
+        gap=gap,
+        body_comp=body_comp(req.profile, waist_g),
+        warnings=warnings,
+        definition_status=definition_statuses(req.definition_scope, req.profile.age, req.goal_profile.not_shown),
+        waist_g=None if waist_g is None else float(waist_g),
+    )
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
@@ -68,8 +74,8 @@ async def analyze(request: Request) -> AnalyzeResponse:
     try:
         req = AnalyzeRequest.model_validate_json(body)
     except ValidationError as e:  # errors without the input: never echo a mask back
-        detail = e.errors(include_input=False, include_url=False, include_context=False)
-        raise HTTPException(422, detail) from e
+        errors = e.errors(include_input=False, include_url=False, include_context=False)
+        raise HTTPException(422, safe_detail(errors)) from e
 
     start, rid = time.monotonic(), uuid.uuid4().hex[:8]
     try:

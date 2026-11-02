@@ -57,10 +57,28 @@ export type Activity = "sedentary" | "light" | "moderate" | "active" | "very_act
 export type Level = "beginner" | "intermediate" | "advanced";
 export type Goal = "cut" | "recomp" | "bulk";
 export type DaysPerWeek = number;
-export type Equipment = string[];
+export type Equipment = (
+  | "barbell"
+  | "dumbbell"
+  | "cable"
+  | "body only"
+  | "machine"
+  | "kettlebells"
+  | "other"
+  | "bands"
+  | "e-z curl bar"
+  | "exercise ball"
+  | "none"
+  | "medicine ball"
+)[];
 export type EdHistory = boolean | null;
 export type TapeWaistCm = number | null;
 export type Sex1 = "male" | "female" | "not_specified";
+export type NotShown = ("abs" | "chest" | "shoulders" | "arms" | "back" | "legs")[];
+export type DefinitionScope = "arms_shoulders_legs" | "full_body" | "none";
+export type Definition = number;
+export type Adiposity = number;
+export type Experimental = boolean;
 export type Analyzer = "geometric" | "siamese_subtract";
 export type Delta = number;
 export type Confidence = number;
@@ -100,16 +118,25 @@ export type KcalHigh = number;
 export type ProteinGLow = number;
 export type ProteinGHigh = number;
 export type Energy = EnergyTarget[];
+export type GPerKgLow = number;
+export type GPerKgHigh = number;
+export type GLow = number;
+export type GHigh = number;
+export type Unit = string;
+export type Label = string;
+export type AlsoListed = string;
+export type Text1 = string;
+export type EnergyMeasured = boolean;
 export type Note = string;
 export type Warnings = string[];
-export type Abs = number;
-export type Chest = number;
-export type Shoulders = number;
-export type Arms = number;
-export type Back = number;
-export type Legs = number;
-export type Adiposity = number;
-export type Experimental = boolean;
+export type Status =
+  | "measured"
+  | "not_measured_covered"
+  | "not_measured_age_gate"
+  | "not_measured_goal_covers"
+  | "not_measured_not_in_demo";
+export type Reason3 = string | null;
+export type WaistG = number | null;
 export type Summary = string;
 /**
  * @maxItems 3
@@ -130,7 +157,7 @@ export type Priorities =
  * @minItems 1
  */
 export type Plan = [PlanDay, ...PlanDay[]];
-export type Label = string;
+export type Label1 = string;
 /**
  * @minItems 1
  */
@@ -146,6 +173,34 @@ export type Cue = string;
 export type Citations = [string, ...string[]];
 export type RealismNote = string | null;
 export type Disclaimer = string;
+export type WaistG1 = number | null;
+/**
+ * @maxItems 3
+ */
+export type Priorities1 =
+  | []
+  | ["shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ];
+export type ExerciseId = string;
+export type Name1 = string;
+export type Sets1 = number;
+export type Days = PlanSlot[][];
+export type Group = string;
+export type Planned = number;
+export type Floor = number;
+export type Shortfalls = PlanShortfall[];
+export type Note1 = string;
+export type BodyCompNote = string;
+export type ServedBy = "deterministic";
+export type Retrieval = "hybrid" | "bm25";
 
 export interface Contracts {
   analyze_request: AnalyzeRequest;
@@ -156,6 +211,8 @@ export interface Contracts {
   definition_scores: DefinitionScores;
   user_profile: UserProfile;
   report: Report;
+  plan_request: PlanRequest;
+  plan_response: PlanResponse;
   [k: string]: unknown;
 }
 /**
@@ -166,6 +223,8 @@ export interface AnalyzeRequest {
   current: Scan;
   profile: UserProfile;
   goal_profile?: GoalProfile;
+  definition_scope?: DefinitionScope;
+  definition?: DefinitionScores | null;
 }
 /**
  * Front is required: a goal photo may have nothing else (ADR-025). A current scan also needs a
@@ -206,11 +265,24 @@ export interface UserProfile {
  */
 export interface GoalProfile {
   sex?: Sex1;
+  not_shown?: NotShown;
+}
+/**
+ * On-device model output; only these two numbers leave the browser (ADR-013). There is deliberately
+ * no per-region field: the regional heads did not beat the overall score, so a payload, a report or an
+ * agent prompt built from this cannot say one region is less defined than another (ADR-053 Amendment 6).
+ */
+export interface DefinitionScores {
+  definition: Definition;
+  adiposity: Adiposity;
+  experimental?: Experimental;
 }
 export interface AnalyzeResponse {
   gap: GapProfile;
   body_comp: BodyComp;
   warnings?: Warnings;
+  definition_status?: DefinitionStatus;
+  waist_g?: WaistG;
 }
 export interface GapProfile {
   analyzer: Analyzer;
@@ -271,13 +343,17 @@ export interface ZoneLabel {
 /**
  * Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).
  * `body_fat` is None when the user's sex is unset: RFM has a sex term and is not guessed
- * (ADR-037 Amendment 4); `note` says why.
+ * (ADR-037 Amendment 4); `note` says why. `energy_measured` is False whenever no calorie numbers
+ * are given (sex unset, under 18, eating-disorder opt-out). `protein` is a per-kg range that
+ * needs only body weight, so it still shows when sex is unset (ADR-048 Amendment 2).
  */
 export interface BodyComp {
   body_fat?: BodyFatRange | null;
   rmr_kcal?: RmrKcal;
   tdee_kcal?: TdeeKcal;
   energy?: Energy;
+  protein?: ProteinRange | null;
+  energy_measured?: EnergyMeasured;
   note?: Note;
 }
 /**
@@ -297,17 +373,28 @@ export interface EnergyTarget {
   protein_g_high: ProteinGHigh;
 }
 /**
- * On-device model output; only these numbers leave the browser (ADR-013).
+ * Cited typical protein range (kb/nutrition.json, ADR-048). A range, never a point: nothing
+ * downstream picks a value inside it unless that is stated as our rule, not a cited number.
  */
-export interface DefinitionScores {
-  abs: Abs;
-  chest: Chest;
-  shoulders: Shoulders;
-  arms: Arms;
-  back: Back;
-  legs: Legs;
-  adiposity: Adiposity;
-  experimental?: Experimental;
+export interface ProteinRange {
+  g_per_kg_low: GPerKgLow;
+  g_per_kg_high: GPerKgHigh;
+  g_low: GLow;
+  g_high: GHigh;
+  unit: Unit;
+  label: Label;
+  also_listed: AlsoListed;
+  text: Text1;
+}
+export interface DefinitionStatus {
+  [k: string]: DefinitionRegionStatus;
+}
+/**
+ * Per-region definition status. N/A always has a reason and is never a number (ADR-051).
+ */
+export interface DefinitionRegionStatus {
+  status: Status;
+  reason?: Reason3;
 }
 export interface Report {
   summary: Summary;
@@ -320,7 +407,7 @@ export interface Report {
   disclaimer: Disclaimer;
 }
 export interface PlanDay {
-  label: Label;
+  label: Label1;
   exercises: Exercises;
 }
 export interface PlannedExercise {
@@ -330,4 +417,40 @@ export interface PlannedExercise {
   reps: Reps;
   cue: Cue;
   citations: Citations;
+}
+/**
+ * No scans: the profile, the gap /analyze returned and, without a tape waist, its waist_g.
+ * The server recomputes body composition itself and never trusts a client-supplied BodyComp.
+ */
+export interface PlanRequest {
+  profile: UserProfile;
+  gap: GapProfile;
+  waist_g?: WaistG1;
+}
+export interface PlanResponse {
+  priorities: Priorities1;
+  days: Days;
+  weekly: Weekly;
+  shortfalls: Shortfalls;
+  note?: Note1;
+  body_comp?: BodyComp | null;
+  body_comp_note?: BodyCompNote;
+  served_by: ServedBy;
+  retrieval: Retrieval;
+}
+export interface PlanSlot {
+  exercise_id: ExerciseId;
+  name: Name1;
+  sets: Sets1;
+}
+export interface Weekly {
+  [k: string]: number;
+}
+/**
+ * A muscle group that ended under its cited weekly floor. Never silent, never lowered.
+ */
+export interface PlanShortfall {
+  group: Group;
+  planned: Planned;
+  floor: Floor;
 }

@@ -5,6 +5,7 @@ import { checkLighting, checkLooseClothing, meanLuma, viewIssues } from "./quali
 import { rgbStore } from "./rgbStore";
 import { buildSilhouette } from "./silhouette";
 import { laplacianVariance, toGray } from "./sharpness";
+import { torsoSkinShare } from "./torso";
 import type { ViewCapture, ViewName } from "./types";
 
 export interface Candidate {
@@ -15,6 +16,7 @@ export interface Candidate {
 }
 
 const scratch = document.createElement("canvas");
+rgbStore.attachScratch(scratch); // so rgbStore.clear() can blank the last frame
 
 /** Draw into one shared canvas, long side capped at CFG.frameMaxSide. */
 export function drawScaled(src: CanvasImageSource, sw: number, sh: number): HTMLCanvasElement {
@@ -37,7 +39,7 @@ export function finalizeView(name: ViewName, c: Candidate): ViewCapture {
   const { det } = c;
   const issues = viewIssues(det.prob, det.w, det.h, det.keypoints);
   const sil = buildSilhouette(det.prob, det.w, det.h, det.keypoints);
-  rgbStore.set(name, c.img);
+  rgbStore.set(name, c.img, det.prob);
   if (!sil) return { name, maskPngB64: "", keypoints: det.keypoints, sharpness: c.sharpness, issues: [...issues, "No silhouette found"], warnings: [] };
   return {
     name,
@@ -49,6 +51,7 @@ export function finalizeView(name: ViewName, c: Candidate): ViewCapture {
       ...checkLighting(meanLuma(c.gray)),
       ...(name === "front" ? checkLooseClothing(det.prob, det.w, det.h, det.keypoints) : []),
     ],
+    torsoSkinShare: name === "front" ? torsoSkinShare(c.img, det.prob, det.keypoints) : undefined,
   };
 }
 
@@ -58,7 +61,9 @@ export async function processUpload(file: File, name: ViewName): Promise<ViewCap
   const canvas = drawScaled(bmp, bmp.width, bmp.height);
   bmp.close();
   const det = await detectPose(canvas, "IMAGE");
-  return det ? finalizeView(name, scoreFrame(canvas, det)) : null;
+  const view = det ? finalizeView(name, scoreFrame(canvas, det)) : null;
+  rgbStore.releaseScratch(); // the outline is made; the photo's pixels are not kept (ADR-051)
+  return view;
 }
 
 const GRAY = 0xffebebeb;

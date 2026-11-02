@@ -32,7 +32,7 @@ Goal input has two modes (ADR-025..027): **photo** (above; the goal's mask comes
 | Goal input | **Mode 1 (P7, priority):** goal photo, front-only accepted; girth regions get lower confidence without a side view; scores labelled "appearance-based"; full-body-in-frame warning; realism flag = goal shoulder-to-waist ratio vs the user's own frame (ADR-025). **Mode 2 (P9):** "describe your goal" -> archetype table + static preview library (ADR-026, ADR-027) | + live three.js preview (stretch) |
 | Analyzer | SiameseSubtract (ResNet-18 shared encoder, fixed subtraction head, front+side, BodyM, goal side-view dropout, ADR-035), ONNX on CPU + geometric analyzer as the fallback only (its back-view numbers are retired, ADR-037; chest/back split and asymmetry not built) | Siamese fine-tuned on real deltas (P8) |
 | Gap output | 10 regions: shoulders, chest, upper back (not measured), lats ("back width (estimate)", unranked), waist, hips, upper-arm, forearm, thigh, calf, plus a separate display-only frame V-taper; left/right asymmetry not built | same + per-region uncertainty |
-| Body comp | RFM BF% range from silhouette waist + height + sex; Mifflin RMR -> energy ranges with floors; on-device MobileNetV3-Small definition/adiposity scores (synthetic-trained, "experimental"), fused into BF% range | same model fine-tuned on real data, uncertainty, badge removed if ρ ≥ 0.5 |
+| Body comp | RFM BF% range from silhouette waist + height + sex; Mifflin RMR -> energy ranges with floors; on-device MobileNetV3-Small leanness & muscularity and adiposity bands (synthetic-trained, "experimental", opt-in, unvalidated on real photos; fusion into the BF% range is TBD after demo, section 10) | same model fine-tuned on real data, uncertainty, badge removed if ρ ≥ 0.5 |
 | Retrieval | Built (P5 demo, ADR-048 Amendment 3): `services/api/app/rag/` BM25 (rank-bm25) + bge-small dense (ONNX Runtime int8 via `tokenizers`, CLS pooling, L2-normalised, queries get the BAAI instruction, one text at a time), RRF k = 60 over top-20 lists, metadata filters over the planner's default pool (strength + powerlifting); 893 chunks and their embeddings are committed in `kb/` (`manifest.json` checked at load); query manager = normalise, region decomposition from `kb/region_map.json`, filters; demo recall@5 hybrid .903 (33 queries) | + cross-encoder rerank if eval says so |
 | Cache + rate limit | exact + semantic, namespaced, behind an interface: in-memory locally, **Upstash Redis (free)** when deployed because Cloud Run instances scale to zero and are separate (ADR-028) | + TTL tuning |
 | Agent | 1 LLM agent, 4 tools, pydantic output | + follow-up Q&A over the plan |
@@ -180,3 +180,24 @@ Decision record: ADR-028 (supersedes ADR-022 / ADR-009).
 - **Numbers the planner may not go below** live as data, validated at import or by tests: `kb/baselines.json` (15 groups x 4 fractional weekly sets, soft per-session guide 11), `kb/region_map.json`, `kb/nutrition.json` (protein 1.6-2.2 g/kg/day; calorie bands checked by `check_energy` at import).
 - **Result:** demo query set (33): recall@5 hybrid .903 vs BM25 .833 and dense .841 (run 2); the gap over dense-only is not statistically separable at this size.
 - **Not built (TBD after demo):** the intent router and the semantic cache (steps 2 and 5 of section 4 above), so section 4 still describes the planned `/plan` path, not the built one; cache false-hit gate deferred, not passed.
+
+## 10. P4 as built: on-device leanness & muscularity and adiposity bands (ADR-049, ADR-051, ADR-053)
+
+```
+ OFFLINE (synth/, ml/src/definition/)                      BROWSER (apps/web/src/definition/), opt-in, off by default
+ MPFB bodies in Blender (front + back renders)             scope step: full body only, age >= 18, sex set
+   labels = quantile bins of latents d_eff, adip             capture -> rgbStore keeps the front frame in memory only
+   MobileNetV3-Small + CORAL heads                             │ person mask -> bbox + 5% margin crop (cropFit)
+   8-head model  ─ definition head ─► definition.fp32.onnx     │ grey 128 background, 192x256, CHW [0,1]
+   2-head model  ─ adiposity head ─► adiposity.fp32.onnx       ▼
+   (3.73 MB each, 7.46 MB together)                         ONNX Runtime Web 1.22.0 (WASM), two forward passes
+                                                               │ class = 1 + (logits > 0).sum; bands low 1-2 / mid 3 / high 4-5
+                                                               ▼
+                                          DefinitionScores {definition, adiposity, experimental}; frame released
+                                          only these two bands may leave the device (optional field on /analyze, full_body only)
+```
+- **Hybrid serving (ADR-053 Amendment 6):** definition from the 8-head model, adiposity from the 2-head model, both fp32 after every int8 variant failed parity; combined cap 8 MB (owner). Normalisation is inside the graph; each graph has a single output. No regional output is served or shown.
+- **Gating in the UI:** `capture/torso.ts` warns when the torso looks covered under the bare-body option (skin-chroma share, rough guess, user can override); the opt-in is dev-only until P7, where the bands are shown only as goal-against-current when both are computed (owner, 2026-11-02).
+- **Privacy:** RGB frames live in `rgbStore` memory only and are cleared after scoring; no image data in any browser store (vitest guard); the DevTools storage check was reported empty by the owner (`dev-log.md`).
+- **Measured:** browser latency p50 14.3 ms / p95 14.9 ms (preprocessing + both passes, WASM, laptop); WASM parity with torch passed; render-path check through the browser preprocessing matched the Python numbers within the pre-set margins. On real photos the bands looked wrong on the owner's own scans: the synthetic-to-real gap is the leading, unproven explanation (`ml/MODEL_CARD.md`, `dev-log.md`).
+- **Not built (TBD after demo):** per-region definition, goal-photo inference (a P7 prerequisite), fusion with the body-fat range, real-photo fine-tune (P8).

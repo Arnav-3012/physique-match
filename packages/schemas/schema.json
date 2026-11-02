@@ -15,6 +15,27 @@
         },
         "goal_profile": {
           "$ref": "#/$defs/GoalProfile"
+        },
+        "definition_scope": {
+          "default": "none",
+          "enum": [
+            "arms_shoulders_legs",
+            "full_body",
+            "none"
+          ],
+          "title": "Definition Scope",
+          "type": "string"
+        },
+        "definition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DefinitionScores"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -41,6 +62,36 @@
           },
           "title": "Warnings",
           "type": "array"
+        },
+        "definition_status": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DefinitionRegionStatus"
+          },
+          "default": {},
+          "propertyNames": {
+            "enum": [
+              "abs",
+              "chest",
+              "shoulders",
+              "arms",
+              "back",
+              "legs"
+            ]
+          },
+          "title": "Definition Status",
+          "type": "object"
+        },
+        "waist_g": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Waist G"
         }
       },
       "required": [
@@ -52,7 +103,7 @@
     },
     "BodyComp": {
       "additionalProperties": false,
-      "description": "Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).\n`body_fat` is None when the user's sex is unset: RFM has a sex term and is not guessed\n(ADR-037 Amendment 4); `note` says why.",
+      "description": "Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).\n`body_fat` is None when the user's sex is unset: RFM has a sex term and is not guessed\n(ADR-037 Amendment 4); `note` says why. `energy_measured` is False whenever no calorie numbers\nare given (sex unset, under 18, eating-disorder opt-out). `protein` is a per-kg range that\nneeds only body weight, so it still shows when sex is unset (ADR-048 Amendment 2).",
       "properties": {
         "body_fat": {
           "anyOf": [
@@ -96,6 +147,22 @@
           },
           "title": "Energy",
           "type": "array"
+        },
+        "protein": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProteinRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "energy_measured": {
+          "default": true,
+          "title": "Energy Measured",
+          "type": "boolean"
         },
         "note": {
           "default": "",
@@ -245,44 +312,48 @@
       "title": "Ceiling",
       "type": "object"
     },
+    "DefinitionRegionStatus": {
+      "additionalProperties": false,
+      "description": "Per-region definition status. N/A always has a reason and is never a number (ADR-051).",
+      "properties": {
+        "status": {
+          "enum": [
+            "measured",
+            "not_measured_covered",
+            "not_measured_age_gate",
+            "not_measured_goal_covers",
+            "not_measured_not_in_demo"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "DefinitionRegionStatus",
+      "type": "object"
+    },
     "DefinitionScores": {
       "additionalProperties": false,
-      "description": "On-device model output; only these numbers leave the browser (ADR-013).",
+      "description": "On-device model output; only these two numbers leave the browser (ADR-013). There is deliberately\nno per-region field: the regional heads did not beat the overall score, so a payload, a report or an\nagent prompt built from this cannot say one region is less defined than another (ADR-053 Amendment 6).",
       "properties": {
-        "abs": {
+        "definition": {
           "maximum": 5,
           "minimum": 1,
-          "title": "Abs",
-          "type": "integer"
-        },
-        "chest": {
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Chest",
-          "type": "integer"
-        },
-        "shoulders": {
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Shoulders",
-          "type": "integer"
-        },
-        "arms": {
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Arms",
-          "type": "integer"
-        },
-        "back": {
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Back",
-          "type": "integer"
-        },
-        "legs": {
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Legs",
+          "title": "Definition",
           "type": "integer"
         },
         "adiposity": {
@@ -298,12 +369,7 @@
         }
       },
       "required": [
-        "abs",
-        "chest",
-        "shoulders",
-        "arms",
-        "back",
-        "legs",
+        "definition",
         "adiposity"
       ],
       "title": "DefinitionScores",
@@ -451,6 +517,22 @@
           ],
           "title": "Sex",
           "type": "string"
+        },
+        "not_shown": {
+          "default": [],
+          "items": {
+            "enum": [
+              "abs",
+              "chest",
+              "shoulders",
+              "arms",
+              "back",
+              "legs"
+            ],
+            "type": "string"
+          },
+          "title": "Not Shown",
+          "type": "array"
         }
       },
       "title": "GoalProfile",
@@ -514,6 +596,184 @@
       "title": "PlanDay",
       "type": "object"
     },
+    "PlanRequest": {
+      "additionalProperties": false,
+      "description": "No scans: the profile, the gap /analyze returned and, without a tape waist, its waist_g.\nThe server recomputes body composition itself and never trusts a client-supplied BodyComp.",
+      "properties": {
+        "profile": {
+          "$ref": "#/$defs/UserProfile"
+        },
+        "gap": {
+          "$ref": "#/$defs/GapProfile"
+        },
+        "waist_g": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.2,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Waist G"
+        }
+      },
+      "required": [
+        "profile",
+        "gap"
+      ],
+      "title": "PlanRequest",
+      "type": "object"
+    },
+    "PlanResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "priorities": {
+          "items": {
+            "enum": [
+              "shoulders",
+              "chest",
+              "upper_back",
+              "lats",
+              "waist",
+              "hips",
+              "upper_arm",
+              "forearm",
+              "thigh",
+              "calf"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "title": "Priorities",
+          "type": "array"
+        },
+        "days": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/PlanSlot"
+            },
+            "type": "array"
+          },
+          "title": "Days",
+          "type": "array"
+        },
+        "weekly": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Weekly",
+          "type": "object"
+        },
+        "shortfalls": {
+          "items": {
+            "$ref": "#/$defs/PlanShortfall"
+          },
+          "title": "Shortfalls",
+          "type": "array"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "body_comp": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BodyComp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "body_comp_note": {
+          "default": "",
+          "title": "Body Comp Note",
+          "type": "string"
+        },
+        "served_by": {
+          "const": "deterministic",
+          "title": "Served By",
+          "type": "string"
+        },
+        "retrieval": {
+          "enum": [
+            "hybrid",
+            "bm25"
+          ],
+          "title": "Retrieval",
+          "type": "string"
+        }
+      },
+      "required": [
+        "priorities",
+        "days",
+        "weekly",
+        "shortfalls",
+        "served_by",
+        "retrieval"
+      ],
+      "title": "PlanResponse",
+      "type": "object"
+    },
+    "PlanShortfall": {
+      "additionalProperties": false,
+      "description": "A muscle group that ended under its cited weekly floor. Never silent, never lowered.",
+      "properties": {
+        "group": {
+          "title": "Group",
+          "type": "string"
+        },
+        "planned": {
+          "minimum": 0,
+          "title": "Planned",
+          "type": "number"
+        },
+        "floor": {
+          "exclusiveMinimum": 0,
+          "title": "Floor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "group",
+        "planned",
+        "floor"
+      ],
+      "title": "PlanShortfall",
+      "type": "object"
+    },
+    "PlanSlot": {
+      "additionalProperties": false,
+      "properties": {
+        "exercise_id": {
+          "title": "Exercise Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sets": {
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Sets",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "exercise_id",
+        "name",
+        "sets"
+      ],
+      "title": "PlanSlot",
+      "type": "object"
+    },
     "PlannedExercise": {
       "additionalProperties": false,
       "properties": {
@@ -557,6 +817,60 @@
         "citations"
       ],
       "title": "PlannedExercise",
+      "type": "object"
+    },
+    "ProteinRange": {
+      "additionalProperties": false,
+      "description": "Cited typical protein range (kb/nutrition.json, ADR-048). A range, never a point: nothing\ndownstream picks a value inside it unless that is stated as our rule, not a cited number.",
+      "properties": {
+        "g_per_kg_low": {
+          "exclusiveMinimum": 0,
+          "title": "G Per Kg Low",
+          "type": "number"
+        },
+        "g_per_kg_high": {
+          "exclusiveMinimum": 0,
+          "title": "G Per Kg High",
+          "type": "number"
+        },
+        "g_low": {
+          "exclusiveMinimum": 0,
+          "title": "G Low",
+          "type": "integer"
+        },
+        "g_high": {
+          "exclusiveMinimum": 0,
+          "title": "G High",
+          "type": "integer"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "also_listed": {
+          "title": "Also Listed",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "g_per_kg_low",
+        "g_per_kg_high",
+        "g_low",
+        "g_high",
+        "unit",
+        "label",
+        "also_listed",
+        "text"
+      ],
+      "title": "ProteinRange",
       "type": "object"
     },
     "RegionGap": {
@@ -798,6 +1112,20 @@
         "equipment": {
           "default": [],
           "items": {
+            "enum": [
+              "barbell",
+              "dumbbell",
+              "cable",
+              "body only",
+              "machine",
+              "kettlebells",
+              "other",
+              "bands",
+              "e-z curl bar",
+              "exercise ball",
+              "none",
+              "medicine ball"
+            ],
             "type": "string"
           },
           "title": "Equipment",
@@ -1017,6 +1345,12 @@
     },
     "report": {
       "$ref": "#/$defs/Report"
+    },
+    "plan_request": {
+      "$ref": "#/$defs/PlanRequest"
+    },
+    "plan_response": {
+      "$ref": "#/$defs/PlanResponse"
     }
   },
   "required": [
@@ -1027,7 +1361,9 @@
     "body_comp",
     "definition_scores",
     "user_profile",
-    "report"
+    "report",
+    "plan_request",
+    "plan_response"
   ],
   "title": "Contracts",
   "type": "object"

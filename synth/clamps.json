@@ -1,0 +1,5 @@
+{
+ "status": "FROZEN by the user 2026-11-02 (ADR-053 Amendment 3). Slider values on the MPFB 0-1 scale; cell boundaries are thirds of each range. Changing this file needs a new ADR and a re-run of fit_labels, plan and coverage.",
+ "female": {"muscle": [0.0, 0.75], "weight": [0.25, 0.75]},
+ "male": {"muscle": [0.0, 0.75], "weight": [0.25, 0.75]}
+}

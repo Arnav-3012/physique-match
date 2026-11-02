@@ -17,6 +17,12 @@ EnergyGoal = Literal["cut", "recomp", "bulk", "maintain"]
 Sex = Literal["male", "female", "not_specified"]  # user-entered, never inferred (ADR-037)
 Level = Literal["beginner", "intermediate", "advanced"]
 Activity = Literal["sedentary", "light", "moderate", "active", "very_active"]
+# Closed checklist, no free text (ADR-054): the `equipment` values of the planner's pool (strength +
+# powerlifting) in kb/raw/exercises.json, spelled as the dataset spells them. A test pins the two.
+Equipment = Literal[
+    "barbell", "dumbbell", "cable", "body only", "machine", "kettlebells",
+    "other", "bands", "e-z curl bar", "exercise ball", "none", "medicine ball",
+]  # fmt: skip
 
 REGIONS: tuple[str, ...] = Region.__args__
 N_KEYPOINTS = 33  # MediaPipe Pose Landmarker
@@ -30,6 +36,9 @@ UPPER_BACK_REASON = (  # fixed text, ADR-039 item 2
 
 Score = Annotated[int, Field(ge=1, le=5)]
 Unit = Annotated[float, Field(ge=0, le=1)]
+# Scale-free silhouette waist girth (girth / body height) that /analyze returns for /plan. A sanity
+# bound, ours and not fitted: 0.2 is a 35 cm waist at 175 cm, 1.0 a waist as long as the body is tall.
+WaistG = Annotated[float, Field(ge=0.2, le=1.0)]
 
 
 class _Strict(BaseModel):
@@ -236,9 +245,7 @@ class BodyComp(_Strict):
     @model_validator(mode="after")
     def _safety_floors(self):
         """Deficit <= 20% of TDEE, never below RMR; surplus <= 10% of TDEE."""
-        if not self.energy_measured and (
-            self.energy or self.rmr_kcal is not None or self.tdee_kcal is not None
-        ):
+        if not self.energy_measured and (self.energy or self.rmr_kcal is not None or self.tdee_kcal is not None):
             raise ValueError("calories not measured: no energy numbers allowed")
         if not self.energy:
             return self
@@ -261,6 +268,7 @@ DefinitionStatus = Literal[
     "not_measured_covered",  # clothing covers the region in this scan option
     "not_measured_age_gate",  # the full-body option is for adults
     "not_measured_goal_covers",  # the goal photo does not show the region bare, or at all
+    "not_measured_not_in_demo",  # no trained head for this region in the demo (ADR-053 Amendment 4)
 ]
 
 
@@ -280,15 +288,12 @@ class DefinitionRegionStatus(_Strict):
 
 
 class DefinitionScores(_Strict):
-    """On-device model output; only these numbers leave the browser (ADR-013)."""
+    """On-device model output; only these two numbers leave the browser (ADR-013). There is deliberately
+    no per-region field: the regional heads did not beat the overall score, so a payload, a report or an
+    agent prompt built from this cannot say one region is less defined than another (ADR-053 Amendment 6)."""
 
-    abs: Score
-    chest: Score
-    shoulders: Score
-    arms: Score
-    back: Score
-    legs: Score
-    adiposity: Score
+    definition: Score  # "leanness & muscularity (estimate)": the 8-head model's overall head, class 1-5
+    adiposity: Score  # waist-girth proxy: the 2-head model's adiposity head, class 1-5
     experimental: bool = True  # stays True until real-data rho >= 0.5 (ADR-020)
 
 
@@ -302,7 +307,7 @@ class UserProfile(_Strict):
     level: Level
     goal: Literal["cut", "recomp", "bulk"]
     days_per_week: Annotated[int, Field(ge=1, le=7)]
-    equipment: list[str] = []
+    equipment: list[Equipment] = []
     ed_history: bool | None = None  # True -> training plan only, no calorie numbers
     tape_waist_cm: Annotated[float, Field(ge=40, le=200)] | None = None
 
@@ -357,6 +362,13 @@ class AnalyzeRequest(_Strict):
     profile: UserProfile
     goal_profile: GoalProfile = Field(default_factory=GoalProfile)
     definition_scope: DefinitionScope = "none"  # ADR-051
+    definition: DefinitionScores | None = None  # the current scan's two on-device scores, only if the user opted in
+
+    @model_validator(mode="after")
+    def _scores_need_the_full_body_scope(self):
+        if self.definition is not None and self.definition_scope != "full_body":
+            raise ValueError("definition scores are only accepted for the full-body scope")
+        return self
 
     @model_validator(mode="after")
     def _current_has_a_side_view(self):
@@ -377,3 +389,43 @@ class AnalyzeResponse(_Strict):
     warnings: list[str] = []  # report-level, e.g. a different-sex goal (ADR-037 Amendment 3)
     # One entry per definition region, set by the route from the scope; N/A always carries a reason.
     definition_status: dict[DefinitionRegion, DefinitionRegionStatus] = {}
+    # The current scan's silhouette waist girth, handed back so /plan can compute body composition
+    # without the scans. None when a tape value or an unset sex made it unnecessary. Not a person's
+    # waist in cm: a scale-free number, bound-checked when it comes back in a PlanRequest.
+    waist_g: float | None = None
+
+
+# --- /plan ----------------------------------------------------------------
+class PlanRequest(_Strict):
+    """No scans: the profile, the gap /analyze returned and, without a tape waist, its waist_g.
+    The server recomputes body composition itself and never trusts a client-supplied BodyComp."""
+
+    profile: UserProfile
+    gap: GapProfile
+    waist_g: WaistG | None = None
+
+
+class PlanSlot(_Strict):
+    exercise_id: str  # the retrieved chunk id, also its citation
+    name: str
+    sets: Annotated[int, Field(ge=1, le=10)]
+
+
+class PlanShortfall(_Strict):
+    """A muscle group that ended under its cited weekly floor. Never silent, never lowered."""
+
+    group: str
+    planned: Annotated[float, Field(ge=0)]
+    floor: Annotated[float, Field(gt=0)]
+
+
+class PlanResponse(_Strict):
+    priorities: list[Region] = Field(max_length=3)
+    days: list[list[PlanSlot]]
+    weekly: dict[str, float]  # recomputed fractional sets per tracked muscle group
+    shortfalls: list[PlanShortfall]
+    note: str = ""  # fixed sentence for weeks of 2 days or fewer with a shortfall (ADR-056)
+    body_comp: BodyComp | None = None  # None when no waist was available (see body_comp_note)
+    body_comp_note: str = ""
+    served_by: Literal["deterministic"]  # the LLM writer adds its own value later
+    retrieval: Literal["hybrid", "bm25"]  # which retriever picked the candidates

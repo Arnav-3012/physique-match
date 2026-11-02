@@ -22,4 +22,6 @@ export const CFG = {
   luminance: [60, 200], // mean 0-255
   looseClothingRatio: 1.6, // torso-row width / shoulder-keypoint width (warn only); arms hugging the torso inflate it
   sideVisibilityGap: 0.1, // far-side shoulder is less visible by at least this
+  torsoSkinChroma: 0.04, // torso pixel counts as skin if its r/g chromaticity is this close to the person's own face / hands
+  torsoBareMin: 0.5, // share of torso pixels that look like skin; below it the torso looks covered (warn, user can override)
 } as const;

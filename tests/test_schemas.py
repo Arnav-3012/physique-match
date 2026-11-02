@@ -77,9 +77,7 @@ def test_body_fat_is_a_range_not_a_point():
 
 
 def energy(kcal_low, kcal_high):
-    return EnergyTarget(
-        goal="cut", kcal_low=kcal_low, kcal_high=kcal_high, protein_g_low=140, protein_g_high=170
-    )
+    return EnergyTarget(goal="cut", kcal_low=kcal_low, kcal_high=kcal_high, protein_g_low=140, protein_g_high=170)
 
 
 def test_energy_within_floor_and_cap_is_accepted():
@@ -98,9 +96,7 @@ def test_cut_below_rmr_is_rejected():
 
 
 def test_surplus_over_10_percent_is_rejected():
-    bulk = EnergyTarget(
-        goal="bulk", kcal_low=2600, kcal_high=2900, protein_g_low=140, protein_g_high=170
-    )
+    bulk = EnergyTarget(goal="bulk", kcal_low=2600, kcal_high=2900, protein_g_low=140, protein_g_high=170)
     with pytest.raises(ValidationError, match="safety"):
         BodyComp(body_fat=bf(), rmr_kcal=1700, tdee_kcal=2500, energy=[bulk])
 
@@ -111,10 +107,15 @@ def test_opt_out_has_no_energy_numbers():
 
 # --- DefinitionScores / UserProfile ---
 def test_definition_scores_are_1_to_5_and_experimental_by_default():
-    ok = dict.fromkeys(("abs", "chest", "shoulders", "arms", "back", "legs", "adiposity"), 3)
+    ok = {
+        "definition": 3,
+        "adiposity": 3,
+    }  # two bands only, no per-region field (ADR-053 Amendment 6)
     assert DefinitionScores(**ok).experimental is True
     with pytest.raises(ValidationError):
-        DefinitionScores(**(ok | {"abs": 6}))
+        DefinitionScores(**(ok | {"definition": 6}))
+    with pytest.raises(ValidationError):  # extra="forbid": a regional score cannot be carried
+        DefinitionScores(**(ok | {"chest": 3}))
 
 
 def profile(**kw):

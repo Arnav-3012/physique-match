@@ -1,10 +1,5 @@
 import { useState } from "react";
-
-const ROWS = [
-  ["Captured on your device", "Camera frames, analysed in your browser. You see a silhouette, not yourself."],
-  ["Sent to the server", "Four black-and-white outlines (head removed) and 33 joint positions per view. You can preview exactly what, before anything is sent."],
-  ["Never sent or stored", "Your photos, your face, your camera feed. Nothing is saved on a server; frames are dropped from memory when you leave."],
-] as const;
+import { PRIVACY_COPY } from "./privacyCopy";
 
 export default function Consent({ onAccept }: { onAccept: () => void }) {
   const [adult, setAdult] = useState(false);
@@ -12,16 +7,10 @@ export default function Consent({ onAccept }: { onAccept: () => void }) {
   return (
     <section className="mx-auto max-w-xl p-8" aria-labelledby="consent-h">
       <h1 id="consent-h" className="text-2xl font-bold">Before we start</h1>
-      <dl className="mt-4 space-y-3">
-        {ROWS.map(([title, text]) => (
-          <div key={title}>
-            <dt className="font-semibold">{title}</dt>
-            <dd className="text-gray-600">{text}</dd>
-          </div>
-        ))}
-      </dl>
+      <p className="mt-4 text-gray-600">{PRIVACY_COPY}</p>
       <p className="mt-4 text-gray-600">
-        Wear fitted clothing: gym wear, a fitted tee, shorts or leggings. You do not need to remove clothes.
+        Before anything is sent you can preview exactly what: the review step shows the outlines. Next you choose what
+        to compare, which decides what to wear; you never have to remove clothes.
       </p>
       <label className="mt-6 flex items-center gap-2">
         <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />

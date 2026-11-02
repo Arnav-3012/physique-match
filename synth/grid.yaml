@@ -1,0 +1,73 @@
+# P4 render configuration (ADR-047 + Amendment 1, ADR-049). Nothing here is rendered yet.
+# The definition-latent constants (LEAN_F, SOFT_F, CAP_BASE, JITTER_SD, BUMP_SIGMA, BUMP_CAP) live in
+# synth/latents.py, the single source of truth shared with the shader code and the tests; they are fixed
+# in ADR-049 and not tuned. Values marked TBD are set after the one contact-sheet round, then frozen.
+# This file is a record, not read by any code (Blender's python has no YAML parser). The sequence, split, slice
+# and rig roles are in synth/plan.py (ADR-045); render.py takes its options as flags and reads
+# synth/plan/identities.csv; the clamps are its required flags --clamp-muscle / --clamp-weight.
+
+seed: 20261102
+views: [front, back]
+size: 384            # render height in px, width = 3/4 of it
+samples: 48          # Cycles, 32-64 allowed (ADR-047 Amendment 1 item A); denoiser on
+engine: CYCLES
+device: METAL        # render.py aborts if the first image is not METAL
+hdri: none
+rigs:
+  train: [key_left, key_right]     # TRAINING rigs, key_right has the small lights (ADR-050 Amendment 1)
+  reserved_lighting_slice: top     # a different rig, never trained on; ~50 extra held-out renders (ADR-045 item 4)
+rig_light_size:                    # ADR-050 item 2: key_right has small lights for harder shadows; unverified until rendered
+  key_left: 1.5
+  key_right: 0.4
+  top: 1.5
+
+budget:
+  hours_hard_stop: 3
+  n_cap: 3996                      # 4000 rounded down to whole 18-cell rounds
+  n_min: 600                       # >= 100 held out, >= 7% of each sex's N per cell
+  per_identity_cost: setup_s + 4 * view_s   # bump set + flat set from the same built body (ADR-049 item 7)
+
+cells:                              # per sex, 3 x 3, round-robin; each cell has its own Sobol sequence
+  muscle: [low, mid, high]
+  fat: [low, mid, high]
+  # Slider ranges are thirds of a clamped range. Placeholder = the full 0..1 range of the macro sliders;
+  # the clamps are decided after the contact sheet, logged in dev-log.md, and written here (TBD).
+  clamp:
+    muscle: [0.0, 1.0]
+    weight: [0.0, 1.0]
+  sobol_dims:                       # per identity, in this order
+    - height
+    - proportions
+    - skin_tone
+    - muscle_in_cell
+    - fat_in_cell
+    - d                             # definition latent (ADR-049 item 2)
+    - j_chest
+    - j_shoulders
+    - j_arms
+    - j_back
+    - j_legs
+    - z_abs                         # log-normal bump factors (ADR-049 item 4)
+    - z_chest
+    - z_shoulders
+    - z_arms
+    - z_back
+    - z_legs
+    - bump_seed
+
+labels:
+  heads: [abs, chest, shoulders, arms, back, legs, adiposity]
+  # Quantile edges (20/40/60/80%) over the planned sequence's training partition, written by
+  # synth/coverage.py BEFORE any render into synth/plan/edges.json, never recomputed (ADR-049 item 3, ADR-045
+  # item 3). TBD until it runs; the lists below stay null on purpose.
+  edges_definition: null
+  edges_flat: null
+  edges_adiposity: null
+
+bump:
+  distance: 0.008                   # frozen (ADR-049 Amendment 1): the 2x strip image of round 1, kept whatever the rerun shows
+  distance_default: 0.004           # world units (m) of round 1's 1x strip image
+  skin: principled_bsdf             # MPFB assets pack not found; logged per identity
+  tone: [0.45, 0.25, 0.18, 1.0]     # placeholder; skin-tone variation joins the Sobol dims after the round
+
+flat_set: true                      # same identities, seeds and bodies, bump forced to 0 (set A)

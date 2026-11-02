@@ -1,0 +1,594 @@
+{
+ "female": {
+  "def_abs": {
+   "1": {
+    "id": "id00404",
+    "value": 0.0598,
+    "muscle_slider": 0.287952,
+    "weight_slider": 0.474603,
+    "adip": 0.239323,
+    "d": 0.059816
+   },
+   "2": {
+    "id": "id01816",
+    "value": 0.2376,
+    "muscle_slider": 0.614052,
+    "weight_slider": 0.697445,
+    "adip": 0.217193,
+    "d": 0.237626
+   },
+   "3": {
+    "id": "id01962",
+    "value": 0.3668,
+    "muscle_slider": 0.116815,
+    "weight_slider": 0.297501,
+    "adip": 0.069559,
+    "d": 0.428886
+   },
+   "4": {
+    "id": "id01518",
+    "value": 0.5205,
+    "muscle_slider": 0.270512,
+    "weight_slider": 0.272055,
+    "adip": 0.024434,
+    "d": 0.717955
+   },
+   "5": {
+    "id": "id02134",
+    "value": 0.725,
+    "muscle_slider": 0.474951,
+    "weight_slider": 0.732607,
+    "adip": 0.320432,
+    "d": 0.990088
+   }
+  },
+  "def_chest": {
+   "1": {
+    "id": "id00404",
+    "value": 0.0598,
+    "muscle_slider": 0.287952,
+    "weight_slider": 0.474603,
+    "adip": 0.239323,
+    "d": 0.059816
+   },
+   "2": {
+    "id": "id01400",
+    "value": 0.2355,
+    "muscle_slider": 0.680697,
+    "weight_slider": 0.517264,
+    "adip": 0.116557,
+    "d": 0.235521
+   },
+   "3": {
+    "id": "id03558",
+    "value": 0.3623,
+    "muscle_slider": 0.680833,
+    "weight_slider": 0.305155,
+    "adip": 0.024156,
+    "d": 0.362299
+   },
+   "4": {
+    "id": "id01500",
+    "value": 0.5212,
+    "muscle_slider": 0.287269,
+    "weight_slider": 0.253853,
+    "adip": 0.004112,
+    "d": 0.949421
+   },
+   "5": {
+    "id": "id01864",
+    "value": 0.7347,
+    "muscle_slider": 0.460167,
+    "weight_slider": 0.636986,
+    "adip": 0.267225,
+    "d": 0.734684
+   }
+  },
+  "def_shoulders": {
+   "1": {
+    "id": "id00404",
+    "value": 0.0598,
+    "muscle_slider": 0.287952,
+    "weight_slider": 0.474603,
+    "adip": 0.239323,
+    "d": 0.059816
+   },
+   "2": {
+    "id": "id02674",
+    "value": 0.2386,
+    "muscle_slider": 0.458865,
+    "weight_slider": 0.608305,
+    "adip": 0.246428,
+    "d": 0.238588
+   },
+   "3": {
+    "id": "id03728",
+    "value": 0.362,
+    "muscle_slider": 0.120692,
+    "weight_slider": 0.535344,
+    "adip": 0.430242,
+    "d": 0.672411
+   },
+   "4": {
+    "id": "id01952",
+    "value": 0.5156,
+    "muscle_slider": 0.383148,
+    "weight_slider": 0.58214,
+    "adip": 0.292646,
+    "d": 0.515596
+   },
+   "5": {
+    "id": "id03990",
+    "value": 0.7268,
+    "muscle_slider": 0.51592,
+    "weight_slider": 0.373778,
+    "adip": 0.066963,
+    "d": 0.882558
+   }
+  },
+  "def_arms": {
+   "1": {
+    "id": "id00404",
+    "value": 0.0598,
+    "muscle_slider": 0.287952,
+    "weight_slider": 0.474603,
+    "adip": 0.239323,
+    "d": 0.059816
+   },
+   "2": {
+    "id": "id03800",
+    "value": 0.2372,
+    "muscle_slider": 0.066566,
+    "weight_slider": 0.437191,
+    "adip": 0.295781,
+    "d": 0.237172
+   },
+   "3": {
+    "id": "id00622",
+    "value": 0.3628,
+    "muscle_slider": 0.333713,
+    "weight_slider": 0.591486,
+    "adip": 0.347114,
+    "d": 0.373834
+   },
+   "4": {
+    "id": "id01592",
+    "value": 0.5154,
+    "muscle_slider": 0.283987,
+    "weight_slider": 0.57715,
+    "adip": 0.372932,
+    "d": 0.733413
+   },
+   "5": {
+    "id": "id01294",
+    "value": 0.7204,
+    "muscle_slider": 0.507337,
+    "weight_slider": 0.74553,
+    "adip": 0.290824,
+    "d": 0.720415
+   }
+  },
+  "def_back": {
+   "1": {
+    "id": "id00404",
+    "value": 0.0598,
+    "muscle_slider": 0.287952,
+    "weight_slider": 0.474603,
+    "adip": 0.239323,
+    "d": 0.059816
+   },
+   "2": {
+    "id": "id03492",
+    "value": 0.2377,
+    "muscle_slider": 0.22498,
+    "weight_slider": 0.27401,
+    "adip": 0.029179,
+    "d": 0.237733
+   },
+   "3": {
+    "id": "id03924",
+    "value": 0.3679,
+    "muscle_slider": 0.091235,
+    "weight_slider": 0.376205,
+    "adip": 0.192246,
+    "d": 0.608573
+   },
+   "4": {
+    "id": "id00712",
+    "value": 0.5154,
+    "muscle_slider": 0.250752,
+    "weight_slider": 0.678727,
+    "adip": 0.549803,
+    "d": 0.966919
+   },
+   "5": {
+    "id": "id01938",
+    "value": 0.7294,
+    "muscle_slider": 0.731386,
+    "weight_slider": 0.346456,
+    "adip": 0.039198,
+    "d": 0.729366
+   }
+  },
+  "def_legs": {
+   "1": {
+    "id": "id00404",
+    "value": 0.0598,
+    "muscle_slider": 0.287952,
+    "weight_slider": 0.474603,
+    "adip": 0.239323,
+    "d": 0.059816
+   },
+   "2": {
+    "id": "id02674",
+    "value": 0.2386,
+    "muscle_slider": 0.458865,
+    "weight_slider": 0.608305,
+    "adip": 0.246428,
+    "d": 0.238588
+   },
+   "3": {
+    "id": "id00180",
+    "value": 0.3616,
+    "muscle_slider": 0.049401,
+    "weight_slider": 0.382005,
+    "adip": 0.2138,
+    "d": 0.744624
+   },
+   "4": {
+    "id": "id00044",
+    "value": 0.5193,
+    "muscle_slider": 0.329365,
+    "weight_slider": 0.483514,
+    "adip": 0.22535,
+    "d": 0.669849
+   },
+   "5": {
+    "id": "id01934",
+    "value": 0.7195,
+    "muscle_slider": 0.417838,
+    "weight_slider": 0.549839,
+    "adip": 0.232859,
+    "d": 0.967307
+   }
+  },
+  "adiposity": {
+   "1": {
+    "id": "id01902",
+    "value": 0.0334,
+    "muscle_slider": 0.6396,
+    "weight_slider": 0.32195,
+    "adip": 0.033365,
+    "d": 0.409301
+   },
+   "2": {
+    "id": "id00420",
+    "value": 0.0971,
+    "muscle_slider": 0.253146,
+    "weight_slider": 0.334399,
+    "adip": 0.097059,
+    "d": 0.614388
+   },
+   "3": {
+    "id": "id00412",
+    "value": 0.1719,
+    "muscle_slider": 0.719801,
+    "weight_slider": 0.691011,
+    "adip": 0.171854,
+    "d": 0.709618
+   },
+   "4": {
+    "id": "id00514",
+    "value": 0.2879,
+    "muscle_slider": 0.434821,
+    "weight_slider": 0.629798,
+    "adip": 0.287924,
+    "d": 0.945264
+   },
+   "5": {
+    "id": "id00380",
+    "value": 0.5649,
+    "muscle_slider": 0.030814,
+    "weight_slider": 0.568877,
+    "adip": 0.564896,
+    "d": 0.044668
+   }
+  }
+ },
+ "male": {
+  "def_abs": {
+   "1": {
+    "id": "id02399",
+    "value": 0.0595,
+    "muscle_slider": 0.145152,
+    "weight_slider": 0.739845,
+    "adip": 0.752065,
+    "d": 0.579634
+   },
+   "2": {
+    "id": "id02937",
+    "value": 0.2287,
+    "muscle_slider": 0.012947,
+    "weight_slider": 0.508101,
+    "adip": 0.537751,
+    "d": 0.406921
+   },
+   "3": {
+    "id": "id01495",
+    "value": 0.3653,
+    "muscle_slider": 0.115348,
+    "weight_slider": 0.414272,
+    "adip": 0.27833,
+    "d": 0.770398
+   },
+   "4": {
+    "id": "id00943",
+    "value": 0.5238,
+    "muscle_slider": 0.273822,
+    "weight_slider": 0.350256,
+    "adip": 0.109171,
+    "d": 0.873399
+   },
+   "5": {
+    "id": "id01593",
+    "value": 0.7227,
+    "muscle_slider": 0.472705,
+    "weight_slider": 0.491555,
+    "adip": 0.096362,
+    "d": 0.748018
+   }
+  },
+  "def_chest": {
+   "1": {
+    "id": "id02399",
+    "value": 0.0595,
+    "muscle_slider": 0.145152,
+    "weight_slider": 0.739845,
+    "adip": 0.752065,
+    "d": 0.579634
+   },
+   "2": {
+    "id": "id01895",
+    "value": 0.2308,
+    "muscle_slider": 0.060133,
+    "weight_slider": 0.622332,
+    "adip": 0.685812,
+    "d": 0.943117
+   },
+   "3": {
+    "id": "id01629",
+    "value": 0.3594,
+    "muscle_slider": 0.422419,
+    "weight_slider": 0.500601,
+    "adip": 0.143804,
+    "d": 0.359369
+   },
+   "4": {
+    "id": "id02263",
+    "value": 0.5178,
+    "muscle_slider": 0.51078,
+    "weight_slider": 0.295781,
+    "adip": 0.013853,
+    "d": 0.517808
+   },
+   "5": {
+    "id": "id02529",
+    "value": 0.7334,
+    "muscle_slider": 0.347405,
+    "weight_slider": 0.442757,
+    "adip": 0.16069,
+    "d": 0.733372
+   }
+  },
+  "def_shoulders": {
+   "1": {
+    "id": "id02399",
+    "value": 0.0595,
+    "muscle_slider": 0.145152,
+    "weight_slider": 0.739845,
+    "adip": 0.752065,
+    "d": 0.579634
+   },
+   "2": {
+    "id": "id01339",
+    "value": 0.2275,
+    "muscle_slider": 0.288829,
+    "weight_slider": 0.327378,
+    "adip": 0.08023,
+    "d": 0.227477
+   },
+   "3": {
+    "id": "id01629",
+    "value": 0.3594,
+    "muscle_slider": 0.422419,
+    "weight_slider": 0.500601,
+    "adip": 0.143804,
+    "d": 0.359369
+   },
+   "4": {
+    "id": "id03707",
+    "value": 0.522,
+    "muscle_slider": 0.527146,
+    "weight_slider": 0.727099,
+    "adip": 0.200889,
+    "d": 0.521986
+   },
+   "5": {
+    "id": "id03957",
+    "value": 0.717,
+    "muscle_slider": 0.556316,
+    "weight_slider": 0.426559,
+    "adip": 0.052194,
+    "d": 0.816013
+   }
+  },
+  "def_arms": {
+   "1": {
+    "id": "id02399",
+    "value": 0.0595,
+    "muscle_slider": 0.145152,
+    "weight_slider": 0.739845,
+    "adip": 0.752065,
+    "d": 0.579634
+   },
+   "2": {
+    "id": "id00451",
+    "value": 0.2295,
+    "muscle_slider": 0.131358,
+    "weight_slider": 0.308942,
+    "adip": 0.096203,
+    "d": 0.229546
+   },
+   "3": {
+    "id": "id01189",
+    "value": 0.3611,
+    "muscle_slider": 0.071019,
+    "weight_slider": 0.314609,
+    "adip": 0.120587,
+    "d": 0.542972
+   },
+   "4": {
+    "id": "id02023",
+    "value": 0.5201,
+    "muscle_slider": 0.299536,
+    "weight_slider": 0.302507,
+    "adip": 0.052492,
+    "d": 0.629816
+   },
+   "5": {
+    "id": "id02249",
+    "value": 0.7148,
+    "muscle_slider": 0.714764,
+    "weight_slider": 0.722545,
+    "adip": 0.196153,
+    "d": 0.714801
+   }
+  },
+  "def_back": {
+   "1": {
+    "id": "id02399",
+    "value": 0.0595,
+    "muscle_slider": 0.145152,
+    "weight_slider": 0.739845,
+    "adip": 0.752065,
+    "d": 0.579634
+   },
+   "2": {
+    "id": "id01339",
+    "value": 0.2275,
+    "muscle_slider": 0.288829,
+    "weight_slider": 0.327378,
+    "adip": 0.08023,
+    "d": 0.227477
+   },
+   "3": {
+    "id": "id01509",
+    "value": 0.3597,
+    "muscle_slider": 0.581821,
+    "weight_slider": 0.477454,
+    "adip": 0.066353,
+    "d": 0.359712
+   },
+   "4": {
+    "id": "id02339",
+    "value": 0.5308,
+    "muscle_slider": 0.599687,
+    "weight_slider": 0.70053,
+    "adip": 0.185118,
+    "d": 0.530752
+   },
+   "5": {
+    "id": "id03705",
+    "value": 0.7301,
+    "muscle_slider": 0.549382,
+    "weight_slider": 0.524019,
+    "adip": 0.087546,
+    "d": 0.809082
+   }
+  },
+  "def_legs": {
+   "1": {
+    "id": "id02399",
+    "value": 0.0595,
+    "muscle_slider": 0.145152,
+    "weight_slider": 0.739845,
+    "adip": 0.752065,
+    "d": 0.579634
+   },
+   "2": {
+    "id": "id01339",
+    "value": 0.2275,
+    "muscle_slider": 0.288829,
+    "weight_slider": 0.327378,
+    "adip": 0.08023,
+    "d": 0.227477
+   },
+   "3": {
+    "id": "id00507",
+    "value": 0.3597,
+    "muscle_slider": 0.113953,
+    "weight_slider": 0.521244,
+    "adip": 0.458271,
+    "d": 0.651083
+   },
+   "4": {
+    "id": "id00101",
+    "value": 0.5266,
+    "muscle_slider": 0.481113,
+    "weight_slider": 0.586869,
+    "adip": 0.144726,
+    "d": 0.526551
+   },
+   "5": {
+    "id": "id00313",
+    "value": 0.7206,
+    "muscle_slider": 0.463367,
+    "weight_slider": 0.303413,
+    "adip": 0.023038,
+    "d": 0.73902
+   }
+  },
+  "adiposity": {
+   "1": {
+    "id": "id01363",
+    "value": 0.0302,
+    "muscle_slider": 0.730926,
+    "weight_slider": 0.362344,
+    "adip": 0.030212,
+    "d": 0.252574
+   },
+   "2": {
+    "id": "id01593",
+    "value": 0.0964,
+    "muscle_slider": 0.472705,
+    "weight_slider": 0.491555,
+    "adip": 0.096362,
+    "d": 0.748018
+   },
+   "3": {
+    "id": "id02699",
+    "value": 0.1707,
+    "muscle_slider": 0.517171,
+    "weight_slider": 0.672231,
+    "adip": 0.170656,
+    "d": 0.101183
+   },
+   "4": {
+    "id": "id00855",
+    "value": 0.2982,
+    "muscle_slider": 0.275136,
+    "weight_slider": 0.523425,
+    "adip": 0.298192,
+    "d": 0.72715
+   },
+   "5": {
+    "id": "id02639",
+    "value": 0.5639,
+    "muscle_slider": 0.253868,
+    "weight_slider": 0.726,
+    "adip": 0.563939,
+    "d": 0.640169
+   }
+  }
+ }
+}

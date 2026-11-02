@@ -11,6 +11,8 @@ from .models import (
     BodyComp,
     DefinitionScores,
     GapProfile,
+    PlanRequest,
+    PlanResponse,
     Report,
     Scan,
     UserProfile,
@@ -26,6 +28,8 @@ class Contracts(BaseModel):
     definition_scores: DefinitionScores
     user_profile: UserProfile
     report: Report
+    plan_request: PlanRequest
+    plan_response: PlanResponse
 
 
 def main() -> None:

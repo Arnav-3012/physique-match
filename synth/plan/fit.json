@@ -1,0 +1,122 @@
+{
+ "a_ref": {
+  "female": 28.838000000000008,
+  "male": 37.051
+ },
+ "cap_form": "position: cap = CAP_BASE + (1 - CAP_BASE) * regional muscle position (latents.muscle_cap)",
+ "checks": {
+  "female": {
+   "C1_girth_monotone_in_weight_at_each_probe_muscle": true,
+   "C2_adiposity_monotone_in_weight_and_spans_0_1": true,
+   "C3_hide_monotone_down_in_adiposity": true,
+   "C4_cap_monotone_up_in_muscle": true,
+   "cap_calibrated_to_measured_muscle_effect_would_be_monotone": false
+  },
+  "male": {
+   "C1_girth_monotone_in_weight_at_each_probe_muscle": true,
+   "C2_adiposity_monotone_in_weight_and_spans_0_1": true,
+   "C3_hide_monotone_down_in_adiposity": true,
+   "C4_cap_monotone_up_in_muscle": true,
+   "cap_calibrated_to_measured_muscle_effect_would_be_monotone": false
+  }
+ },
+ "clamps": {
+  "female": {
+   "muscle": [
+    0.0,
+    0.75
+   ],
+   "weight": [
+    0.25,
+    0.75
+   ]
+  },
+  "male": {
+   "muscle": [
+    0.0,
+    0.75
+   ],
+   "weight": [
+    0.25,
+    0.75
+   ]
+  }
+ },
+ "girth": {
+  "female": [
+   [
+    56.882,
+    68.079,
+    80.576,
+    96.917,
+    115.452
+   ],
+   [
+    60.919,
+    68.612,
+    76.958,
+    87.498,
+    97.56
+   ],
+   [
+    65.288,
+    69.376,
+    73.348,
+    77.944,
+    82.561
+   ],
+   [
+    65.37,
+    68.022,
+    70.868,
+    73.175,
+    75.396
+   ],
+   [
+    65.999,
+    66.903,
+    68.539,
+    68.974,
+    71.135
+   ]
+  ],
+  "male": [
+   [
+    51.47,
+    70.34,
+    90.182,
+    107.391,
+    124.717
+   ],
+   [
+    59.278,
+    70.303,
+    81.155,
+    92.498,
+    103.817
+   ],
+   [
+    67.687,
+    70.341,
+    73.159,
+    78.263,
+    83.712
+   ],
+   [
+    68.971,
+    71.882,
+    74.346,
+    79.725,
+    85.434
+   ],
+   [
+    69.987,
+    72.854,
+    75.258,
+    81.119,
+    87.845
+   ]
+  ]
+ },
+ "sha256": "d03e7a146d121c361d771c7efcba2df8228f0cae004b9c517fb0a8bf8ac18cb2"
+}

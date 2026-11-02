@@ -1,0 +1,6 @@
+rung: finetune
+init_from: definition8_probe
+epochs: 30
+patience: 6
+lr_head: 0.0003
+lr_backbone: 0.0001

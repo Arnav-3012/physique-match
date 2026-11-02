@@ -52,7 +52,7 @@ testpaths = ["tests"]
 pythonpath = [".", "services/api"]
 
 [tool.ruff]
-line-length = 100
+line-length = 120  # P4: raised from 100 (owner decision 2026-11-02, lint debt of ~260 wrapped-only lines)
 target-version = "py312"
 extend-exclude = ["ml/data", "synth/out"]
 

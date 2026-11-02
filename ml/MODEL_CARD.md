@@ -131,3 +131,57 @@ Comparing a goal silhouette with the user's own scans, and a rough waist estimat
 - A cropped body (feet or head out of frame) breaks the height normalisation behind every feature.
 - The files we used carry no age or ethnicity. Male share: 60% (train), 53% (Test-A), 39% (Test-B). Subgroup error by sex and BMI band is planned for P8.
 - Parity was checked on 3 captures from one person.
+
+---
+
+# Model card: muscle-definition model (P4), demo model, experimental
+
+Status: **trained on synthetic renders only, scored on a synthetic held-out set, and NOT validated on real photos; the two real-photo scans so far looked wrong (see Limits).** Ships in the demo as an opt-in, experimental estimate (decision of the owner, 2026-11-02: the model stays as it is for the demo). Decisions: ADR-044, ADR-047, ADR-049, ADR-050, ADR-051, ADR-053 (Amendments 4-6). Name in the app: "leanness & muscularity (estimate)", always with the badge "experimental, trained on synthetic data".
+
+## What it does
+MobileNetV3-Small (ImageNet) with CORAL ordinal heads (class 1-5 = quantile bins of synthetic latents; app bands: low = 1-2, mid = 3, high = 4-5), run in the user's browser on the front RGB frame, opt-in and off by default. The demo serves two single-output graphs (below): one overall "leanness & muscularity (estimate)" band and one adiposity band (a waist-girth proxy). Only the two bands leave the device (ADR-013). There is no per-region definition anywhere. The capture scope (ADR-051) decides whether the score is shown: full-body scope only; a clothed scan gets none, with a reason.
+
+## Data
+Synthetic renders only (ADR-020): MPFB 2.0.18 bodies in Blender 5.2.3, Cycles, front and back views, a transparent figure composited on backgrounds, two or three light rigs, labels from sliders (ADR-049). Bodies are bare: the MPFB system assets pack was not found, so there are no clothing assets and the skin is a plain colour. No real photo is used for training. BodyM is not used for this model.
+
+## Demo serving: a hybrid of two checkpoints, fp32 (ADR-053 Amendment 6, 2026-11-02)
+Each head is served from the model that passed its own pre-registered checks. Both read the same preprocessed front-frame tensor (two forward passes). All three pre-registered int8 variants failed parity (agreement with torch 0.15-0.30, cause not established), so both graphs are fp32, and the owner raised the combined size cap from 5 MB to 8 MB (measured pair 7.46 MB). If browser latency, parity or size fails, the 8-head model is served alone under a recorded owner override.
+
+| Output | Served by | Checkpoint (SHA-256) | ONNX fp32 (SHA-256, size) |
+|---|---|---|---|
+| Overall definition ("leanness & muscularity (estimate)") | 8-head model, `definition` head | `f0a1314d886324ca4e078226543d533db5377d8e49e303ece9fcfe1a9ca2661f` | `c9331fac7052e8bd1ee510a49c407fc6a9dc29ac5ef15aeb0b057a679a94bd5d`, about 3.73 MB |
+| Adiposity (waist-girth proxy), front frame only | 2-head model, `adiposity` head | `c1142f758fe62333c35278ada3fefaf1b7cc49abadf847881c72f2846a91a123` | `4220596358cac6f97a74c5f6f9a2a959c72b23c2a5759ab0ccd35e650aa99338`, about 3.73 MB |
+
+Not in the served graphs: all regional outputs, the 8-head adiposity head and the 2-head definition head.
+
+**Synthetic held-out test (792 identities, 2-head scored once, 8-head scored twice with the same checkpoint):**
+
+| | 2-head | 8-head |
+|---|---|---|
+| definition rho / MAE | 0.909 / 0.359 | 0.923 / 0.302 |
+| adiposity rho / MAE (front-only samples) | 0.901 / 0.337 | 0.901 / 0.354 |
+| adiposity, lighting slice (n 50, front) | 0.818 / 0.600 | 0.779 / 0.660 |
+| definition, lighting slice (n 50, front) | 0.906 / 0.340 | 0.909 / 0.320 |
+
+**Limits of this choice.**
+- **Selected after seeing test results.** Both models, all thresholds and the frozen edges were fixed first and nothing was retrained or retuned, but picking a model per head was done afterwards: mild selection. The size cap was also raised after the sizes were measured.
+- **The adiposity margins are thin.** The 8-head model misses the pre-registered "not worse" rule by 0.007 on MAE, and the slice is 50 identities where the served 2-head model itself sits at MAE 0.600. Adiposity is about equal; the rule says the 8-head model does not beat the 2-head one. The 8-head adiposity is worse for women (front-only MAE 0.328 against 0.270) and slightly better for men (0.379 against 0.404).
+- **The definition gain cannot be attributed to the regional heads:** the 8-head model trains on both views, which doubled the training samples.
+- **No region passed the incremental gate** (a region needs rho at least 0.05 above the overall score on its own label; the best was legs, +0.019, then arms +0.015). **The regional labels come from one shared definition latent and are nearly redundant, so the high regional rho is not evidence that the model reads individual regions.** The app shows no per-region definition.
+- The pair was checked for combined size (<= 8 MB), combined latency (<= 300 ms, real browser tab, laptop; phone untested) and per-model ONNX parity before use. **Measured:** combined 7.46 MB; browser latency (preprocessing + both forward passes, WASM) p50 14.3 ms, p95 14.9 ms; ONNX Runtime Web 1.22.0 parity with torch passed. Details in `docs/logs/dev-log.md`.
+- **Browser-path check on renders (val only):** the 8-head definition and 2-head adiposity graphs, fed through the app's own preprocessing, score definition rho 0.926 / MAE 0.278 and adiposity rho 0.875 / MAE 0.409, within the margins fixed beforehand (rho >= reference - 0.03, MAE <= reference + 0.10). This rules out crop, mask, resize, scaling and output-mapping bugs on renders; it does not test the segmenter or a real photo.
+
+## Limits (known before training)
+- **Clothing:** the capture-scope rule removes the clothing mismatch between runtime inputs and the bare-body training renders; the render-realism gap remains and is checked only by the real-photo sanity check.
+- **The cues are procedural, not anatomy.** Definition appears in the renders as a bump map drawn from approximate landmarks, not as sculpted muscle, veins or striations. **Abs is the clearest cue.** Chest and shoulder cues are weak (not readable in the contact sheets), back marks are short slashes, leg lines are seam-like, arm cues show in the back view only. No claim is made about a region's definition beyond what that region's head shows in its own per-head numbers.
+- **The abs head has no muscle target** in the body generator; it rests on the global muscle slider and the bump.
+- **Labels are a function of the sliders,** so a high score on held-out synthetic bodies shows the network can invert the mapping, not that it reads real bodies (ADR-049 item 6). Class edges are quantiles of the sampled body-type mix, so a class is relative to that mix.
+- **The adiposity score is a waist-girth proxy, not body fat %** (ADR-053): the girth that the generator's weight slider adds at fixed muscle, read from a lookup fitted on a 5 x 5 probe grid. The generator's muscle slider adds soft mass at its low end (male waist depth 25 cm at muscle 0 against 19 cm at 0.5), which the adiposity label does not include, so a low-muscle body can look softer than its adiposity score says. Fitted-versus-measured error on the rendered identities will be recorded here after the render; it is validation only and no label is recomputed from it.
+- **Adiposity follows muscle softness, and high-muscle bodies are never labelled soft.** In the generator the weight slider adds waist girth mainly at low muscle (female +29 cm at muscle 0 against +5 cm at 0.75; male +37 against +8, inside the clamps), so the adiposity classes sort bodies mostly by low muscle with high weight, and a high-muscle body with high weight keeps full definition (only 2% of identities have zero definition). The label is a waist proxy: hip and thigh mass added by weight on the female is under-counted. The archetype "bulky" (high muscle, soft) cannot be produced and is not in the data: **a real user who is muscular and carries extra body fat will likely get a high definition score and a low adiposity score, and adiposity is least reliable for muscular bodies** (ADR-044 Amendment 1). The scores never choose cut, recomp or bulk; that stays the user's choice. Fusion with the body-fat range is TBD after demo (ADR-046): adiposity must not push the body-fat point toward the lower half.
+- **The definition cap is not measured:** it is a monotone function of the muscle slider position with placeholder constants, because the measured muscle effect is non-monotone in the generator (ADR-053).
+- **Resolution:** renders are 384 px tall; the browser model sees about 224-256 px. A resolution check is run before the big render (ADR-050); the result will be recorded here.
+- **No real-world validation yet** (P8). The real-photo A/B between the bump and the flat model is post-demo evidence (ADR-050). **Observed on the owner's own scans (anecdote, n = 1 person, not a test):** the first scan came out definition high / adiposity high, which the owner says does not match their body; a second scan (clean preview, torso share 1.00) came out definition class 4 (high) and adiposity class 2 (low). The pass on renders through the same browser path points to a synthetic-to-real gap, test-retest instability and shorts being out of distribution; none of these is proven. **Treat the bands as unvalidated on real photos.** No dataset with leanness or definition labels was found (see `docs/logs/dev-log.md`); the ordering check on consented adults, the flat model and real labelled data are post-demo work.
+- **Not medical or body-composition advice.** The adiposity score does not feed the body-fat range (ADR-052).
+
+## Licence
+Training data is synthetic, built on MPFB's CC0 base mesh, targets and skins (code GPL; the project claims no rights over renders, per its FAQ; licence files not read by us). The `synth/` code is ours. No BodyM data in this model.

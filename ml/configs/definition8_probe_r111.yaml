@@ -1,0 +1,5 @@
+rung: probe
+epochs: 30
+patience: 6
+lr_head: 0.001
+max_round: 111  # 50% of the 222 rendered rounds
