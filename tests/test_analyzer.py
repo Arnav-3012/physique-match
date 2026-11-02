@@ -46,6 +46,7 @@ def test_identical_scans_have_no_gap(base):
     gap = GeometricAnalyzer().compare(scan(*base), scan(*base))
     assert gap.analyzer == "geometric" and set(gap.regions) == set(REGIONS)
     assert all(r.delta == 0 for r in gap.regions.values())
+    assert gap.v_taper is None  # no per-person ratios on the fallback (ADR-038)
 
 
 def test_gap_is_antisymmetric_and_points_the_right_way(base, wide):

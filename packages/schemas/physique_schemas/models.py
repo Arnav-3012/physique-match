@@ -86,11 +86,36 @@ class RegionGap(_Strict):
         return self
 
 
+class VTaper(_Strict):
+    """Frame V-taper (estimate), ADR-038: index = shoulders / waist, each B's measurement / height.
+    About .40, not the gym ratio: no ideal line. Shown, not ranked. `delta` = goal - current."""
+
+    goal_index: float | None = None
+    current_index: float | None = None
+    delta: Annotated[float, Field(ge=-1, le=1)] | None = None
+    # None until the `v_taper` block (val residuals) is in gap_regressor.json (ADR-038).
+    reliability: Unit | None = None
+    measured: bool = True  # False = shoulders or waist was not measured; the numbers are all None
+    reason: str | None = None
+
+    @model_validator(mode="after")
+    def _numbers_iff_measured(self):
+        numbers = (self.goal_index, self.current_index, self.delta)
+        if self.measured and None in numbers:
+            raise ValueError("a measured V-taper needs both indices and the delta")
+        if self.measured and self.reason is not None:
+            raise ValueError("only an unmeasured V-taper has a reason")
+        if not self.measured and any(n is not None for n in (*numbers, self.reliability)):
+            raise ValueError("an unmeasured V-taper carries no numbers")
+        return self
+
+
 class GapProfile(_Strict):
     analyzer: Literal["geometric", "siamese_subtract"]
     regions: dict[Region, RegionGap]
     goal_front_only: bool = False  # the goal had no side view; the UI says so (ADR-025)
     asymmetry: dict[Region, float] | None = None  # left - right, height-normalised
+    v_taper: VTaper | None = None  # None when the analyzer has no per-person ratios (geometric)
 
     @model_validator(mode="after")
     def _all_regions(self):

@@ -5,18 +5,24 @@ from test_analyzer import KEYPOINTS, mask_b64, png_b64, scan
 from test_features import side_figure
 from test_rows import figure
 
-from app.analyzer.siamese_subtract import ONNX_PATH, SiameseSubtractAnalyzer
+from app.analyzer.siamese_subtract import (
+    ONNX_PATH,
+    V_TAPER_NOT_MEASURED,
+    SiameseSubtractAnalyzer,
+    v_taper,
+)
 from ml.src.calibrate import reliability
 from ml.src.data.regions import LABELLED_REGIONS
 from ml.src.preprocess import H, W, from_bodym
 from ml.src.sanity_ordering import load_scan
-from physique_schemas.models import REGIONS, RegionGap, Scan, ViewData
+from physique_schemas.models import REGIONS, RegionGap, Scan, ViewData, VTaper
 
 SIGMAS = {"sigma_full": 0.01, "sigma_front": 0.03, "sigma_prior": 0.1}
 META = {
     "output": {"regions": list(LABELLED_REGIONS)},
     "calibration": {r: SIGMAS for r in LABELLED_REGIONS},
 }
+META_VT = META | {"v_taper": SIGMAS}  # the block's sigmas are named like a calibration entry
 
 
 class StubSession:
@@ -162,6 +168,73 @@ def test_sanity_script_loads_only_the_views_on_disk(tmp_path, base):
     assert list(load_scan(tmp_path, ("front", "left")).views) == ["front"]
 
 
+class FixedSession:
+    """Returns the given per-person outputs in call order; the goal is encoded first."""
+
+    def __init__(self, *outputs):
+        self.outputs = iter(outputs)
+
+    def run(self, _, feed):
+        return [next(self.outputs)]
+
+
+def person(shoulders: float, waist: float) -> np.ndarray:
+    row = dict.fromkeys(LABELLED_REGIONS, 0.3) | {"shoulders": shoulders, "waist": waist}
+    return np.array([[row[r] for r in LABELLED_REGIONS]])
+
+
+def fixed(goal, current, meta=META_VT) -> SiameseSubtractAnalyzer:
+    return SiameseSubtractAnalyzer(session=FixedSession(person(*goal), person(*current)), meta=meta)
+
+
+def test_v_taper_is_shoulders_over_waist_and_the_delta_is_goal_minus_current(base):
+    vt = fixed((0.24, 0.48), (0.22, 0.52)).compare(scan(*base), scan(*base)).v_taper
+    assert vt.measured and vt.reason is None
+    assert vt.goal_index == pytest.approx(0.5)
+    assert vt.current_index == pytest.approx(0.22 / 0.52)
+    assert vt.delta == pytest.approx(0.5 - 0.22 / 0.52)
+
+
+def test_v_taper_delta_is_exactly_antisymmetric(base):
+    ab = fixed((0.24, 0.48), (0.22, 0.52)).compare(scan(*base), scan(*base)).v_taper
+    ba = fixed((0.22, 0.52), (0.24, 0.48)).compare(scan(*base), scan(*base)).v_taper
+    assert ab.delta == -ba.delta != 0
+
+
+def test_v_taper_reliability_follows_the_slice_and_is_none_without_the_block(base):
+    full = fixed((0.24, 0.48), (0.22, 0.52)).compare(scan(*base), scan(*base)).v_taper
+    front = fixed((0.24, 0.48), (0.22, 0.52)).compare(front_only(base[0]), scan(*base)).v_taper
+    assert full.reliability == pytest.approx(reliability(0.01, 0.01, 0.1))
+    assert front.reliability == pytest.approx(reliability(0.03, 0.01, 0.1))
+    assert front.reliability < full.reliability
+    bare = fixed((0.24, 0.48), (0.22, 0.52), meta=META).compare(scan(*base), scan(*base)).v_taper
+    assert bare.measured and bare.reliability is None
+
+
+def test_v_taper_is_not_measured_when_shoulders_or_waist_is_not():
+    def region(g, c):
+        return RegionGap(delta=g - c, confidence=0.5, goal_ratio=g, current_ratio=c)
+
+    blank = RegionGap(delta=0.0, confidence=0.0, measured=False)
+    ok = region(0.24, 0.22), region(0.5, 0.5)
+    for shoulders, waist in [(blank, ok[1]), (ok[0], blank), (ok[0], region(0.0, 0.5))]:
+        out = v_taper({"shoulders": shoulders, "waist": waist}, False, SIGMAS)
+        assert out == VTaper(measured=False, reason=V_TAPER_NOT_MEASURED)
+
+
+def test_v_taper_schema_keeps_numbers_and_measured_in_step():
+    VTaper(goal_index=0.4, current_index=0.38, delta=0.02)
+    VTaper(measured=False, reason="because")
+    with pytest.raises(ValueError, match="needs both indices"):
+        VTaper(goal_index=0.4, delta=0.02)
+    with pytest.raises(ValueError, match="carries no numbers"):
+        VTaper(measured=False, delta=0.02)
+    with pytest.raises(ValueError, match="carries no numbers"):
+        VTaper(measured=False, reliability=0.0)
+    with pytest.raises(ValueError, match="reason"):
+        VTaper(goal_index=0.4, current_index=0.38, delta=0.02, reason="because")
+
+
 @pytest.mark.skipif(not ONNX_PATH.exists(), reason="run ml.src.export_onnx first")
 def test_real_model_runs_and_is_antisymmetric(base, wide):
     analyzer = SiameseSubtractAnalyzer()
@@ -170,3 +243,4 @@ def test_real_model_runs_and_is_antisymmetric(base, wide):
     for region in LABELLED_REGIONS:
         assert ab.regions[region].delta == -ba.regions[region].delta
         assert 0 < ab.regions[region].confidence < 1
+    assert ab.v_taper.measured and ab.v_taper.delta == -ba.v_taper.delta

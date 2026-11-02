@@ -318,6 +318,17 @@
           ],
           "default": null,
           "title": "Asymmetry"
+        },
+        "v_taper": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VTaper"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -729,6 +740,83 @@
         "days_per_week"
       ],
       "title": "UserProfile",
+      "type": "object"
+    },
+    "VTaper": {
+      "additionalProperties": false,
+      "description": "Frame V-taper (estimate), ADR-038: index = shoulders / waist, each B's measurement / height.\nAbout .40, not the gym ratio: no ideal line. Shown, not ranked. `delta` = goal - current.",
+      "properties": {
+        "goal_index": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Goal Index"
+        },
+        "current_index": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Index"
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": -1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delta"
+        },
+        "reliability": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reliability"
+        },
+        "measured": {
+          "default": true,
+          "title": "Measured",
+          "type": "boolean"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "title": "VTaper",
       "type": "object"
     },
     "ViewData": {

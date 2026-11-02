@@ -72,6 +72,12 @@ export type GoalFrontOnly = boolean;
 export type Asymmetry = {
   [k: string]: number;
 } | null;
+export type GoalIndex = number | null;
+export type CurrentIndex = number | null;
+export type Delta1 = number | null;
+export type Reliability = number | null;
+export type Measured1 = boolean;
+export type Reason1 = string | null;
 export type Low = number;
 export type High = number;
 export type Method = string;
@@ -201,6 +207,7 @@ export interface GapProfile {
   regions: Regions;
   goal_front_only?: GoalFrontOnly;
   asymmetry?: Asymmetry;
+  v_taper?: VTaper | null;
 }
 export interface Regions {
   [k: string]: RegionGap;
@@ -212,6 +219,18 @@ export interface RegionGap {
   current_ratio?: CurrentRatio;
   measured?: Measured;
   reason?: Reason;
+}
+/**
+ * Frame V-taper (estimate), ADR-038: index = shoulders / waist, each B's measurement / height.
+ * About .40, not the gym ratio: no ideal line. Shown, not ranked. `delta` = goal - current.
+ */
+export interface VTaper {
+  goal_index?: GoalIndex;
+  current_index?: CurrentIndex;
+  delta?: Delta1;
+  reliability?: Reliability;
+  measured?: Measured1;
+  reason?: Reason1;
 }
 /**
  * Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).
