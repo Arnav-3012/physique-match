@@ -39,24 +39,13 @@ def run_rag() -> dict:
     queries = [json.loads(line) for line in RAG_SET.read_text().splitlines()]
     retriever = Retriever(corpus_mod.load(), Embedder(MODEL_DIR))
     ranked = {
-        mode: {
-            q["id"]: retriever.search(q["query"], mode, Filters.from_dict(q["filters"]), K)
-            for q in queries
-        }
+        mode: {q["id"]: retriever.search(q["query"], mode, Filters.from_dict(q["filters"]), K) for q in queries}
         for mode in MODES
     }
-    recall = {
-        m: np.array([recall_at_k(q["gold"], ranked[m][q["id"]]) for q in queries]) for m in MODES
-    }
-    hit = {
-        m: np.array([bool(set(q["gold"]) & set(ranked[m][q["id"]])) for q in queries])
-        for m in MODES
-    }
+    recall = {m: np.array([recall_at_k(q["gold"], ranked[m][q["id"]]) for q in queries]) for m in MODES}
+    hit = {m: np.array([bool(set(q["gold"]) & set(ranked[m][q["id"]])) for q in queries]) for m in MODES}
     types = sorted({q["type"] for q in queries})
-    by_type = {
-        m: {t: float(recall[m][[q["type"] == t for q in queries]].mean()) for t in types}
-        for m in MODES
-    }
+    by_type = {m: {t: float(recall[m][[q["type"] == t for q in queries]].mean()) for t in types} for m in MODES}
     comparisons = {
         other: {
             "mean_diff": float((recall["hybrid"] - recall[other]).mean()),
@@ -95,12 +84,49 @@ def run_rag() -> dict:
     return result
 
 
+def run_pipeline_suite(args) -> dict:
+    """Plan and safety suites (ADR-058). Writes the full per-case result; returns the summary only."""
+    live = args.llm == "live"
+    if args.suite == "plan" and args.readable:
+        # Scores merge into the SAVED result through the key file; no model call, no new plans.
+        from evals.plan_suite import apply_readable
+
+        out = Path(__file__).parent / "results" / (args.out or f"plan{'_live' if live else ''}.json")
+        result = apply_readable(json.loads(out.read_text()), args.readable)
+        out.write_text(json.dumps(result, indent=2) + "\n")
+        return {k: v for k, v in result.items() if k != "rows"}
+    if args.suite == "plan":
+        from evals.plan_suite import run_plan
+
+        only = args.cases.split(",") if args.cases else None
+        result = run_plan(live, args.readable, only)
+        if only:
+            result["subset"] = f"only {only}; not the gate run, which needs all 15 cases"
+    else:
+        from evals.safety_suite import run_safety
+
+        result = run_safety(live)
+    out = Path(__file__).parent / "results" / (args.out or f"{args.suite}{'_live' if live else ''}.json")
+    out.parent.mkdir(exist_ok=True)
+    out.write_text(json.dumps(result, indent=2) + "\n")
+    bad = [r for r in result["rows"] if r.get("status") == "fail" or r.get("schema_valid") is False]
+    summary = {k: v for k, v in result.items() if k != "rows"}
+    return {**summary, "needs_attention": bad[:20], "full_result": str(out)}
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--suite", choices=["rag"], required=True)
-    parser.add_argument("--out", default="rag.json", help="file name under evals/results/")
+    parser.add_argument("--suite", choices=["rag", "plan", "safety"], required=True)
+    parser.add_argument("--out", help="file name under evals/results/ (default: <suite>[_live].json)")
+    parser.add_argument("--llm", choices=["off", "live"], default="off", help="plan / safety only")
+    parser.add_argument("--cases", help="plan only: comma-separated case ids for a quick subset, e.g. p03,p11")
+    parser.add_argument("--readable", type=Path, help="plan only: the owner's blind scores, 'A 1' per line")
     args = parser.parse_args()
+    if args.suite in ("plan", "safety"):
+        print(json.dumps(run_pipeline_suite(args), indent=2))
+        return
     result = run_rag()
+    args.out = args.out or "rag.json"
     out = Path(__file__).parent / "results" / args.out
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(result, indent=2) + "\n")

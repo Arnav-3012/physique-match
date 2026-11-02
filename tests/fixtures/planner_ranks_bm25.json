@@ -1,0 +1,547 @@
+{
+ "corpus_hash": "9ce6bc8290c6bf685bf78c026c412d1fe3f635033570429390d47b279b47b8b0",
+ "mode": "bm25",
+ "ranks": {
+  "advanced|barbell,body only,cable,dumbbell,machine": {
+   "abdominals": [
+    "ex:Flat_Bench_Leg_Pull-In",
+    "ex:Oblique_Crunches_-_On_The_Floor",
+    "ex:Crunch_-_Legs_On_Exercise_Ball",
+    "ex:Press_Sit-Up",
+    "ex:Oblique_Crunches",
+    "ex:Tuck_Crunch",
+    "ex:Sit-Up",
+    "ex:Jackknife_Sit-Up",
+    "ex:Landmine_180s",
+    "ex:Leg_Pull-In"
+   ],
+   "abductors": [
+    "ex:Thigh_Abductor"
+   ],
+   "adductors": [
+    "ex:Thigh_Adductor"
+   ],
+   "biceps": [
+    "ex:Seated_Close-Grip_Concentration_Barbell_Curl",
+    "ex:Overhead_Cable_Curl",
+    "ex:Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench",
+    "ex:Lying_Cable_Curl",
+    "ex:Preacher_Hammer_Dumbbell_Curl",
+    "ex:Two-Arm_Dumbbell_Preacher_Curl",
+    "ex:One_Arm_Dumbbell_Preacher_Curl",
+    "ex:Dumbbell_Bicep_Curl",
+    "ex:Barbell_Curl",
+    "ex:Wide-Grip_Standing_Barbell_Curl"
+   ],
+   "calves": [
+    "ex:Rocking_Standing_Calf_Raise",
+    "ex:Calf_Raise_On_A_Dumbbell",
+    "ex:Calf_Press_On_The_Leg_Press_Machine",
+    "ex:Standing_Barbell_Calf_Raise",
+    "ex:Barbell_Seated_Calf_Raise",
+    "ex:Seated_Calf_Raise",
+    "ex:Standing_Dumbbell_Calf_Raise",
+    "ex:Standing_Calf_Raises",
+    "ex:Calf_Press",
+    "ex:Dumbbell_Seated_One-Leg_Calf_Raise"
+   ],
+   "chest": [
+    "ex:Push-Ups_With_Feet_Elevated",
+    "ex:One-Arm_Flat_Bench_Dumbbell_Flye",
+    "ex:Clock_Push-Up",
+    "ex:Straight-Arm_Dumbbell_Pullover",
+    "ex:Bent-Arm_Dumbbell_Pullover",
+    "ex:Wide-Grip_Decline_Barbell_Pullover",
+    "ex:Pushups",
+    "ex:Butterfly",
+    "ex:Incline_Cable_Chest_Press",
+    "ex:Leverage_Decline_Chest_Press"
+   ],
+   "forearms": [
+    "ex:Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "ex:Seated_Dumbbell_Palms-Down_Wrist_Curl",
+    "ex:Seated_Dumbbell_Palms-Up_Wrist_Curl",
+    "ex:Palms-Down_Wrist_Curl_Over_A_Bench",
+    "ex:Cable_Wrist_Curl",
+    "ex:Palms-Up_Barbell_Wrist_Curl_Over_A_Bench",
+    "ex:Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "ex:Standing_Palms-Up_Barbell_Behind_The_Back_Wrist_Curl",
+    "ex:Seated_Two-Arm_Palms-Up_Low-Pulley_Wrist_Curl",
+    "ex:Seated_Palm-Up_Barbell_Wrist_Curl"
+   ],
+   "glutes": [
+    "ex:Barbell_Glute_Bridge",
+    "ex:Barbell_Hip_Thrust",
+    "ex:Glute_Kickback",
+    "ex:One-Legged_Cable_Kickback",
+    "ex:Single_Leg_Glute_Bridge",
+    "ex:Flutter_Kicks",
+    "ex:Butt_Lift_Bridge",
+    "ex:Pull_Through",
+    "ex:Kneeling_Squat",
+    "ex:Step-up_with_Knee_Raise"
+   ],
+   "hamstrings": [
+    "ex:Standing_Leg_Curl",
+    "ex:Romanian_Deadlift",
+    "ex:Good_Morning",
+    "ex:Smith_Machine_Stiff-Legged_Deadlift",
+    "ex:Good_Morning_off_Pins",
+    "ex:Hanging_Bar_Good_Morning",
+    "ex:Stiff-Legged_Dumbbell_Deadlift",
+    "ex:Stiff-Legged_Barbell_Deadlift",
+    "ex:Lying_Leg_Curls",
+    "ex:Smith_Machine_Hang_Power_Clean"
+   ],
+   "lats": [
+    "ex:Elevated_Cable_Rows",
+    "ex:V-Bar_Pulldown",
+    "ex:Straight-Arm_Pulldown",
+    "ex:V-Bar_Pullup",
+    "ex:Rope_Straight-Arm_Pulldown",
+    "ex:Bent-Arm_Barbell_Pullover",
+    "ex:Cable_Incline_Pushdown",
+    "ex:Wide-Grip_Rear_Pull-Up",
+    "ex:Shotgun_Row",
+    "ex:Kneeling_High_Pulley_Row"
+   ],
+   "middle back": [
+    "ex:Lying_Cambered_Barbell_Row",
+    "ex:Seated_Cable_Rows",
+    "ex:Middle_Back_Shrug",
+    "ex:Seated_One-arm_Cable_Pulley_Rows",
+    "ex:Straight_Bar_Bench_Mid_Rows",
+    "ex:Bent_Over_Barbell_Row",
+    "ex:Bent_Over_Two-Dumbbell_Row_With_Palms_In",
+    "ex:Dumbbell_Incline_Row",
+    "ex:One-Arm_Long_Bar_Row",
+    "ex:T-Bar_Row_with_Handle"
+   ],
+   "quadriceps": [
+    "ex:Plie_Dumbbell_Squat",
+    "ex:Leg_Extensions",
+    "ex:Split_Squat_with_Dumbbells",
+    "ex:Barbell_Hack_Squat",
+    "ex:Weighted_Jump_Squat",
+    "ex:Wide_Stance_Barbell_Squat",
+    "ex:Dumbbell_Squat",
+    "ex:Barbell_Squat",
+    "ex:Dumbbell_Squat_To_A_Bench",
+    "ex:Front_Barbell_Squat_To_A_Bench"
+   ],
+   "shoulders": [
+    "ex:Standing_Palm-In_One-Arm_Dumbbell_Press",
+    "ex:Standing_Barbell_Press_Behind_Neck",
+    "ex:Barbell_Rear_Delt_Row",
+    "ex:Dumbbell_Scaption",
+    "ex:Side_Laterals_to_Front_Raise",
+    "ex:Standing_Palms-In_Dumbbell_Press",
+    "ex:Standing_Low-Pulley_Deltoid_Raise",
+    "ex:Reverse_Flyes",
+    "ex:Arnold_Dumbbell_Press",
+    "ex:Front_Cable_Raise"
+   ],
+   "traps": [
+    "ex:Barbell_Shrug",
+    "ex:Barbell_Shrug_Behind_The_Back",
+    "ex:Calf-Machine_Shoulder_Shrug",
+    "ex:Dumbbell_Shrug",
+    "ex:Smith_Machine_Behind_the_Back_Shrug",
+    "ex:Leverage_Shrug",
+    "ex:Cable_Shrugs",
+    "ex:Standing_Dumbbell_Upright_Row",
+    "ex:Upright_Cable_Row",
+    "ex:Smith_Machine_Upright_Row"
+   ],
+   "triceps": [
+    "ex:One_Arm_Pronated_Dumbbell_Triceps_Extension",
+    "ex:One_Arm_Supinated_Dumbbell_Triceps_Extension",
+    "ex:One_Arm_Floor_Press",
+    "ex:Standing_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:JM_Press",
+    "ex:Standing_Low-Pulley_One-Arm_Triceps_Extension",
+    "ex:Standing_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:Bench_Dips",
+    "ex:Seated_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:Floor_Press_with_Chains"
+   ]
+  },
+  "beginner|barbell,body only,cable,dumbbell,machine": {
+   "abdominals": [
+    "ex:Flat_Bench_Leg_Pull-In",
+    "ex:Oblique_Crunches_-_On_The_Floor",
+    "ex:Crunch_-_Legs_On_Exercise_Ball",
+    "ex:Oblique_Crunches",
+    "ex:Tuck_Crunch",
+    "ex:Sit-Up",
+    "ex:Jackknife_Sit-Up",
+    "ex:Landmine_180s",
+    "ex:Leg_Pull-In",
+    "ex:Reverse_Crunch"
+   ],
+   "abductors": [
+    "ex:Thigh_Abductor"
+   ],
+   "adductors": [
+    "ex:Thigh_Adductor"
+   ],
+   "biceps": [
+    "ex:Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench",
+    "ex:Preacher_Hammer_Dumbbell_Curl",
+    "ex:Two-Arm_Dumbbell_Preacher_Curl",
+    "ex:One_Arm_Dumbbell_Preacher_Curl",
+    "ex:Dumbbell_Bicep_Curl",
+    "ex:Barbell_Curl",
+    "ex:Wide-Grip_Standing_Barbell_Curl",
+    "ex:Preacher_Curl",
+    "ex:Standing_Biceps_Cable_Curl",
+    "ex:Hammer_Curls"
+   ],
+   "calves": [
+    "ex:Rocking_Standing_Calf_Raise",
+    "ex:Calf_Press_On_The_Leg_Press_Machine",
+    "ex:Standing_Barbell_Calf_Raise",
+    "ex:Barbell_Seated_Calf_Raise",
+    "ex:Seated_Calf_Raise",
+    "ex:Standing_Calf_Raises",
+    "ex:Calf_Press",
+    "ex:Dumbbell_Seated_One-Leg_Calf_Raise",
+    "ex:Smith_Machine_Calf_Raise",
+    "ex:Smith_Machine_Reverse_Calf_Raises"
+   ],
+   "chest": [
+    "ex:Push-Ups_With_Feet_Elevated",
+    "ex:One-Arm_Flat_Bench_Dumbbell_Flye",
+    "ex:Pushups",
+    "ex:Butterfly",
+    "ex:Incline_Cable_Chest_Press",
+    "ex:Leverage_Decline_Chest_Press",
+    "ex:Leverage_Incline_Chest_Press",
+    "ex:Standing_Cable_Chest_Press",
+    "ex:Leverage_Chest_Press",
+    "ex:Barbell_Incline_Bench_Press_-_Medium_Grip"
+   ],
+   "forearms": [
+    "ex:Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "ex:Seated_Dumbbell_Palms-Down_Wrist_Curl",
+    "ex:Seated_Dumbbell_Palms-Up_Wrist_Curl",
+    "ex:Palms-Down_Wrist_Curl_Over_A_Bench",
+    "ex:Cable_Wrist_Curl",
+    "ex:Palms-Up_Barbell_Wrist_Curl_Over_A_Bench",
+    "ex:Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "ex:Standing_Palms-Up_Barbell_Behind_The_Back_Wrist_Curl",
+    "ex:Seated_Two-Arm_Palms-Up_Low-Pulley_Wrist_Curl",
+    "ex:Seated_Palm-Up_Barbell_Wrist_Curl"
+   ],
+   "glutes": [
+    "ex:Glute_Kickback",
+    "ex:Single_Leg_Glute_Bridge",
+    "ex:Flutter_Kicks",
+    "ex:Butt_Lift_Bridge",
+    "ex:Pull_Through",
+    "ex:Step-up_with_Knee_Raise",
+    "ex:Leg_Lift"
+   ],
+   "hamstrings": [
+    "ex:Standing_Leg_Curl",
+    "ex:Smith_Machine_Stiff-Legged_Deadlift",
+    "ex:Stiff-Legged_Dumbbell_Deadlift",
+    "ex:Lying_Leg_Curls",
+    "ex:Seated_Leg_Curl"
+   ],
+   "lats": [
+    "ex:Straight-Arm_Pulldown",
+    "ex:V-Bar_Pullup",
+    "ex:Rope_Straight-Arm_Pulldown",
+    "ex:Cable_Incline_Pushdown",
+    "ex:Shotgun_Row",
+    "ex:Kneeling_High_Pulley_Row",
+    "ex:One_Arm_Lat_Pulldown",
+    "ex:Pullups",
+    "ex:Underhand_Cable_Pulldowns",
+    "ex:Leverage_Iso_Row"
+   ],
+   "middle back": [
+    "ex:Lying_Cambered_Barbell_Row",
+    "ex:Seated_Cable_Rows",
+    "ex:Straight_Bar_Bench_Mid_Rows",
+    "ex:Bent_Over_Barbell_Row",
+    "ex:Bent_Over_Two-Dumbbell_Row_With_Palms_In",
+    "ex:Dumbbell_Incline_Row",
+    "ex:One-Arm_Long_Bar_Row",
+    "ex:T-Bar_Row_with_Handle",
+    "ex:Bent_Over_Two-Dumbbell_Row",
+    "ex:Smith_Machine_Bent_Over_Row"
+   ],
+   "quadriceps": [
+    "ex:Plie_Dumbbell_Squat",
+    "ex:Leg_Extensions",
+    "ex:Split_Squat_with_Dumbbells",
+    "ex:Dumbbell_Squat",
+    "ex:Barbell_Squat",
+    "ex:Smith_Single-Leg_Split_Squat",
+    "ex:Smith_Machine_Squat",
+    "ex:Hack_Squat",
+    "ex:Leverage_Deadlift",
+    "ex:Leg_Press"
+   ],
+   "shoulders": [
+    "ex:Standing_Palm-In_One-Arm_Dumbbell_Press",
+    "ex:Barbell_Rear_Delt_Row",
+    "ex:Dumbbell_Scaption",
+    "ex:Side_Laterals_to_Front_Raise",
+    "ex:Standing_Low-Pulley_Deltoid_Raise",
+    "ex:Reverse_Flyes",
+    "ex:Front_Cable_Raise",
+    "ex:One-Arm_Side_Laterals",
+    "ex:Cable_Seated_Lateral_Raise",
+    "ex:Dumbbell_Incline_Shoulder_Raise"
+   ],
+   "traps": [
+    "ex:Barbell_Shrug",
+    "ex:Barbell_Shrug_Behind_The_Back",
+    "ex:Calf-Machine_Shoulder_Shrug",
+    "ex:Dumbbell_Shrug",
+    "ex:Smith_Machine_Behind_the_Back_Shrug",
+    "ex:Leverage_Shrug",
+    "ex:Cable_Shrugs",
+    "ex:Standing_Dumbbell_Upright_Row",
+    "ex:Smith_Machine_Upright_Row"
+   ],
+   "triceps": [
+    "ex:One_Arm_Pronated_Dumbbell_Triceps_Extension",
+    "ex:One_Arm_Supinated_Dumbbell_Triceps_Extension",
+    "ex:Standing_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:JM_Press",
+    "ex:Standing_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:Bench_Dips",
+    "ex:Seated_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:Dip_Machine",
+    "ex:Cable_Rope_Overhead_Triceps_Extension",
+    "ex:Dips_-_Triceps_Version"
+   ]
+  },
+  "beginner|body only": {
+   "abdominals": [
+    "ex:Flat_Bench_Leg_Pull-In",
+    "ex:Oblique_Crunches_-_On_The_Floor",
+    "ex:Crunch_-_Legs_On_Exercise_Ball",
+    "ex:Oblique_Crunches",
+    "ex:Tuck_Crunch",
+    "ex:Sit-Up",
+    "ex:Jackknife_Sit-Up",
+    "ex:Leg_Pull-In",
+    "ex:Reverse_Crunch",
+    "ex:Dead_Bug"
+   ],
+   "abductors": [],
+   "adductors": [],
+   "biceps": [],
+   "calves": [],
+   "chest": [
+    "ex:Push-Ups_With_Feet_Elevated",
+    "ex:Pushups",
+    "ex:Pushups_Close_and_Wide_Hand_Positions",
+    "ex:Incline_Push-Up",
+    "ex:Incline_Push-Up_Medium",
+    "ex:Incline_Push-Up_Reverse_Grip",
+    "ex:Incline_Push-Up_Wide",
+    "ex:Push-Up_Wide",
+    "ex:Isometric_Wipers",
+    "ex:Push_Up_to_Side_Plank"
+   ],
+   "forearms": [],
+   "glutes": [
+    "ex:Glute_Kickback",
+    "ex:Single_Leg_Glute_Bridge",
+    "ex:Flutter_Kicks",
+    "ex:Butt_Lift_Bridge",
+    "ex:Step-up_with_Knee_Raise",
+    "ex:Leg_Lift"
+   ],
+   "hamstrings": [],
+   "lats": [
+    "ex:V-Bar_Pullup",
+    "ex:Pullups",
+    "ex:Chin-Up"
+   ],
+   "middle back": [],
+   "quadriceps": [
+    "ex:Bodyweight_Squat"
+   ],
+   "shoulders": [],
+   "traps": [],
+   "triceps": [
+    "ex:Bench_Dips",
+    "ex:Dips_-_Triceps_Version",
+    "ex:Standing_Towel_Triceps_Extension",
+    "ex:Body_Tricep_Press",
+    "ex:Incline_Push-Up_Close-Grip"
+   ]
+  },
+  "intermediate|barbell,body only,cable,dumbbell,machine": {
+   "abdominals": [
+    "ex:Flat_Bench_Leg_Pull-In",
+    "ex:Oblique_Crunches_-_On_The_Floor",
+    "ex:Crunch_-_Legs_On_Exercise_Ball",
+    "ex:Oblique_Crunches",
+    "ex:Tuck_Crunch",
+    "ex:Sit-Up",
+    "ex:Jackknife_Sit-Up",
+    "ex:Landmine_180s",
+    "ex:Leg_Pull-In",
+    "ex:Reverse_Crunch"
+   ],
+   "abductors": [
+    "ex:Thigh_Abductor"
+   ],
+   "adductors": [
+    "ex:Thigh_Adductor"
+   ],
+   "biceps": [
+    "ex:Seated_Close-Grip_Concentration_Barbell_Curl",
+    "ex:Overhead_Cable_Curl",
+    "ex:Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench",
+    "ex:Lying_Cable_Curl",
+    "ex:Preacher_Hammer_Dumbbell_Curl",
+    "ex:Two-Arm_Dumbbell_Preacher_Curl",
+    "ex:One_Arm_Dumbbell_Preacher_Curl",
+    "ex:Dumbbell_Bicep_Curl",
+    "ex:Barbell_Curl",
+    "ex:Wide-Grip_Standing_Barbell_Curl"
+   ],
+   "calves": [
+    "ex:Rocking_Standing_Calf_Raise",
+    "ex:Calf_Raise_On_A_Dumbbell",
+    "ex:Calf_Press_On_The_Leg_Press_Machine",
+    "ex:Standing_Barbell_Calf_Raise",
+    "ex:Barbell_Seated_Calf_Raise",
+    "ex:Seated_Calf_Raise",
+    "ex:Standing_Dumbbell_Calf_Raise",
+    "ex:Standing_Calf_Raises",
+    "ex:Calf_Press",
+    "ex:Dumbbell_Seated_One-Leg_Calf_Raise"
+   ],
+   "chest": [
+    "ex:Push-Ups_With_Feet_Elevated",
+    "ex:One-Arm_Flat_Bench_Dumbbell_Flye",
+    "ex:Clock_Push-Up",
+    "ex:Straight-Arm_Dumbbell_Pullover",
+    "ex:Bent-Arm_Dumbbell_Pullover",
+    "ex:Wide-Grip_Decline_Barbell_Pullover",
+    "ex:Pushups",
+    "ex:Butterfly",
+    "ex:Incline_Cable_Chest_Press",
+    "ex:Leverage_Decline_Chest_Press"
+   ],
+   "forearms": [
+    "ex:Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "ex:Seated_Dumbbell_Palms-Down_Wrist_Curl",
+    "ex:Seated_Dumbbell_Palms-Up_Wrist_Curl",
+    "ex:Palms-Down_Wrist_Curl_Over_A_Bench",
+    "ex:Cable_Wrist_Curl",
+    "ex:Palms-Up_Barbell_Wrist_Curl_Over_A_Bench",
+    "ex:Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench",
+    "ex:Standing_Palms-Up_Barbell_Behind_The_Back_Wrist_Curl",
+    "ex:Seated_Two-Arm_Palms-Up_Low-Pulley_Wrist_Curl",
+    "ex:Seated_Palm-Up_Barbell_Wrist_Curl"
+   ],
+   "glutes": [
+    "ex:Barbell_Glute_Bridge",
+    "ex:Barbell_Hip_Thrust",
+    "ex:Glute_Kickback",
+    "ex:One-Legged_Cable_Kickback",
+    "ex:Single_Leg_Glute_Bridge",
+    "ex:Flutter_Kicks",
+    "ex:Butt_Lift_Bridge",
+    "ex:Pull_Through",
+    "ex:Kneeling_Squat",
+    "ex:Step-up_with_Knee_Raise"
+   ],
+   "hamstrings": [
+    "ex:Standing_Leg_Curl",
+    "ex:Romanian_Deadlift",
+    "ex:Good_Morning",
+    "ex:Smith_Machine_Stiff-Legged_Deadlift",
+    "ex:Good_Morning_off_Pins",
+    "ex:Hanging_Bar_Good_Morning",
+    "ex:Stiff-Legged_Dumbbell_Deadlift",
+    "ex:Stiff-Legged_Barbell_Deadlift",
+    "ex:Lying_Leg_Curls",
+    "ex:Smith_Machine_Hang_Power_Clean"
+   ],
+   "lats": [
+    "ex:Elevated_Cable_Rows",
+    "ex:V-Bar_Pulldown",
+    "ex:Straight-Arm_Pulldown",
+    "ex:V-Bar_Pullup",
+    "ex:Rope_Straight-Arm_Pulldown",
+    "ex:Bent-Arm_Barbell_Pullover",
+    "ex:Cable_Incline_Pushdown",
+    "ex:Wide-Grip_Rear_Pull-Up",
+    "ex:Shotgun_Row",
+    "ex:Kneeling_High_Pulley_Row"
+   ],
+   "middle back": [
+    "ex:Lying_Cambered_Barbell_Row",
+    "ex:Seated_Cable_Rows",
+    "ex:Middle_Back_Shrug",
+    "ex:Seated_One-arm_Cable_Pulley_Rows",
+    "ex:Straight_Bar_Bench_Mid_Rows",
+    "ex:Bent_Over_Barbell_Row",
+    "ex:Bent_Over_Two-Dumbbell_Row_With_Palms_In",
+    "ex:Dumbbell_Incline_Row",
+    "ex:One-Arm_Long_Bar_Row",
+    "ex:T-Bar_Row_with_Handle"
+   ],
+   "quadriceps": [
+    "ex:Plie_Dumbbell_Squat",
+    "ex:Leg_Extensions",
+    "ex:Split_Squat_with_Dumbbells",
+    "ex:Barbell_Hack_Squat",
+    "ex:Weighted_Jump_Squat",
+    "ex:Wide_Stance_Barbell_Squat",
+    "ex:Dumbbell_Squat",
+    "ex:Barbell_Squat",
+    "ex:Dumbbell_Squat_To_A_Bench",
+    "ex:Speed_Box_Squat"
+   ],
+   "shoulders": [
+    "ex:Standing_Palm-In_One-Arm_Dumbbell_Press",
+    "ex:Standing_Barbell_Press_Behind_Neck",
+    "ex:Barbell_Rear_Delt_Row",
+    "ex:Dumbbell_Scaption",
+    "ex:Side_Laterals_to_Front_Raise",
+    "ex:Standing_Palms-In_Dumbbell_Press",
+    "ex:Standing_Low-Pulley_Deltoid_Raise",
+    "ex:Reverse_Flyes",
+    "ex:Arnold_Dumbbell_Press",
+    "ex:Front_Cable_Raise"
+   ],
+   "traps": [
+    "ex:Barbell_Shrug",
+    "ex:Barbell_Shrug_Behind_The_Back",
+    "ex:Calf-Machine_Shoulder_Shrug",
+    "ex:Dumbbell_Shrug",
+    "ex:Smith_Machine_Behind_the_Back_Shrug",
+    "ex:Leverage_Shrug",
+    "ex:Cable_Shrugs",
+    "ex:Standing_Dumbbell_Upright_Row",
+    "ex:Upright_Cable_Row",
+    "ex:Smith_Machine_Upright_Row"
+   ],
+   "triceps": [
+    "ex:One_Arm_Pronated_Dumbbell_Triceps_Extension",
+    "ex:One_Arm_Supinated_Dumbbell_Triceps_Extension",
+    "ex:One_Arm_Floor_Press",
+    "ex:Standing_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:JM_Press",
+    "ex:Standing_Low-Pulley_One-Arm_Triceps_Extension",
+    "ex:Standing_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:Bench_Dips",
+    "ex:Seated_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
+    "ex:Floor_Press_with_Chains"
+   ]
+  }
+ }
+}

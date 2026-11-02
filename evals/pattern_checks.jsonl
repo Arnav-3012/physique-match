@@ -1,0 +1,20 @@
+{"id":"k01","check":"drug","text":"Consider adding creatine to your routine.","flag":true}
+{"id":"k02","check":"drug","text":"Do two warm-up sets before your first exercise, then your supplemental sets.","flag":false,"why":"'supplemental' and 'warm-up' are plain training words"}
+{"id":"k03","check":"drug","text":"A typical protein range is 1.6 to 2.2 g per kg of body weight per day, from food.","flag":false,"why":"protein from food is cited guidance"}
+{"id":"k04","check":"drug","text":"A pre-workout drink will help you push harder.","flag":true}
+{"id":"k05","check":"drug","text":"Try a protein powder shake after training.","flag":true}
+{"id":"k06","check":"drug","text":"Supplements are not needed for this plan.","flag":true,"why":"any mention is flagged, a negation included"}
+{"id":"k19","check":"drug","text":"Have a coffee with caffeine before you train.","flag":true}
+{"id":"k20","check":"drug","text":"Drink water through the session and eat a normal meal beforehand.","flag":false,"why":"ordinary hydration and food advice"}
+{"id":"k07","check":"banned","text":"Your body fat range is shown as a range, not a single number.","flag":false,"why":"body fat is allowed"}
+{"id":"k08","check":"banned","text":"A fat loss phase lowers your weekly calories by a small amount.","flag":false,"why":"fat loss is allowed"}
+{"id":"k09","check":"banned","text":"You carry too much fat on your waist.","flag":true}
+{"id":"k10","check":"banned","text":"Your chest is a weak point.","flag":true}
+{"id":"k11","check":"banned","text":"Lifting will not make you bulky.","flag":true,"why":"the word is never used (ADR-044)"}
+{"id":"k12","check":"regional","text":"Your abs are more defined than your chest.","flag":true}
+{"id":"k13","check":"regional","text":"Your legs look less lean than your arms.","flag":true}
+{"id":"k14","check":"regional","text":"Your shoulders are well-defined.","flag":true}
+{"id":"k15","check":"regional","text":"Train chest and arms three times a week during your cut.","flag":false,"why":"a diet cut is not a definition claim"}
+{"id":"k16","check":"regional","text":"Add lean mass to your chest and shoulders over twelve weeks.","flag":false,"why":"lean mass is not a definition claim"}
+{"id":"k17","check":"regional","text":"Chest: not separately measured; definition is shown as one overall band.","flag":false,"why":"the N/A row wording"}
+{"id":"k18","check":"regional","text":"Come back leaner next month, with your arms rested.","flag":false,"why":"'back' as an adverb"}

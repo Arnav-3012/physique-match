@@ -201,3 +201,28 @@ Decision record: ADR-028 (supersedes ADR-022 / ADR-009).
 - **Privacy:** RGB frames live in `rgbStore` memory only and are cleared after scoring; no image data in any browser store (vitest guard); the DevTools storage check was reported empty by the owner (`dev-log.md`).
 - **Measured:** browser latency p50 14.3 ms / p95 14.9 ms (preprocessing + both passes, WASM, laptop); WASM parity with torch passed; render-path check through the browser preprocessing matched the Python numbers within the pre-set margins. On real photos the bands looked wrong on the owner's own scans: the synthetic-to-real gap is the leading, unproven explanation (`ml/MODEL_CARD.md`, `dev-log.md`).
 - **Not built (TBD after demo):** per-region definition, goal-photo inference (a P7 prerequisite), fusion with the body-fat range, real-photo fine-tune (P8).
+
+## 11. P6 as built: `/plan`, the planner, the writer and the safety layer (ADR-054 to ADR-058)
+
+```
+ PlanRequest {profile (closed equipment checklist), gap, waist_g?, goal_sex}      422: field path + type only
+        │ priorities(gap)            frozen rule, 0.010 minimum (untested)         (never the rejected value)
+        │ ranked_candidates()        retriever (hybrid, or BM25 with a warning) -> per-group candidate lists
+        ▼
+  build()  planner, no LLM:  floors first, the most constrained group first (ADR-056), then priority extras
+        │   caps: 10 sets / group / week, 8 / group / session, 4 sessions / group, 9 exercises / day
+        │   check.py recomputes every group from the plan and raises on a silent shortfall or a cap breach
+        ▼
+  body_comp (recomputed from the profile; None + fixed note without a waist) ──► safety/rules.py re-check
+        ▼
+  write()  LLM writer, off unless LLM_WRITER_ENABLED: ONE structured call, <= 3 calls, 1 retry
+        │   picks exercises BY ID from the candidate lists, writes labels / reps / cues / summary; no sets field
+        │   accepted only if it parses, ids fit the day's focus, check() passes with no more shortfalls
+        │   than the deterministic plan, and the text passes the frozen patterns + URL / markdown / HTML + numbers
+        ▼   else the deterministic plan, with a closed fallback_reason
+  PlanResponse {days, weekly, shortfalls, note, body_comp, warnings, report, served_by, fallback_reason, retrieval}
+```
+- **Files:** `app/planner/{params,priorities,candidates,plan,check,realism}.py`, `app/safety/rules.py`, `app/agent/{llm,schema,textsafety,writer}.py`, `app/rag/service.py`, `app/routes/plan.py`, `app/errors.py`. Rank fixtures for the planner tests: `tests/fixtures/`.
+- **Trust boundaries:** no client free text reaches the model or comes back (`clean_gap` drops `RegionGap.reason` and the V-taper wording); the disclaimer, the realism note and every warning are written by code; keys, prompts and responses are never logged.
+- **Measured limits:** Groq's free tier allows 8,000 tokens a minute; a report is about 4,000, so about one or two writer reports a minute across all users (ADR-058). HTTP 413 from Groq is mapped to `rate_limited`.
+- **Not built:** the Dockerfile for `/plan` (model fetched at build, P7), the report screen (P7), the semantic cache, the intent router (no free text reaches `/plan`).

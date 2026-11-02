@@ -619,6 +619,16 @@
           ],
           "default": null,
           "title": "Waist G"
+        },
+        "goal_sex": {
+          "default": "not_specified",
+          "enum": [
+            "male",
+            "female",
+            "not_specified"
+          ],
+          "title": "Goal Sex",
+          "type": "string"
         }
       },
       "required": [
@@ -696,11 +706,6 @@
           "title": "Body Comp Note",
           "type": "string"
         },
-        "served_by": {
-          "const": "deterministic",
-          "title": "Served By",
-          "type": "string"
-        },
         "retrieval": {
           "enum": [
             "hybrid",
@@ -708,6 +713,54 @@
           ],
           "title": "Retrieval",
           "type": "string"
+        },
+        "served_by": {
+          "enum": [
+            "primary",
+            "fallback",
+            "deterministic"
+          ],
+          "title": "Served By",
+          "type": "string"
+        },
+        "fallback_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "disabled",
+                "timeout",
+                "rate_limited",
+                "invalid_json",
+                "check_failed",
+                "unsafe_text"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fallback Reason"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "report": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Report"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -715,8 +768,8 @@
         "days",
         "weekly",
         "shortfalls",
-        "served_by",
-        "retrieval"
+        "retrieval",
+        "served_by"
       ],
       "title": "PlanResponse",
       "type": "object"
@@ -968,7 +1021,15 @@
           "$ref": "#/$defs/GapProfile"
         },
         "body_comp": {
-          "$ref": "#/$defs/BodyComp"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BodyComp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "definition": {
           "anyOf": [
@@ -1010,7 +1071,6 @@
         "summary",
         "priorities",
         "gap",
-        "body_comp",
         "plan",
         "disclaimer"
       ],

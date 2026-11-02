@@ -17,6 +17,9 @@ EnergyGoal = Literal["cut", "recomp", "bulk", "maintain"]
 Sex = Literal["male", "female", "not_specified"]  # user-entered, never inferred (ADR-037)
 Level = Literal["beginner", "intermediate", "advanced"]
 Activity = Literal["sedentary", "light", "moderate", "active", "very_active"]
+# Which path wrote the plan text, and why the writer did not (ADR-058). Closed enums, no free text.
+ServedBy = Literal["primary", "fallback", "deterministic"]
+FallbackReason = Literal["disabled", "timeout", "rate_limited", "invalid_json", "check_failed", "unsafe_text"]
 # Closed checklist, no free text (ADR-054): the `equipment` values of the planner's pool (strength +
 # powerlifting) in kb/raw/exercises.json, spelled as the dataset spells them. A test pins the two.
 Equipment = Literal[
@@ -340,7 +343,7 @@ class Report(_Strict):
     summary: str
     priorities: list[Region] = Field(max_length=3)
     gap: GapProfile
-    body_comp: BodyComp
+    body_comp: BodyComp | None = None  # None when no waist was available (/plan says why)
     definition: DefinitionScores | None = None
     plan: list[PlanDay] = Field(min_length=1)
     realism_note: str | None = None
@@ -403,6 +406,7 @@ class PlanRequest(_Strict):
     profile: UserProfile
     gap: GapProfile
     waist_g: WaistG | None = None
+    goal_sex: Sex = "not_specified"  # typed by the user, never defaulted to the profile's sex
 
 
 class PlanSlot(_Strict):
@@ -427,5 +431,15 @@ class PlanResponse(_Strict):
     note: str = ""  # fixed sentence for weeks of 2 days or fewer with a shortfall (ADR-056)
     body_comp: BodyComp | None = None  # None when no waist was available (see body_comp_note)
     body_comp_note: str = ""
-    served_by: Literal["deterministic"]  # the LLM writer adds its own value later
     retrieval: Literal["hybrid", "bm25"]  # which retriever picked the candidates
+    served_by: ServedBy
+    # primary: none. fallback: why the primary failed. deterministic: the last failure.
+    fallback_reason: FallbackReason | None = None
+    warnings: list[str] = []  # fixed, code-written sentences only
+    report: Report | None = None  # None when a day has no exercise (nothing to write about)
+
+    @model_validator(mode="after")
+    def _reason_matches_path(self):
+        if (self.served_by == "primary") != (self.fallback_reason is None):
+            raise ValueError("fallback_reason is set exactly when the primary did not serve")
+        return self

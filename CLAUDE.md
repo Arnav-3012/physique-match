@@ -15,7 +15,7 @@ Privacy-first: raw photos never leave the browser. Only binary silhouettes + key
 - Analyzer interface is fixed: `Analyzer.compare(goal: Scan, current: Scan) -> GapProfile`. Geometric v1 and Siamese v2 both implement it; nothing downstream changes when we swap.
 - ML: split BodyM **by subject_id** (subjects appear multiple times -> leakage otherwise). Seeds fixed. Same preprocessing in train and inference (`ml/src/preprocess.py` is shared with the API).
 - Overfit one batch before any full training run. Train on M4 Pro (MPS). Log every N steps, not every batch.
-- LLM: one agent with tools, direct OpenAI-compatible SDK, pydantic structured output. No LangChain.
+- LLM: one agent with tools, OpenAI-compatible wire protocol via httpx, pydantic structured output. No LangChain.
 - Write the eval set before tuning prompts / RAG / cache thresholds (`evals/`).
 - Secrets only via env / Cloud Run env vars or Secret Manager. Never commit keys or `ml/data/`; never put them in the image or logs.
 - Hosting (ADR-028): web on Vercel, API on Google Cloud Run free tier (1 vCPU / 2 GiB, request-based billing, min-instances 0, max-instances 1–2), models on Google Cloud (ADR-043, no HF Hub: baked into the image or a private bucket, decided in the spike). API image is `python:3.12-slim` with **no torch**: anything the API imports (incl. `ml/src/preprocess.py`) must be numpy/Pillow-class; check image size when adding a dependency.

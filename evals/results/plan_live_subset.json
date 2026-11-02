@@ -1,0 +1,81 @@
+{
+  "mode": "live",
+  "n_cases": 4,
+  "served_by": {
+    "primary": 2,
+    "fallback": 0,
+    "deterministic": 2
+  },
+  "fallback_reasons": [
+    "check_failed",
+    "rate_limited"
+  ],
+  "schema_valid": 4,
+  "priorities_ok": 4,
+  "days_ok": 4,
+  "invariant_ok": 4,
+  "follows_priorities": 4,
+  "spreads_volume": 4,
+  "safe_wording": 4,
+  "cites_sources": 4,
+  "readable": "not scored yet",
+  "rows": [
+    {
+      "id": "p01",
+      "status": 200,
+      "served_by": "primary",
+      "fallback_reason": null,
+      "schema_valid": true,
+      "priorities_ok": true,
+      "days_ok": true,
+      "invariant_ok": true,
+      "follows_priorities": true,
+      "spreads_volume": true,
+      "safe_wording": true,
+      "cites_sources": true
+    },
+    {
+      "id": "p03",
+      "status": 200,
+      "served_by": "deterministic",
+      "fallback_reason": "check_failed",
+      "schema_valid": true,
+      "priorities_ok": true,
+      "days_ok": true,
+      "invariant_ok": true,
+      "follows_priorities": true,
+      "spreads_volume": true,
+      "safe_wording": true,
+      "cites_sources": true
+    },
+    {
+      "id": "p11",
+      "status": 200,
+      "served_by": "deterministic",
+      "fallback_reason": "rate_limited",
+      "schema_valid": true,
+      "priorities_ok": true,
+      "days_ok": true,
+      "invariant_ok": true,
+      "follows_priorities": true,
+      "spreads_volume": true,
+      "safe_wording": true,
+      "cites_sources": true
+    },
+    {
+      "id": "p14",
+      "status": 200,
+      "served_by": "primary",
+      "fallback_reason": null,
+      "schema_valid": true,
+      "priorities_ok": true,
+      "days_ok": true,
+      "invariant_ok": true,
+      "follows_priorities": true,
+      "spreads_volume": true,
+      "safe_wording": true,
+      "cites_sources": true
+    }
+  ],
+  "subset": "only ['p03', 'p11', 'p01', 'p14']; not the gate run, which needs all 15 cases"
+}

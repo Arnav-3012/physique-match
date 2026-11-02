@@ -174,6 +174,7 @@ export type Citations = [string, ...string[]];
 export type RealismNote = string | null;
 export type Disclaimer = string;
 export type WaistG1 = number | null;
+export type GoalSex = "male" | "female" | "not_specified";
 /**
  * @maxItems 3
  */
@@ -199,8 +200,11 @@ export type Floor = number;
 export type Shortfalls = PlanShortfall[];
 export type Note1 = string;
 export type BodyCompNote = string;
-export type ServedBy = "deterministic";
 export type Retrieval = "hybrid" | "bm25";
+export type ServedBy = "primary" | "fallback" | "deterministic";
+export type FallbackReason =
+  ("disabled" | "timeout" | "rate_limited" | "invalid_json" | "check_failed" | "unsafe_text") | null;
+export type Warnings1 = string[];
 
 export interface Contracts {
   analyze_request: AnalyzeRequest;
@@ -400,7 +404,7 @@ export interface Report {
   summary: Summary;
   priorities: Priorities;
   gap: GapProfile;
-  body_comp: BodyComp;
+  body_comp?: BodyComp | null;
   definition?: DefinitionScores | null;
   plan: Plan;
   realism_note?: RealismNote;
@@ -426,6 +430,7 @@ export interface PlanRequest {
   profile: UserProfile;
   gap: GapProfile;
   waist_g?: WaistG1;
+  goal_sex?: GoalSex;
 }
 export interface PlanResponse {
   priorities: Priorities1;
@@ -435,8 +440,11 @@ export interface PlanResponse {
   note?: Note1;
   body_comp?: BodyComp | null;
   body_comp_note?: BodyCompNote;
-  served_by: ServedBy;
   retrieval: Retrieval;
+  served_by: ServedBy;
+  fallback_reason?: FallbackReason;
+  warnings?: Warnings1;
+  report?: Report | null;
 }
 export interface PlanSlot {
   exercise_id: ExerciseId;
