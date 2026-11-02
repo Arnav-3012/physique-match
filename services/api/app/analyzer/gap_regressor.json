@@ -77,5 +77,16 @@
    31.3,
    31.6
   ]
+ },
+ "v_taper": {
+  "version": 1,
+  "script_commit": "62b7348caa12dad616a586fbdc487920a71bcf62",
+  "tree_clean": true,
+  "model_hash": "213383d7c86f33c8040910c7c165f38589eecbdc8b6da4330641a2ee86f26b0b",
+  "onnx_sha256": "672d876c3d47ec5391eafed51d4c9050838a27a570b80dade92c50bad2a5bfc6",
+  "n_val_subjects": 251,
+  "sigma_full": 0.01518334075808525,
+  "sigma_front": 0.01531150471419096,
+  "sigma_prior": 0.06038307398557663
  }
 }

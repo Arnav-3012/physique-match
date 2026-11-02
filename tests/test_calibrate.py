@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from ml.src.data.regions import LABELLED_REGIONS
 
 N_REGIONS = len(LABELLED_REGIONS)
 META = Path(__file__).resolve().parents[1] / "services/api/app/analyzer/gap_regressor.json"
+ONNX = META.with_suffix(".onnx")
 
 
 def standardised(rng, shape):
@@ -95,3 +97,20 @@ def test_exported_calibration_does_not_clip_typical_regions():
         rel = [reliability(s[goal], s["sigma_full"], s["sigma_prior"]) for s in table.values()]
         assert min(rel) > 0
         assert sum(r > 0.3 for r in rel) >= 6
+
+
+@pytest.mark.skipif(not META.exists(), reason="run ml.src.export_onnx first")
+def test_v_taper_block_is_of_this_model_and_does_not_clip():
+    meta = json.loads(META.read_text())
+    assert "v_taper" in meta, "export_onnx rewrites the JSON; re-run ml.src.v_taper_block"
+    block = meta["v_taper"]
+    assert block["model_hash"] == meta["model_hash"]
+    for goal in ("sigma_full", "sigma_front"):
+        assert 0 < reliability(block[goal], block["sigma_full"], block["sigma_prior"]) < 1
+
+
+@pytest.mark.skipif(not ONNX.exists(), reason="the ONNX is gitignored; run ml.src.export_onnx")
+def test_v_taper_block_records_the_onnx_in_use():
+    with ONNX.open("rb") as f:
+        digest = hashlib.file_digest(f, "sha256").hexdigest()
+    assert json.loads(META.read_text())["v_taper"]["onnx_sha256"] == digest

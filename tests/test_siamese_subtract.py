@@ -244,3 +244,4 @@ def test_real_model_runs_and_is_antisymmetric(base, wide):
         assert ab.regions[region].delta == -ba.regions[region].delta
         assert 0 < ab.regions[region].confidence < 1
     assert ab.v_taper.measured and ab.v_taper.delta == -ba.v_taper.delta
+    assert 0 < ab.v_taper.reliability < 1  # the block in gap_regressor.json is read
