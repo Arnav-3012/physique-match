@@ -23,6 +23,7 @@ N_KEYPOINTS = 33  # MediaPipe Pose Landmarker
 MAX_PAYLOAD_B64 = 700_000  # ~512 KB of PNG bytes after base64 (architecture.md section 5)
 MAX_VIEW_B64 = MAX_PAYLOAD_B64 // 2  # one view may be large; the Scan total is what's capped
 KCAL_TOLERANCE = 0.5
+MIN_ADULT_AGE = 18  # the 18+ gate (UserProfile.age) and the full-body definition scope (ADR-051)
 UPPER_BACK_REASON = (  # fixed text, ADR-039 item 2
     "Not measurable from a front photo; a back silhouette adds no size information."
 )
@@ -197,20 +198,48 @@ class EnergyTarget(_Strict):
         return self
 
 
+class ProteinRange(_Strict):
+    """Cited typical protein range (kb/nutrition.json, ADR-048). A range, never a point: nothing
+    downstream picks a value inside it unless that is stated as our rule, not a cited number."""
+
+    g_per_kg_low: Annotated[float, Field(gt=0)]
+    g_per_kg_high: Annotated[float, Field(gt=0)]
+    g_low: Annotated[int, Field(gt=0)]  # g_per_kg x weight_kg, total body weight
+    g_high: Annotated[int, Field(gt=0)]
+    unit: str  # "g per kg of total body weight per day"
+    label: str  # "typical range"
+    also_listed: str  # the ISSN 1.4-2.0 range, shown beside ours
+    text: str  # the wording the report and the agent use as is
+
+    @model_validator(mode="after")
+    def _ordered(self):
+        if self.g_per_kg_low > self.g_per_kg_high or self.g_low > self.g_high:
+            raise ValueError("low must be <= high")
+        return self
+
+
 class BodyComp(_Strict):
     """Energy fields are empty when the user opts out (eating-disorder screen, BMI/BF floors).
     `body_fat` is None when the user's sex is unset: RFM has a sex term and is not guessed
-    (ADR-037 Amendment 4); `note` says why."""
+    (ADR-037 Amendment 4); `note` says why. `energy_measured` is False whenever no calorie numbers
+    are given (sex unset, under 18, eating-disorder opt-out). `protein` is a per-kg range that
+    needs only body weight, so it still shows when sex is unset (ADR-048 Amendment 2)."""
 
     body_fat: BodyFatRange | None = None
     rmr_kcal: float | None = None
     tdee_kcal: float | None = None
     energy: list[EnergyTarget] = []
+    protein: ProteinRange | None = None
+    energy_measured: bool = True
     note: str = ""
 
     @model_validator(mode="after")
     def _safety_floors(self):
         """Deficit <= 20% of TDEE, never below RMR; surplus <= 10% of TDEE."""
+        if not self.energy_measured and (
+            self.energy or self.rmr_kcal is not None or self.tdee_kcal is not None
+        ):
+            raise ValueError("calories not measured: no energy numbers allowed")
         if not self.energy:
             return self
         if self.rmr_kcal is None or self.tdee_kcal is None:
@@ -220,6 +249,33 @@ class BodyComp(_Strict):
         for t in self.energy:
             if t.kcal_low < floor or t.kcal_high > cap:
                 raise ValueError(f"{t.goal} target outside safety floor/cap")
+        return self
+
+
+DefinitionRegion = Literal["abs", "chest", "shoulders", "arms", "back", "legs"]
+DEFINITION_REGIONS: tuple[str, ...] = DefinitionRegion.__args__
+# What the user chose to compare, asked once before capture (ADR-051).
+DefinitionScope = Literal["arms_shoulders_legs", "full_body", "none"]
+DefinitionStatus = Literal[
+    "measured",  # eligible for an on-device score; scores are not in the request yet
+    "not_measured_covered",  # clothing covers the region in this scan option
+    "not_measured_age_gate",  # the full-body option is for adults
+    "not_measured_goal_covers",  # the goal photo does not show the region bare, or at all
+]
+
+
+class DefinitionRegionStatus(_Strict):
+    """Per-region definition status. N/A always has a reason and is never a number (ADR-051)."""
+
+    status: DefinitionStatus
+    reason: str | None = None
+
+    @model_validator(mode="after")
+    def _reason_iff_not_measured(self):
+        if self.status == "measured" and self.reason is not None:
+            raise ValueError("a measured region has no reason")
+        if self.status != "measured" and not self.reason:
+            raise ValueError("a region that is not measured needs a reason")
         return self
 
 
@@ -256,6 +312,8 @@ class GoalProfile(_Strict):
     the user's sex (ADR-037 Amendment 3): `lats` needs both sexes set and equal."""
 
     sex: Sex = "not_specified"
+    # Regions the goal photo does not show bare, or at all: typed by the user, never inferred.
+    not_shown: list[DefinitionRegion] = []
 
 
 # --- Report ---------------------------------------------------------------
@@ -298,6 +356,7 @@ class AnalyzeRequest(_Strict):
     current: Scan
     profile: UserProfile
     goal_profile: GoalProfile = Field(default_factory=GoalProfile)
+    definition_scope: DefinitionScope = "none"  # ADR-051
 
     @model_validator(mode="after")
     def _current_has_a_side_view(self):
@@ -305,8 +364,16 @@ class AnalyzeRequest(_Strict):
             raise ValueError("the current scan needs a side view: left or right")
         return self
 
+    @model_validator(mode="after")
+    def _full_body_is_for_adults(self):
+        if self.definition_scope == "full_body" and self.profile.age < MIN_ADULT_AGE:
+            raise ValueError("the full-body definition scope is for adults")
+        return self
+
 
 class AnalyzeResponse(_Strict):
     gap: GapProfile
     body_comp: BodyComp
     warnings: list[str] = []  # report-level, e.g. a different-sex goal (ADR-037 Amendment 3)
+    # One entry per definition region, set by the route from the scope; N/A always carries a reason.
+    definition_status: dict[DefinitionRegion, DefinitionRegionStatus] = {}

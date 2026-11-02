@@ -6,4 +6,5 @@
 !ml/src/preprocess.py
 !ml/src/calibrate.py
 !ml/src/data/regions.py
+!kb/nutrition.json
 **/__pycache__

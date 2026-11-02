@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir ./packages/schemas
 COPY --chown=user services/api/app ./app
 COPY --chown=user ml/src/preprocess.py ml/src/calibrate.py ./ml/src/
 COPY --chown=user ml/src/data/regions.py ./ml/src/data/
+# Cited protein/energy ranges; app/nutrition.py finds kb/nutrition.json above itself
+COPY --chown=user kb/nutrition.json ./kb/nutrition.json
 
 # The deployed API must never serve baseline A by accident: refuse to start without the model
 # (ADR-035). Local runs do not set this and fall back to A with a warning.

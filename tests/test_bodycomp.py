@@ -1,8 +1,21 @@
+import copy
 from itertools import product
 
 import pytest
+from pydantic import ValidationError
 
-from app.bodycomp import NOTE_ED, NOTE_NO_SEX, body_comp, body_fat, rfm, rmr
+from app import nutrition
+from app.bodycomp import (
+    ENERGY,
+    MAX_LOSS_PER_WEEK,
+    NOTE_ED,
+    NOTE_MINOR,
+    NOTE_NO_SEX,
+    body_comp,
+    body_fat,
+    rfm,
+    rmr,
+)
 from physique_schemas.models import UserProfile
 
 
@@ -110,3 +123,74 @@ def test_no_waist_at_all_is_an_error_not_a_guess():
         body_comp(profile(tape_waist_cm=None))
     with pytest.raises(ValueError, match="no waist"):
         body_comp(profile(tape_waist_cm=None), waist_g=float("nan"))
+
+
+# --- protein, calories and the cited ranges (ADR-048 Amendment 2) ----------------------------
+def test_protein_shows_when_sex_is_unset_but_calories_are_not_measured():
+    bc = body_comp(profile(sex="not_specified", weight_kg=80))
+    assert bc.energy_measured is False and bc.energy == []
+    assert bc.rmr_kcal is None and bc.tdee_kcal is None and bc.body_fat is None
+    assert (bc.protein.g_per_kg_low, bc.protein.g_per_kg_high) == (1.6, 2.2)
+    assert (bc.protein.g_low, bc.protein.g_high) == (128, 176)
+    assert bc.protein.unit == "g per kg of total body weight per day"
+    assert "1.4" in bc.protein.also_listed and "2.0" in bc.protein.also_listed
+
+
+def test_protein_is_the_whole_cited_range_and_matches_every_energy_target():
+    bc = body_comp(profile(weight_kg=70))
+    low, high = round(1.6 * 70), round(2.2 * 70)
+    assert bc.energy_measured is True and (bc.protein.g_low, bc.protein.g_high) == (low, high)
+    assert {(t.protein_g_low, t.protein_g_high) for t in bc.energy} == {(low, high)}
+
+
+def test_protein_and_calories_are_withheld_together_for_an_eating_disorder_history():
+    bc = body_comp(profile(ed_history=True))
+    assert bc.protein is None and bc.energy_measured is False and bc.energy == []
+
+
+def test_every_calorie_band_is_inside_the_cited_range_or_a_declared_override():
+    nutrition.check_energy(ENERGY, MAX_LOSS_PER_WEEK)
+
+
+def test_a_band_without_a_cited_range_or_declared_override_fails_loudly():
+    with pytest.raises(ValueError, match="bulk"):
+        nutrition.check_energy({**ENERGY, "bulk": (1.15, 1.25)}, MAX_LOSS_PER_WEEK)
+    with pytest.raises(ValueError, match="crash"):
+        nutrition.check_energy({**ENERGY, "crash": (0.6, 0.7)}, MAX_LOSS_PER_WEEK)
+    with pytest.raises(ValueError, match="loss cap"):
+        nutrition.check_energy(ENERGY, 0.02)
+
+
+def test_app_floors_override_the_cited_ranges(monkeypatch):
+    p = profile(weight_kg=60, height_cm=165, goal="cut", tape_waist_cm=80)
+    before = body_comp(p)
+    wide = copy.deepcopy(nutrition.NUTRITION)
+    wide["energy"]["loss_pct_bodyweight_per_week"] = [0.5, 3.0]
+    wide["energy"]["gain_surplus_pct_above_maintenance"] = [10, 50]
+    monkeypatch.setattr(nutrition, "NUTRITION", wide)
+    after = body_comp(p)
+    assert after == before  # calories come from the app's own bands and cap, not the cited file
+    assert "cut" in [t.goal for t in after.energy]
+    for t in after.energy:
+        assert t.kcal_low >= after.rmr_kcal - 1
+        assert after.tdee_kcal - t.kcal_low <= MAX_LOSS_PER_WEEK * 60 * 7700 / 7 + 1
+
+
+def test_under_18_gets_no_targets_and_a_short_message():
+    with pytest.raises(ValidationError):
+        profile(age=17)  # the schema's 18+ gate
+    bc = body_comp(profile().model_copy(update={"age": 17}))  # body_comp checks it again
+    assert bc.note == NOTE_MINOR and len(NOTE_MINOR) < 160
+    assert bc.protein is None and bc.energy == [] and bc.body_fat is None
+    assert bc.energy_measured is False and bc.rmr_kcal is None
+
+
+def test_protein_and_loss_cap_do_not_scale_with_leanness():
+    """No point is picked inside the protein range and the loss cap does not move with body fat;
+    only the deficit opt-out depends on it (kb/nutrition.json planner_rules, user 2026-11-02)."""
+    outs = [
+        body_comp(profile(weight_kg=85, height_cm=175, goal="cut", tape_waist_cm=w))
+        for w in (75, 85, 95, 110)
+    ]
+    assert all([t.goal for t in o.energy] == ["maintain", "cut"] for o in outs)
+    assert all(o.energy == outs[0].energy and o.protein == outs[0].protein for o in outs)

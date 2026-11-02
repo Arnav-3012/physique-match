@@ -10,6 +10,7 @@ import numpy as np
 
 from app.analyzer.features import extract
 from app.analyzer.masks import decode_scan, side_view
+from app.nutrition import check_energy, protein_range
 from physique_schemas.models import BodyComp, BodyFatRange, EnergyTarget, Scan, UserProfile
 
 WAIST = json.loads((Path(__file__).parent / "analyzer" / "waist_coef.json").read_text())
@@ -51,8 +52,10 @@ ENERGY = {  # (low, high) as a fraction of TDEE
 }
 MAX_LOSS_PER_WEEK = 0.01  # of body weight (privacy-and-safety.md)
 KCAL_PER_KG = 7700
-# Widely cited range for lifters (g/kg/day); the P5 corpus replaces this with a cited value.
-PROTEIN_G_PER_KG = (1.6, 2.2)
+MIN_AGE = 18  # the schema's 18+ gate; body_comp checks it again
+# The app's bands and cap override the cited ranges (kb/nutrition.json); a band outside a cited
+# range must be a declared override there, or the API does not start (ADR-048 Amendment 2).
+check_energy(ENERGY, MAX_LOSS_PER_WEEK)
 
 NOTE_ED = (
     "Calorie numbers are left out of this plan. If food or weight feels stressful, "
@@ -65,6 +68,10 @@ NOTE_LOW = (
 NOTE_NO_SEX = (
     "Body fat and calorie numbers need your sex, because the formulas differ by sex. "
     "Set it in your profile to see them; your gaps and plan are unchanged."
+)
+NOTE_MINOR = (
+    "Calorie and protein numbers are for adults (18+). For a younger person, "
+    "ask a doctor, dietitian or qualified coach."
 )
 
 
@@ -149,6 +156,7 @@ def body_fat(p: UserProfile, waist_cm: float, sd_cm: float, source: str) -> Body
 def energy_targets(p: UserProfile, rmr_kcal: float, tdee: float, deficit_ok: bool):
     goals = ["maintain"] + ([p.goal] if deficit_ok or p.goal == "bulk" else [])
     max_daily_deficit = MAX_LOSS_PER_WEEK * p.weight_kg * KCAL_PER_KG / 7
+    protein = protein_range(p.weight_kg)  # the whole cited range, no point picked inside it
     out = []
     for goal in goals:
         lo_f, hi_f = ENERGY[goal]
@@ -159,22 +167,27 @@ def energy_targets(p: UserProfile, rmr_kcal: float, tdee: float, deficit_ok: boo
                 goal=goal,
                 kcal_low=round(low),
                 kcal_high=round(high),
-                protein_g_low=round(PROTEIN_G_PER_KG[0] * p.weight_kg),
-                protein_g_high=round(PROTEIN_G_PER_KG[1] * p.weight_kg),
+                protein_g_low=protein.g_low,
+                protein_g_high=protein.g_high,
             )
         )
     return out
 
 
 def body_comp(p: UserProfile, waist_g: float | None = None) -> BodyComp:
-    """`waist_g` = the current scan's scale-free silhouette waist girth (features.waist_g)."""
+    """`waist_g` = the current scan's scale-free silhouette waist girth (features.waist_g).
+    Protein is a per-kg range that needs only body weight, so it shows when sex is unset; it is
+    withheld with the calorie numbers for an eating-disorder history and for under 18."""
+    if p.age < MIN_AGE:  # the schema's 18+ gate normally stops this earlier
+        return BodyComp(energy_measured=False, note=NOTE_MINOR)
+    protein = None if p.ed_history else protein_range(p.weight_kg)
     if p.sex == "not_specified":  # RFM, the waist model and Mifflin all have a sex term (ADR-037)
         notes = ([NOTE_ED] if p.ed_history else []) + [NOTE_NO_SEX]
-        return BodyComp(body_fat=None, note=" ".join(notes))
+        return BodyComp(body_fat=None, protein=protein, energy_measured=False, note=" ".join(notes))
     waist, sd, source = waist_estimate(p, waist_g)
     bf = body_fat(p, waist, sd, source)
     if p.ed_history:
-        return BodyComp(body_fat=bf, note=NOTE_ED)
+        return BodyComp(body_fat=bf, energy_measured=False, note=NOTE_ED)
 
     r = rmr(p)
     tdee = r * ACTIVITY[p.activity]
@@ -186,5 +199,6 @@ def body_comp(p: UserProfile, waist_g: float | None = None) -> BodyComp:
         rmr_kcal=round(r),
         tdee_kcal=round(tdee),
         energy=energy_targets(p, round(r), round(tdee), deficit_ok),
+        protein=protein,
         note="" if deficit_ok else NOTE_LOW,
     )
