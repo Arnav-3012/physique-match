@@ -19,8 +19,8 @@
  │                               │ ◄─────────────── │   hybrid RAG -> deterministic planner ->  │
  │ Report + plan UI              │   Report JSON    │   LLM writer -> safety check -> Report    │
  └───────────────────────────────┘                  └──────────────────────────────────────────┘
-                                                     Model weights: HF Hub model repos; ONNX baked into
-                                                     the image or fetched at start (decided in the spike)
+                                                     Model weights: Google Cloud (ADR-043); ONNX baked into the
+                                                     image or fetched from a private bucket (decided in the spike)
 ```
 Goal input has two modes (ADR-025..027): **photo** (above; the goal's mask comes from the same Pose Landmarker, side view optional, definition scores computed on-device on the goal frame) and, from P9, **typed description** -> `goal_from_text` agent tool -> archetype table (section 3b). Only masks, keypoints, scores, numbers and (Mode 2) goal text leave the browser.
 
@@ -30,8 +30,8 @@ Goal input has two modes (ADR-025..027): **photo** (above; the goal's mask comes
 |---|---|---|
 | Capture | MediaPipe Pose Landmarker (WASM, on-device, self-hosted model; its mask is the silhouette), user-paced guided turn -> 4 head-less 384x512 8-bit {0,255} PNG silhouettes + remapped keypoints (ADR-011, ADR-023); code in `apps/web/src/capture/`, RGB frames kept in memory only | + region mode, better frame selection |
 | Goal input | **Mode 1 (P7, priority):** goal photo, front-only accepted; girth regions get lower confidence without a side view; scores labelled "appearance-based"; full-body-in-frame warning; realism flag = goal shoulder-to-waist ratio vs the user's own frame (ADR-025). **Mode 2 (P9):** "describe your goal" -> archetype table + static preview library (ADR-026, ADR-027) | + live three.js preview (stretch) |
-| Analyzer | SiameseSubtract (ResNet-18 shared encoder, fixed subtraction head, front+side, BodyM, goal side-view dropout, ADR-035), ONNX on CPU + geometric analyzer for back view and fallback (chest/back split and asymmetry not built) | Siamese fine-tuned on real deltas (P8) |
-| Gap output | 10 regions: shoulders, chest, upper back, lats (V-taper), waist, hips, upper-arm, forearm, thigh, calf + left/right asymmetry | same + per-region uncertainty |
+| Analyzer | SiameseSubtract (ResNet-18 shared encoder, fixed subtraction head, front+side, BodyM, goal side-view dropout, ADR-035), ONNX on CPU + geometric analyzer as the fallback only (its back-view numbers are retired, ADR-037; chest/back split and asymmetry not built) | Siamese fine-tuned on real deltas (P8) |
+| Gap output | 10 regions: shoulders, chest, upper back (not measured), lats ("back width (estimate)", unranked), waist, hips, upper-arm, forearm, thigh, calf, plus a separate display-only frame V-taper; left/right asymmetry not built | same + per-region uncertainty |
 | Body comp | RFM BF% range from silhouette waist + height + sex; Mifflin RMR -> energy ranges with floors; on-device MobileNetV3-Small definition/adiposity scores (synthetic-trained, "experimental"), fused into BF% range | same model fine-tuned on real data, uncertainty, badge removed if ρ ≥ 0.5 |
 | Retrieval | Hybrid: BM25 + bge-small dense (ONNX Runtime int8, no torch; corpus embeddings precomputed offline), RRF fusion, metadata filters | + cross-encoder rerank if eval says so |
 | Cache + rate limit | exact + semantic, namespaced, behind an interface: in-memory locally, **Upstash Redis (free)** when deployed because Cloud Run instances scale to zero and are separate (ADR-028) | + TTL tuning |
@@ -96,7 +96,7 @@ Decision record: ADR-028 (supersedes ADR-022 / ADR-009).
 - **Web:** Vercel (React + Vite + TS), preview deploys per PR. The definition ONNX is a static asset of the web app.
 - **API:** FastAPI in a Docker container on **Cloud Run**, region `asia-south1` if available (recorded in `dev-log.md`), 1 vCPU / 2 GiB, request-based billing, `min-instances=0`, `max-instances` 1–2 (set before the service is public), small concurrency. Free tier per month: 2M requests, 180k vCPU-s, 360k GiB-s; at this size the compute quotas are both exhausted at 180,000 billed instance-seconds. The UI keeps its "waking server" state for cold starts (measured in the spike).
 - **Image:** `python:3.12-slim`, no torch; onnxruntime, numpy, Pillow (+ scipy.ndimage until the spike decides), rank-bm25, bge-small int8 via ONNX Runtime. Design target <= ~250 MB stored so two versions fit Artifact Registry's 0.5 GiB free allowance; old versions removed after each deploy.
-- **Models:** HF Hub model repos (public, free) hold weights and model cards, linked from README and UI footer. Siamese ONNX is baked into the image or fetched at container start (spike decides). Model card source in `ml/MODEL_CARD.md`.
+- **Models (ADR-043, no HF Hub):** the Siamese ONNX is baked into the image (Artifact Registry) or fetched at container start from a private Cloud Storage bucket in the same project (spike decides). Model cards stay in the repo (`ml/MODEL_CARD.md`), linked from README and UI footer.
 - **State:** semantic cache and rate limiter in Upstash Redis when deployed (in-memory locally). In-process state resets on scale-to-zero and is per instance.
 - **Secrets:** Secret Manager / Cloud Run env vars, never in repo, image or logs.
 - **CI/CD:** GitHub Actions tests; Vercel auto-deploys web; CI builds and deploys the API image to Cloud Run in P7 (keyless Workload Identity Federation). No HF Space sync, no Vercel API project.
@@ -105,7 +105,7 @@ Decision record: ADR-028 (supersedes ADR-022 / ADR-009).
 ```
  Vercel (web) ──HTTPS, CORS: Vercel origin only──► Cloud Run (API, 0..2 instances) ──► Upstash Redis (cache, limits)
                                                          │                       └──► Groq / OpenRouter (text only)
- HF Hub (models, cards) ── baked into image or fetched at start
+ Model ONNX (Google Cloud, ADR-043) ── baked into image or fetched from a private bucket at start
  Budget ─► Pub/Sub ─► kill-switch function ─► detach billing from the project
 ```
 
@@ -151,9 +151,13 @@ Decision record: ADR-028 (supersedes ADR-022 / ADR-009).
      goal_ratio  ──────────────  delta = goal - current  ── current_ratio
                                         │
    confidence = region reliability (gap_regressor.json: val sigmas; fixed per region and slice)
-   upper_back, lats = geometric analyzer (needs a back view on both, else `measured: false`)
+   upper_back = `measured: false` always (fixed reason, ADR-039)
+   lats = "back width (estimate)": ANSUR II ridge on the chest / shoulders / waist ratios, applied in the
+          route after `compare` (`with_lats`); needs user and goal sex both set and equal, else `measured: false`
+   v_taper = shoulders / waist per person (display-only, ADR-038); its `ceiling` part (three zones, ADR-040..042)
+          is applied in the route and needs the user's sex
                                         ▼
-        GapProfile {analyzer: siamese_subtract, regions, goal_front_only}
+        GapProfile {analyzer: siamese_subtract, regions, v_taper, goal_front_only}
 ```
 
 - **Files:** `app/analyzer/siamese_subtract.py`; `gap_regressor.json` is committed, `gap_regressor.onnx` is gitignored and written by `ml/src/export_onnx.py` (`baked vs fetched` is decided in the P7 spike). With `REQUIRE_MODEL=true` (set in the Dockerfile) the API refuses to start without a loadable ONNX; without it, `/analyze` falls back to the geometric analyzer with a log warning.
