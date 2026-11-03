@@ -135,6 +135,16 @@ def test_every_layout_covers_every_group_and_has_the_right_length():
         assert len(layout) == n and set().union(*layout) == set(GROUPS)
 
 
+@pytest.mark.parametrize("case", CASES, ids=lambda c: c["id"])
+def test_five_picked_regions_never_break_an_invariant(case):
+    """ADR-060: up to 5 user-picked regions boost up to 8 muscle groups. Floors are filled first and every cap holds,
+    so each frozen case keeps its constraints (and, where it expects `met`, every floor)."""
+    profile = profile_of(case)
+    chosen = priorities(gap_of(case["input"]), ["shoulders", "chest", "upper_arm", "forearm", "hips"])
+    plan = build(profile, chosen, CORPUS.chunks, RANKS["hybrid"]["ranks"][rank_key(profile)])
+    assert_constraints(case, plan, profile)
+
+
 def test_priority_groups_get_the_extra_sets():
     case = next(c for c in CASES if c["id"] == "p01")
     _, plan = run(case, "hybrid")

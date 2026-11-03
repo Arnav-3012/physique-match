@@ -41,9 +41,10 @@ export default function Privacy() {
 
       <Section title="The leanness model runs in your browser">
         <p>
-          It is off unless you turn it on. When on, two small models read the front photo of you and of your goal on
-          your device and produce two numbers each, an overall leanness and muscularity estimate and an adiposity
-          estimate. Those numbers stay in your browser and are not sent. It is experimental, not yet validated on real photos, and it never decides whether you cut, recomp or
+          It is off unless you turn it on. When on, small models read the front photo of you and of your goal on your
+          device and produce two numbers each, an overall leanness and muscularity estimate and an adiposity estimate;
+          if you add back photos, a third rough back-development band is read from those. All of these numbers, and a
+          back photo&apos;s outline, stay in your browser and are not sent. It is experimental, not yet validated on real photos, and it never decides whether you cut, recomp or
           bulk.
         </p>
       </Section>

@@ -22,6 +22,7 @@ interface Props {
   focus?: GoalRegion[]; // regions the user asked to prioritise; empty = the server uses the largest gaps
   scores?: Scores | null; // your on-device leanness estimate (opt-in), browser memory only
   goalScores?: Scores | null;
+  goalBack?: number | null; // the goal back photo's experimental class (ADR-061)
   onBack: () => void;
   onRestart: () => void;
 }
@@ -52,7 +53,7 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
-export default function ResultsScreen({ current, goal, profile, goalSex, scope, goalBand, focus = [], scores, goalScores, onBack, onRestart }: Props) {
+export default function ResultsScreen({ current, goal, profile, goalSex, scope, goalBand, focus = [], scores, goalScores, goalBack, onBack, onRestart }: Props) {
   const [state, setState] = useState<State>({ phase: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [waking, setWaking] = useState(false);
@@ -140,7 +141,16 @@ export default function ResultsScreen({ current, goal, profile, goalSex, scope, 
         )}
 
         {state.phase === "ready" && (
-          <Report state={state} profile={profile} goalBand={goalBand} scores={scores} goalScores={goalScores} onBack={onBack} onRestart={onRestart} />
+          <Report
+            state={state}
+            profile={profile}
+            goalBand={goalBand}
+            scores={scores}
+            goalScores={goalScores}
+            goalBack={goalBack}
+            onBack={onBack}
+            onRestart={onRestart}
+          />
         )}
       </Stagger>
 
@@ -157,6 +167,7 @@ function Report({
   goalBand,
   scores,
   goalScores,
+  goalBack,
   onBack,
   onRestart,
 }: {
@@ -165,6 +176,7 @@ function Report({
   goalBand?: Band;
   scores?: Scores | null;
   goalScores?: Scores | null;
+  goalBack?: number | null;
   onBack: () => void;
   onRestart: () => void;
 }) {
@@ -223,7 +235,7 @@ function Report({
         </div>
       </Panel>
 
-      {scores && goalScores && <LeannessPanel you={scores} goal={goalScores} />}
+      <LeannessPanel you={scores} goal={goalScores} goalBack={goalBack} />
 
       {bc && (bf || energy.length > 0 || bc.protein) && (
         <Panel className="mb-5">

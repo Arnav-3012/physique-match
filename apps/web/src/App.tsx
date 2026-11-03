@@ -48,7 +48,8 @@ export default function App() {
   // Everything below lives in memory only and is cleared on restart (privacy-and-safety.md: no storage).
   const [goalViews, setGoalViews] = useState<GoalViews>({});
   const [goalSex, setGoalSex] = useState<Sex>(); // asked, never defaulted (ADR-037 Amendment 3)
-  const [goalScores, setGoalScores] = useState<Scores | null>(null); // front photo only, browser memory only
+  const [goalScores, setGoalScores] = useState<Scores | null>(null); // front photo, browser memory only
+  const [goalBack, setGoalBack] = useState<number | null>(null); // experimental back class from the goal's back photo (ADR-061)
   const [goalChoices, setGoalChoices] = useState<GoalChoices>({ highPriority: [] });
   const [form, setForm] = useState<ProfileForm>(emptyForm());
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -87,6 +88,7 @@ export default function App() {
     setGoalViews({});
     setGoalSex(undefined);
     setGoalScores(null);
+    setGoalBack(null);
     setGoalChoices({ highPriority: [] });
     setForm(emptyForm());
     setProfile(null);
@@ -175,6 +177,7 @@ export default function App() {
               scoreWanted={choice?.scope === "full_body" && !!choice.scoreOnDevice}
               scope={choice?.scope}
               onGoalScores={setGoalScores}
+              onGoalBack={setGoalBack}
             />
           }
           canContinue={!!goalViews.front?.maskPngB64 && goalSex !== undefined}
@@ -207,6 +210,7 @@ export default function App() {
           focus={goalChoices.highPriority}
           scores={torsoLooksCovered(choice?.scope, views.front?.torsoSkinShare, torsoBare) ? null : scores}
           goalScores={goalScores}
+          goalBack={goalBack}
           onBack={() => setStep("profile")}
           onRestart={restart}
         />

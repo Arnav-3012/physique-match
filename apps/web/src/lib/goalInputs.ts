@@ -69,8 +69,8 @@ export const REGION_LABEL: Record<GoalRegion, string> = {
   calf: "Calf",
 };
 
-/** Mirrors services/api/app/planner/priorities.py MAX_PRIORITIES: the server gives extra volume to at most 3 regions. */
-export const MAX_PRIORITY_REGIONS = 3;
+/** Mirrors services/api/app/planner/priorities.py MAX_FOCUS: the server gives extra volume to at most 5 picked regions. */
+export const MAX_PRIORITY_REGIONS = 5;
 
 /**
  * What the user can ask to prioritise (ADR-060). Each option maps to the gap regions the server ranks (`focus` in the plan

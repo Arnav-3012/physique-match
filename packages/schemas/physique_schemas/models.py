@@ -341,7 +341,7 @@ class PlanDay(_Strict):
 
 class Report(_Strict):
     summary: str
-    priorities: list[Region] = Field(max_length=3)
+    priorities: list[Region] = Field(max_length=5)  # 3 by the gap rule, up to 5 when the user picked (ADR-060)
     gap: GapProfile
     body_comp: BodyComp | None = None  # None when no waist was available (/plan says why)
     definition: DefinitionScores | None = None
@@ -426,7 +426,7 @@ class PlanShortfall(_Strict):
 
 
 class PlanResponse(_Strict):
-    priorities: list[Region] = Field(max_length=3)
+    priorities: list[Region] = Field(max_length=5)
     days: list[list[PlanSlot]]
     weekly: dict[str, float]  # recomputed fractional sets per tracked muscle group
     shortfalls: list[PlanShortfall]

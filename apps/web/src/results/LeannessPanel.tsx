@@ -27,23 +27,40 @@ function Track({ band, tone }: { band: string; tone: "you" | "goal" }) {
   );
 }
 
-/** Leanness and adiposity as goal against current, never a stand-alone score (docs/phase-plan.md P7). Computed in the
- * browser; nothing here is sent anywhere. Always carries the experimental label and the limits. */
-export default function LeannessPanel({ you, goal }: { you: Scores; goal: Scores }) {
-  const rows = [
-    { label: BAND_LABELS.definition, you: bandOf(you.definition), goal: bandOf(goal.definition) },
-    { label: BAND_LABELS.adiposity, you: bandOf(you.adiposity), goal: bandOf(goal.adiposity) },
-  ];
+interface Row {
+  label: string;
+  you: string;
+  goal: string;
+}
+
+/** Leanness, adiposity and (experimental) back development as goal against current, never a stand-alone score
+ * (docs/phase-plan.md P7). Computed in the browser; nothing here is sent anywhere. Renders only the rows where both sides
+ * were scored, and always carries the experimental label and the limits. */
+export default function LeannessPanel({ you, goal, goalBack }: { you?: Scores | null; goal?: Scores | null; goalBack?: number | null }) {
+  const front: Row[] =
+    you && goal
+      ? [
+          { label: BAND_LABELS.definition, you: bandOf(you.definition), goal: bandOf(goal.definition) },
+          { label: BAND_LABELS.adiposity, you: bandOf(you.adiposity), goal: bandOf(goal.adiposity) },
+        ]
+      : [];
+  const back: Row[] =
+    you?.back != null && goalBack != null ? [{ label: BAND_LABELS.back, you: bandOf(you.back), goal: bandOf(goalBack) }] : [];
+  const rows = [...front, ...back];
+  if (rows.length === 0) return null;
+
   return (
     <Panel className="mb-5">
       <div className="flex flex-wrap items-center gap-3">
         <h2>Leanness, you and your goal</h2>
         <span className="rounded-full border border-caution/60 px-3 py-1 text-[0.65rem] uppercase tracking-[0.14em] text-caution">{EXPERIMENTAL_BADGE}</span>
       </div>
-      <p className="mt-3 text-ink-2">
-        Compared with your goal photo, your {rows[0].label.toLowerCase()} is <span className="text-ink">{rows[0].you}</span> (goal: {rows[0].goal}) and your{" "}
-        {rows[1].label.toLowerCase()} is <span className="text-ink">{rows[1].you}</span> (goal: {rows[1].goal}).
-      </p>
+      {front.length > 0 && (
+        <p className="mt-3 text-ink-2">
+          Compared with your goal photo, your {front[0].label.toLowerCase()} is <span className="text-ink">{front[0].you}</span> (goal: {front[0].goal}) and
+          your {front[1].label.toLowerCase()} is <span className="text-ink">{front[1].you}</span> (goal: {front[1].goal}).
+        </p>
+      )}
       <div className="mt-6 space-y-6">
         {rows.map((r) => (
           <div key={r.label} className="grid gap-4 sm:grid-cols-[10rem_1fr_1fr] sm:items-end">
@@ -59,10 +76,17 @@ export default function LeannessPanel({ you, goal }: { you: Scores; goal: Scores
           </div>
         ))}
       </div>
-      <p className="mt-6 text-xs leading-relaxed text-ink-3">
-        Adiposity is a waist-girth proxy, not a body-fat percentage, and is least reliable for very muscular bodies. This
-        estimate is experimental and has not been validated on real photos; goal photos are often posed, pumped, lit or
-        edited. It never changes your body-fat range or your plan, and it is read from the front photos only. Not medical advice.
+      {back.length > 0 && (
+        <p className="mt-6 rounded-xl border border-caution/40 bg-caution/5 p-4 text-sm leading-relaxed text-ink-2">
+          The back band is a rough hint. In our own testing this reading did not beat the overall leanness score, it was
+          trained only on synthetic back views, and it needs a bare back in both photos to mean anything.
+        </p>
+      )}
+      <p className="mt-4 text-xs leading-relaxed text-ink-3">
+        Adiposity is a waist-girth proxy, not a body-fat percentage, and is least reliable for very muscular bodies. These
+        estimates are experimental and have not been validated on real photos; goal photos are often posed, pumped, lit or
+        edited. They never change your body-fat range or your plan. Leanness and adiposity are read from the front photos,
+        the back band from the back photos. Not medical advice.
       </p>
     </Panel>
   );

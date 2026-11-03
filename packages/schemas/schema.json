@@ -677,7 +677,7 @@
             ],
             "type": "string"
           },
-          "maxItems": 3,
+          "maxItems": 5,
           "title": "Priorities",
           "type": "array"
         },
@@ -1033,7 +1033,7 @@
             ],
             "type": "string"
           },
-          "maxItems": 3,
+          "maxItems": 5,
           "title": "Priorities",
           "type": "array"
         },

@@ -2,7 +2,7 @@ import { useState } from "react";
 import Choice from "../ui/Choice";
 import { Notice, Panel } from "../ui/Layout";
 import { processUpload } from "./pipeline";
-import { scoreFrontAndClear, type Scores } from "../definition/score";
+import { scoreBackAndClear, scoreFrontAndClear, type Scores } from "../definition/score";
 import { rgbStore } from "./rgbStore";
 import type { Scope, Sex } from "./scope";
 import { torsoLooksCovered } from "./torso";
@@ -12,6 +12,7 @@ import type { ViewCapture } from "./types";
 export interface GoalViews {
   front?: ViewCapture;
   side?: ViewCapture;
+  back?: ViewCapture; // kept for the preview and the on-device back score only; never sent to the server (ADR-061)
 }
 
 const SEXES: { value: Sex; label: string }[] = [
@@ -73,28 +74,41 @@ interface Props {
   scoreWanted?: boolean; // the on-device leanness opt-in (full body only)
   scope?: Scope;
   onGoalScores?: (s: Scores | null) => void;
+  onGoalBack?: (cls: number | null) => void; // the back photo's experimental class, browser memory only
 }
 
 /** The goal photos (Mode 1, ADR-025). Each is read in the browser like the scan; only its outline is kept.
  * Only the FRONT photo can be scored: the definition model was trained on front and back renders and its overall head
  * on front images only (ml/src/definition/views.py), and never saw a side view. */
-export default function GoalPhoto({ views, onViews, goalSex, onGoalSex, scoreWanted, scope, onGoalScores }: Props) {
-  const [busy, setBusy] = useState<"front" | "side" | null>(null);
+export default function GoalPhoto({ views, onViews, goalSex, onGoalSex, scoreWanted, scope, onGoalScores, onGoalBack }: Props) {
+  const [busy, setBusy] = useState<"front" | "side" | "back" | null>(null);
   const [error, setError] = useState("");
   const [side, setSide] = useState<"left" | "right">("left");
   const [scoreNote, setScoreNote] = useState("");
+  const [backNote, setBackNote] = useState("");
+  const load = () => import("../definition/models").then((m) => m.loadRunners());
 
-  async function pick(slot: "front" | "side", file?: File) {
+  async function pick(slot: "front" | "side" | "back", file?: File) {
     if (!file) return;
     setBusy(slot);
     setError("");
     try {
-      const v = await processUpload(file, slot === "front" ? "front" : side);
+      const v = await processUpload(file, slot === "side" ? side : slot);
       let scores: Scores | null = null;
-      if (slot === "front") {
+      if (slot === "back") {
+        let cls: number | null = null;
+        if (scoreWanted && v?.maskPngB64) {
+          cls = await scoreBackAndClear(load); // scores, then clears
+          setBackNote(cls ? "Back development scored on this device. The photo was released." : "The back photo could not be scored.");
+        } else {
+          rgbStore.clear();
+          setBackNote("");
+        }
+        onGoalBack?.(cls);
+      } else if (slot === "front") {
         const covered = !!v && torsoLooksCovered(scope, v.torsoSkinShare);
         if (scoreWanted && v?.maskPngB64 && !covered) {
-          scores = await scoreFrontAndClear(() => import("../definition/models").then((m) => m.loadRunners())); // scores, then clears
+          scores = await scoreFrontAndClear(load); // scores, then clears
           setScoreNote(scores ? "Leanness estimate scored on this device. The photo was released." : "The leanness estimate could not be scored for this photo.");
         } else {
           rgbStore.clear();
@@ -130,15 +144,7 @@ export default function GoalPhoto({ views, onViews, goalSex, onGoalSex, scoreWan
         <div className="mt-5 grid grid-cols-3 gap-3 sm:gap-4">
           <Slot title="Front" badge="Required" hint="Whole body, facing the camera" view={views.front} busy={busy === "front"} onFile={(f) => pick("front", f)} />
           <Slot title="Side" badge="Optional" hint="Sharpens waist, thigh and other girths" view={views.side} busy={busy === "side"} onFile={(f) => pick("side", f)} />
-          <Slot
-            title="Back"
-            badge="Later"
-            hint=""
-            busy={false}
-            disabled
-            disabledNote="A back outline adds no size information, and the leanness model reads only the front photo for now."
-            onFile={() => {}}
-          />
+          <Slot title="Back" badge="Optional" hint="Bare back, for a rough back comparison" view={views.back} busy={busy === "back"} onFile={(f) => pick("back", f)} />
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3" role="radiogroup" aria-label="Which side the side photo shows">
@@ -151,7 +157,12 @@ export default function GoalPhoto({ views, onViews, goalSex, onGoalSex, scoreWan
 
         {scoreWanted && (
           <p className="mt-4 text-sm text-ink-2">
-            {scoreNote || "Leanness is read from the front photo only, because the model was never trained on side or back views."}
+            {scoreNote || "Leanness and adiposity are read from the front photo. The model was never trained on side views."}
+          </p>
+        )}
+        {scoreWanted && (
+          <p className="mt-2 text-sm text-ink-2">
+            {backNote || "A back photo adds an experimental back-development band; it does not change your size gaps. Its outline stays on this device."}
           </p>
         )}
         {error && <p className="mt-4 text-sm text-[#e58b7b]">{error}</p>}

@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.planner.priorities import MAX_PRIORITIES, priorities
+from app.planner.priorities import MAX_FOCUS, MAX_PRIORITIES, priorities
 from physique_schemas.models import REGIONS, GapProfile, PlanRequest, RegionGap, UserProfile
 
 UNMEASURED = {"upper_back", "lats"}
@@ -32,9 +32,11 @@ def test_focus_replaces_the_gap_rule_largest_gap_first():
     assert priorities(GAP, ["forearm"]) == ["forearm"]  # a region below MIN_GAP is still prioritised when asked for
 
 
-def test_focus_is_capped_at_three_regions():
-    out = priorities(GAP, ["shoulders", "chest", "thigh", "calf", "upper_arm"])
-    assert len(out) == MAX_PRIORITIES and out == ["shoulders", "chest", "thigh"]
+def test_focus_is_capped_at_five_regions_and_the_gap_rule_stays_at_three():
+    picks = ["shoulders", "chest", "thigh", "calf", "upper_arm", "forearm", "hips"]
+    out = priorities(GAP, picks)
+    assert len(out) == MAX_FOCUS == 5 and out == ["shoulders", "chest", "thigh", "upper_arm", "forearm"]
+    assert MAX_PRIORITIES == 3 and len(priorities(GAP)) == 3  # the frozen default rule is untouched
 
 
 def test_unrankable_or_unmeasured_picks_are_ignored_and_the_gap_rule_applies():

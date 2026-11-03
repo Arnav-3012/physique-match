@@ -139,7 +139,7 @@ export type Reason3 = string | null;
 export type WaistG = number | null;
 export type Summary = string;
 /**
- * @maxItems 3
+ * @maxItems 5
  */
 export type Priorities =
   | []
@@ -149,6 +149,19 @@ export type Priorities =
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
     ]
   | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
@@ -254,7 +267,7 @@ export type Focus =
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
     ];
 /**
- * @maxItems 3
+ * @maxItems 5
  */
 export type Priorities1 =
   | []
@@ -264,6 +277,19 @@ export type Priorities1 =
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
     ]
   | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
       "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
