@@ -20,9 +20,7 @@ NEEDS_MODEL = "Back width needs the learned model, which is not loaded."
 SET_YOUR_SEX = "Set your sex to estimate back width."
 SET_GOAL_SEX = "Say whether the goal physique is male or female to estimate back width."
 SEX_DIFFERS = "Back width is only compared between people of the same sex."
-DIFFERENT_SEX_WARNING = (
-    "The goal physique is the other sex from yours, so absolute size gaps may not be reachable."
-)
+DIFFERENT_SEX_WARNING = "The goal physique is the other sex from yours, so absolute size gaps may not be reachable."
 
 
 def _not_measured(reason: str) -> RegionGap:

@@ -1,10 +1,16 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
+import { BrowserRouter } from "react-router-dom";
+import ErrorBoundary from "./ErrorBoundary";
+import Root from "./Root";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Root />
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>,
 );

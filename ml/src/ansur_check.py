@@ -18,9 +18,7 @@ def main() -> None:
     ansur["sex"] = ansur.is_male.map({1.0: "male", 0.0: "female"})
     bodym = load_split_table("train").drop_duplicates("subject_id")
     closer_to_bideltoid = []
-    print(
-        f"{'sex':7}{'BodyM column':18}{'BodyM mean':>11}  ANSUR candidates (mean of col / stature)"
-    )
+    print(f"{'sex':7}{'BodyM column':18}{'BodyM mean':>11}  ANSUR candidates (mean of col / stature)")
     for sex in ("male", "female"):
         a, b = ansur[ansur.sex == sex], bodym[bodym.sex == sex]
         print(f"{sex}: ANSUR n={len(a)}, BodyM n={len(b)}")

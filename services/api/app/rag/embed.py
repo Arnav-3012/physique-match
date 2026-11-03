@@ -23,9 +23,7 @@ class Embedder:
         self.tokenizer = Tokenizer.from_file(str(model_dir / TOKENIZER_FILE))
         self.tokenizer.enable_truncation(MAX_LEN)
         self.tokenizer.enable_padding()
-        self.session = ort.InferenceSession(
-            str(model_dir / MODEL_FILE), providers=["CPUExecutionProvider"]
-        )
+        self.session = ort.InferenceSession(str(model_dir / MODEL_FILE), providers=["CPUExecutionProvider"])
         self.input_names = {i.name for i in self.session.get_inputs()}
 
     # batch_size 1 on purpose: the int8 model's vectors shift by about 1e-3 per element with the
@@ -39,9 +37,7 @@ class Embedder:
                 "attention_mask": np.array([e.attention_mask for e in enc], dtype=np.int64),
                 "token_type_ids": np.array([e.type_ids for e in enc], dtype=np.int64),
             }
-            hidden = self.session.run(
-                None, {k: v for k, v in feeds.items() if k in self.input_names}
-            )[0]
+            hidden = self.session.run(None, {k: v for k, v in feeds.items() if k in self.input_names})[0]
             out.append(hidden[:, 0])  # CLS token
         vectors = np.concatenate(out).astype(np.float32)
         return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)

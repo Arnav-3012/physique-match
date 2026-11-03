@@ -71,9 +71,7 @@ def main() -> None:
                 "subjects_in_split": in_split,
                 "subjects": n,
                 "ordered_pairs": n * (n - 1),
-                "photos": dict(
-                    zip(df.subject_id.astype(str), df.photo_id.astype(str), strict=True)
-                ),
+                "photos": dict(zip(df.subject_id.astype(str), df.photo_id.astype(str), strict=True)),
             },
             indent=1,
         )  # fmt: skip

@@ -6,5 +6,10 @@
 !ml/src/preprocess.py
 !ml/src/calibrate.py
 !ml/src/data/regions.py
-!kb/nutrition.json
+!kb/*.py
+!kb/*.json
+!kb/chunks.jsonl
+!kb/embeddings.npy
+!ml/data/models/bge-small/model_quantized.onnx
+!ml/data/models/bge-small/tokenizer.json
 **/__pycache__

@@ -21,14 +21,9 @@ class Corpus:
 def load(kb_dir: Path = KB_DIR) -> Corpus:
     text = (kb_dir / "chunks.jsonl").read_text()
     manifest = json.loads((kb_dir / "manifest.json").read_text())
-    expected = hashlib.sha256(
-        (text + manifest["model_sha256"] + manifest["tokenizer_sha256"]).encode()
-    ).hexdigest()
+    expected = hashlib.sha256((text + manifest["model_sha256"] + manifest["tokenizer_sha256"]).encode()).hexdigest()
     if expected != manifest["corpus_hash"]:
-        raise ValueError(
-            "kb/chunks.jsonl does not match manifest.corpus_hash; "
-            "rebuild with `python -m kb.build_index`"
-        )
+        raise ValueError("kb/chunks.jsonl does not match manifest.corpus_hash; rebuild with `python -m kb.build_index`")
     chunks = [json.loads(line) for line in text.splitlines()]
     embeddings = np.load(kb_dir / "embeddings.npy")
     if embeddings.shape != (len(chunks), manifest["dim"]) or len(chunks) != manifest["chunks"]:

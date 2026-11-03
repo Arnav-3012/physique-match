@@ -1,0 +1,7 @@
+# Replaces .gitignore for `gcloud builds submit`: the gitignored dummy.onnx must be uploaded.
+__pycache__/
+*.pyc
+test.png
+bench.py
+make_assets.py
+README.md

@@ -43,9 +43,7 @@ def test_reliability_is_the_stored_one_and_lower_for_a_front_only_goal():
     r = FIT["reliability"]
     full = with_lats(profile(), "male", "male")[0].regions["lats"].confidence
     front = with_lats(profile(front_only=True), "male", "male")[0].regions["lats"].confidence
-    assert full == pytest.approx(
-        reliability(r["resid_std_full"], r["resid_std_full"], r["sigma_prior"])
-    )
+    assert full == pytest.approx(reliability(r["resid_std_full"], r["resid_std_full"], r["sigma_prior"]))
     assert 0 < front < full
 
 
@@ -59,9 +57,7 @@ def test_reliability_is_the_stored_one_and_lower_for_a_front_only_goal():
         ("female", "male", SEX_DIFFERS, 1),
     ],
 )
-def test_lats_is_blocked_with_a_reason_and_other_regions_are_untouched(
-    user, goal, reason, n_warnings
-):
+def test_lats_is_blocked_with_a_reason_and_other_regions_are_untouched(user, goal, reason, n_warnings):
     gap = profile()
     out, warnings = with_lats(gap, user, goal)
     lats = out.regions["lats"]

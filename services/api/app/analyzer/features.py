@@ -130,9 +130,7 @@ def side_row(front_row: int, crown_f: int, bpx_f: float, side: np.ndarray) -> in
     return round((H - body_px(side)) / 2 + (front_row - crown_f) / bpx_f * body_px(side))
 
 
-def side_depths(
-    mask: np.ndarray, front_rows: dict[str, int], crown_f: int, bpx_f: float
-) -> dict[str, float]:
+def side_depths(mask: np.ndarray, front_rows: dict[str, int], crown_f: int, bpx_f: float) -> dict[str, float]:
     """Depth / body height at the body fractions of the front rows; NaN where it spikes."""
     bpx = body_px(mask)
     depth = np.array([_widest(row_runs(r)) for r in mask], float)
@@ -147,9 +145,7 @@ def side_depths(
     return out
 
 
-def extract(
-    front: np.ndarray, side: np.ndarray | None = None, back: np.ndarray | None = None
-) -> dict[str, float]:
+def extract(front: np.ndarray, side: np.ndarray | None = None, back: np.ndarray | None = None) -> dict[str, float]:
     """All features for one person. Missing views give NaN (never a guess).
 
     `side` must not be a clipped BodyM mask (ml.src.data.bodym.clipped); the caller drops those.
@@ -158,9 +154,7 @@ def extract(
     out = dict(widths)
     bpx = body_px(front)
     depths = (
-        side_depths(side, where, rows.crown, bpx)
-        if side is not None
-        else {f"{n}_d": np.nan for n in GIRTH_REGIONS}
+        side_depths(side, where, rows.crown, bpx) if side is not None else {f"{n}_d": np.nan for n in GIRTH_REGIONS}
     )
     out |= depths
     for n in GIRTH_REGIONS:

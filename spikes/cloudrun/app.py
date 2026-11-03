@@ -50,8 +50,8 @@ app.add_middleware(
 )
 
 
-@app.get("/healthz")
-def healthz():
+@app.get("/health")  # not /healthz: Cloud Run's front end reserves paths ending in "z" and 404s them
+def health():
     return {
         "ok": True,
         "model_source": MODEL_SOURCE,

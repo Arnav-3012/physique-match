@@ -1,0 +1,31 @@
+# Replaces .gitignore for `gcloud builds submit` from the repo root: the gitignored ONNX files
+# must be uploaded, everything else (ml/data, .env, apps, docs) must not. Same allow-list as .dockerignore.
+**
+!services/
+!services/api/
+!services/api/Dockerfile
+!services/api/requirements.txt
+!services/api/app/
+!services/api/app/**
+!packages/
+!packages/schemas/
+!packages/schemas/**
+!ml/
+!ml/src/
+!ml/src/preprocess.py
+!ml/src/calibrate.py
+!ml/src/data/
+!ml/src/data/regions.py
+!kb/
+!kb/*.py
+!kb/*.json
+!kb/chunks.jsonl
+!kb/embeddings.npy
+!ml/data/
+!ml/data/models/
+!ml/data/models/bge-small/
+!ml/data/models/bge-small/model_quantized.onnx
+!ml/data/models/bge-small/tokenizer.json
+!.dockerignore
+__pycache__/
+*.pyc

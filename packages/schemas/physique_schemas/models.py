@@ -407,6 +407,8 @@ class PlanRequest(_Strict):
     gap: GapProfile
     waist_g: WaistG | None = None
     goal_sex: Sex = "not_specified"  # typed by the user, never defaulted to the profile's sex
+    # Regions the user asked to prioritise (ADR-060). Empty = the gap rule of ADR-054, unchanged.
+    focus: list[Region] = Field(default_factory=list, max_length=10)
 
 
 class PlanSlot(_Strict):

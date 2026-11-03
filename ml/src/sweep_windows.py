@@ -46,10 +46,7 @@ def main() -> None:
         arms.append({"lo": round(lo, 2), "rho_bicep": rb, "rho_forearm": rf, "nan": nan})
     shoulders = []
     for k in KS:
-        s = [
-            _at(m, r.armpit - round(k * b), _span) / b
-            for m, r, b in zip(masks, rows, bpx, strict=True)
-        ]
+        s = [_at(m, r.armpit - round(k * b), _span) / b for m, r, b in zip(masks, rows, bpx, strict=True)]
         rho_s = score(s, targets["shoulder_breadth"])[0]
         shoulders.append({"k": round(k, 2), "rho_shoulder": rho_s})
     pd.set_option("display.precision", 3)

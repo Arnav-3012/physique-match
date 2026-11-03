@@ -1,11 +1,13 @@
 """Request guards for /analyze: size cap before parsing, per-client rate limit (docs/architecture.md
 section 5). Mask-level validation lives in analyzer/masks.py."""
 
+import hashlib
 import os
 import time
 from collections import deque
 from typing import Protocol
 
+import httpx
 from fastapi import HTTPException, Request
 
 from physique_schemas.models import MAX_PAYLOAD_B64
@@ -40,10 +42,54 @@ class SlidingWindowLimiter:
         hits.append(now)
 
 
-limiter: RateLimiter = SlidingWindowLimiter(int(os.environ.get("RATE_LIMIT_PER_MIN", "30")))
+class UpstashLimiter:
+    """Fixed-window counter in Upstash Redis over its REST API, shared by every instance and surviving scale-to-zero
+    (ADR-028). The key is a hash of the client address, never the address itself, and expires with its window.
+    If Upstash is unreachable it falls back to the in-memory limiter instead of failing open."""
+
+    def __init__(self, url: str, token: str, limit: int, fallback: RateLimiter, window_s: int = 60,
+                 transport: httpx.BaseTransport | None = None):  # fmt: skip
+        self.limit, self.window_s, self.fallback = limit, window_s, fallback
+        self._http = httpx.Client(
+            base_url=url.rstrip("/"),
+            headers={"Authorization": f"Bearer {token.strip()}"},
+            timeout=1.5,
+            transport=transport,
+        )
+
+    def check(self, key: str) -> None:
+        now = time.time()
+        slot = int(now // self.window_s)
+        name = f"rl:{hashlib.sha256(key.encode()).hexdigest()[:16]}:{slot}"
+        try:
+            r = self._http.post("/pipeline", json=[["INCR", name], ["EXPIRE", name, self.window_s * 2]])
+            r.raise_for_status()
+            count = int(r.json()[0]["result"])
+        except Exception:  # network, auth, or a malformed answer
+            self.fallback.check(key)
+            return
+        if count > self.limit:
+            retry = self.window_s - int(now) % self.window_s
+            raise HTTPException(429, "rate limit exceeded", headers={"Retry-After": str(retry)})
+
+
+def make_limiter() -> RateLimiter:
+    local = SlidingWindowLimiter(int(os.environ.get("RATE_LIMIT_PER_MIN", "30")))
+    url, token = os.environ.get("UPSTASH_REDIS_REST_URL", ""), os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
+    return UpstashLimiter(url, token, local.limit, local) if url.strip() and token.strip() else local
+
+
+limiter: RateLimiter = make_limiter()
 
 
 def client_key(request: Request) -> str:
+    """Behind Cloud Run every request comes from an internal address, so the client is read from X-Forwarded-For
+    (the spike measured one client address in it). The LAST entry is the one Google's front end added; earlier
+    entries are client-supplied and spoofable. Only trusted when TRUST_FORWARDED_FOR is set (the deployed service)."""
+    if os.environ.get("TRUST_FORWARDED_FOR", "").strip().lower() in {"1", "true", "yes"}:
+        forwarded = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
+        if forwarded:
+            return forwarded
     return request.client.host if request.client else "unknown"
 
 

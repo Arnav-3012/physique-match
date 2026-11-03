@@ -8,6 +8,9 @@ ml/data/
 synth/out/
 validation-set/
 *.onnx
+# the two on-device definition graphs (7.46 MB) are served by Vercel as static assets (ADR-043, ADR-059 Amendment 2)
+!apps/web/public/models/definition.fp32.onnx
+!apps/web/public/models/adiposity.fp32.onnx
 *.pt
 *.pth
 

@@ -156,9 +156,7 @@ def tier(gate_passed: bool, r2_min: float) -> str:
 def sigma_prior(y, male) -> float:
     """Std of the true gap over ordered same-sex pairs (the only pairs this route serves)."""
     groups = [y[male == s] for s in (0, 1)]
-    sum_sq = sum(
-        2 * len(g) * ((g - g.mean()) ** 2).sum() for g in groups
-    )  # sum (yi - yj)^2, i != j
+    sum_sq = sum(2 * len(g) * ((g - g.mean()) ** 2).sum() for g in groups)  # sum (yi - yj)^2, i != j
     return float(np.sqrt(sum_sq / sum(len(g) * (len(g) - 1) for g in groups)))
 
 

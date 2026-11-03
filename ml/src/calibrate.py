@@ -31,10 +31,7 @@ def _sigmas(full: np.ndarray, front: np.ndarray, y: np.ndarray) -> dict[str, np.
 def calibrate(full: np.ndarray, front: np.ndarray, y: np.ndarray) -> dict[str, dict[str, float]]:
     """full, front, y: (subjects, regions) predictions and truth, measurement / height."""
     s = _sigmas(full, front, y)
-    return {
-        region: {name: float(v[k]) for name, v in s.items()}
-        for k, region in enumerate(LABELLED_REGIONS)
-    }
+    return {region: {name: float(v[k]) for name, v in s.items()} for k, region in enumerate(LABELLED_REGIONS)}
 
 
 def index_sigmas(full: np.ndarray, front: np.ndarray, y: np.ndarray) -> dict[str, float]:

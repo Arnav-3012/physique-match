@@ -16,7 +16,7 @@ MAX_SETS_PER_GROUP_PER_SESSION = 8.0  # applied as the lower of this and the cit
 MAX_SESSIONS_PER_GROUP_PER_WEEK = 4
 TOP_K = 10
 SHORT_DAYS_NOTE = (  # code-generated, shown when days <= 2 and a shortfall exists (ADR-056)
-    "With 2 or fewer days not every region can be covered; " "the regions below are short of their weekly minimum."
+    "With 2 or fewer days not every region can be covered; the regions below are short of their weekly minimum."
 )
 
 PUSH = frozenset({"chest", "shoulders", "triceps"})

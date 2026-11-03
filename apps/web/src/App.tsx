@@ -3,19 +3,35 @@ import CaptureScreen from "./capture/CaptureScreen";
 import Consent from "./capture/Consent";
 import ReviewScreen from "./capture/ReviewScreen";
 import { rgbStore } from "./capture/rgbStore";
-import { chestApproximate, SCOPE_TEXT, type ScopeChoice } from "./capture/scope";
+import Stepper from "./Stepper";
+import { chestApproximate, SCOPE_TEXT, type ScopeChoice, type Sex } from "./capture/scope";
 import ScopeStep from "./capture/ScopeStep";
 import UploadCapture from "./capture/UploadCapture";
-import type { ViewName } from "./capture/types";
+import GoalPhoto, { type GoalViews } from "./capture/GoalPhoto";
+import { torsoLooksCovered } from "./capture/torso";
+import { VIEWS, type ViewName } from "./capture/types";
 import type { Views } from "./capture/useTurnCapture";
 import { getHealth, type Health } from "./lib/api";
-import GoalInputs from "./lib/GoalInputsPanel";
+import GoalInputs, { type GoalChoices } from "./lib/GoalInputsPanel";
+import { emptyForm, type ProfileForm } from "./lib/profile";
+import { buildScan } from "./lib/scan";
+import type { Scan, UserProfile, ViewData } from "./lib/types.gen";
+import ProfileScreen from "./profile/ProfileScreen";
+import ResultsScreen from "./results/ResultsScreen";
 import DevPreview, { withDiag, type Diag } from "./definition/DevPreview";
 import { scoreFrontAndClear, type Scores } from "./definition/score";
 
 const WAKING_AFTER_MS = 3000; // free HF Spaces sleep; first request can take 30-60 s
 
-type Step = "consent" | "scope" | "capture" | "upload" | "review" | "goal";
+type Step = "consent" | "scope" | "capture" | "upload" | "review" | "goal" | "profile" | "results";
+const STEP_INDEX: Record<Step, number> = { consent: 0, scope: 1, capture: 2, upload: 2, review: 3, goal: 4, profile: 5, results: 6 };
+
+/** The goal scan: a front (required) and optionally one side; a front-only goal is valid (ADR-025). */
+const goalScan = (g: GoalViews): Scan => ({
+  views: Object.fromEntries(
+    [g.front, g.side].flatMap((v) => (v ? [[v.name, { mask_png_b64: v.maskPngB64, keypoints: v.keypoints as ViewData["keypoints"] }]] : [])),
+  ),
+});
 
 export default function App() {
   const [step, setStep] = useState<Step>("consent");
@@ -29,6 +45,13 @@ export default function App() {
   const [health, setHealth] = useState<Health>();
   const [error, setError] = useState(false);
   const [waking, setWaking] = useState(false);
+  // Everything below lives in memory only and is cleared on restart (privacy-and-safety.md: no storage).
+  const [goalViews, setGoalViews] = useState<GoalViews>({});
+  const [goalSex, setGoalSex] = useState<Sex>(); // asked, never defaulted (ADR-037 Amendment 3)
+  const [goalScores, setGoalScores] = useState<Scores | null>(null); // front photo only, browser memory only
+  const [goalChoices, setGoalChoices] = useState<GoalChoices>({ highPriority: [] });
+  const [form, setForm] = useState<ProfileForm>(emptyForm());
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -61,6 +84,12 @@ export default function App() {
     setTurnMs(0);
     setRetake(undefined);
     setTorsoBare(false);
+    setGoalViews({});
+    setGoalSex(undefined);
+    setGoalScores(null);
+    setGoalChoices({ highPriority: [] });
+    setForm(emptyForm());
+    setProfile(null);
     setStep("capture");
   };
 
@@ -69,8 +98,9 @@ export default function App() {
     : undefined;
 
   return (
-    <main className="font-sans">
-      {step === "consent" && <Consent onAccept={() => setStep("scope")} />}
+    <main className="font-sans pb-16">
+      <Stepper current={STEP_INDEX[step]} />
+      {step === "consent" &&<Consent onAccept={() => setStep("scope")} />}
       {step === "scope" && (
         <ScopeStep
           onStart={(c) => {
@@ -131,19 +161,67 @@ export default function App() {
         />
       )}
       {import.meta.env.DEV && step === "review" && diag && <DevPreview diag={diag} />}
-      {step === "goal" && <GoalInputs sex={choice?.sex ?? "not_specified"} onBack={() => setStep("review")} />}
+      {step === "goal" && (
+        <GoalInputs
+          sex={choice?.sex ?? "not_specified"}
+          onChange={setGoalChoices}
+          onBack={() => setStep("review")}
+          top={
+            <GoalPhoto
+              views={goalViews}
+              onViews={setGoalViews}
+              goalSex={goalSex}
+              onGoalSex={setGoalSex}
+              scoreWanted={choice?.scope === "full_body" && !!choice.scoreOnDevice}
+              scope={choice?.scope}
+              onGoalScores={setGoalScores}
+            />
+          }
+          canContinue={!!goalViews.front?.maskPngB64 && goalSex !== undefined}
+          onContinue={() => {
+            setForm((f) => (f.age ? f : { ...f, age: choice?.age === undefined ? "" : String(choice.age) }));
+            setStep("profile");
+          }}
+        />
+      )}
+      {step === "profile" && (
+        <ProfileScreen
+          form={form}
+          onForm={setForm}
+          sex={choice?.sex ?? "not_specified"}
+          onBack={() => setStep("goal")}
+          onSubmit={(p) => {
+            setProfile(p);
+            setStep("results");
+          }}
+        />
+      )}
+      {step === "results" && profile && goalViews.front && goalSex && (
+        <ResultsScreen
+          current={buildScan(VIEWS.flatMap((v) => (views[v] && !views[v].issues.length ? [views[v]] : [])))}
+          goal={goalScan(goalViews)}
+          profile={profile}
+          goalSex={goalSex}
+          scope={choice?.scope ?? "none"}
+          goalBand={goalChoices.band}
+          focus={goalChoices.highPriority}
+          scores={torsoLooksCovered(choice?.scope, views.front?.torsoSkinShare, torsoBare) ? null : scores}
+          goalScores={goalScores}
+          onBack={() => setStep("profile")}
+          onRestart={restart}
+        />
+      )}
 
-      <footer className="mx-auto max-w-xl p-4 text-sm text-gray-500">
-        API:{" "}
-        {error
-          ? "unreachable"
-          : health
-            ? `${health.status} · ${Object.entries(health.providers)
-                .map(([name, p]) => `${name}: ${p.status}`)
-                .join(", ")}`
-            : waking
-              ? "waking server… this can take up to a minute"
-              : "checking…"}
+      <footer className="relative z-10 mx-auto max-w-xl p-4 text-sm text-ink-3">
+        {import.meta.env.DEV && health ? ( // provider status is a developer detail
+          `API: ${health.status} · ${Object.entries(health.providers)
+            .map(([name, p]) => `${name}: ${p.status}`)
+            .join(", ")}`
+        ) : error ? (
+          "The server is unreachable right now."
+        ) : !health && waking ? (
+          "Waking the server… this can take up to a minute."
+        ) : null}
       </footer>
     </main>
   );

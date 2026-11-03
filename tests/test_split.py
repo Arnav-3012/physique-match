@@ -12,9 +12,7 @@ from physique_schemas.models import REGIONS
 def _table(prefix: str, n: int, shared: tuple[str, ...] = ()) -> pd.DataFrame:
     """n subjects with 3 photos each, alternating sex."""
     ids = [f"{prefix}{i}" for i in range(n)] + list(shared)
-    rows = [
-        (s, f"{s}-p{k}", "male" if i % 2 else "female") for i, s in enumerate(ids) for k in range(3)
-    ]
+    rows = [(s, f"{s}-p{k}", "male" if i % 2 else "female") for i, s in enumerate(ids) for k in range(3)]
     return pd.DataFrame(rows, columns=["subject_id", "photo_id", "sex"])
 
 

@@ -55,9 +55,7 @@ class Views:
         self.y = torch.from_numpy(labels(canon)).float()
         self.subjects = canon.subject_id.astype(str).tolist()
         self.canonical = np.array([row_of[str(p)] for p in canon.photo_id])
-        self.photos = [
-            np.array([row_of[str(p)] for p in by_subject.get_group(s)]) for s in canon.subject_id
-        ]
+        self.photos = [np.array([row_of[str(p)] for p in by_subject.get_group(s)]) for s in canon.subject_id]
 
     def __len__(self) -> int:
         return len(self.subjects)

@@ -72,7 +72,7 @@ def _body_comp(profile: UserProfile, waist_g: float | None) -> tuple[BodyComp | 
 
 def _plan(req: PlanRequest) -> PlanResponse:
     profile = req.profile
-    chosen = priorities(req.gap)
+    chosen = priorities(req.gap, req.focus)
     candidates = ranked_candidates(profile, RETRIEVAL.search)
     by_id = {c["id"]: c for c in RETRIEVAL.corpus.chunks}
     det = build(profile, chosen, RETRIEVAL.corpus.chunks, candidates)

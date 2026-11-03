@@ -16,8 +16,14 @@ RUN pip install --no-cache-dir ./packages/schemas
 COPY --chown=user services/api/app ./app
 COPY --chown=user ml/src/preprocess.py ml/src/calibrate.py ./ml/src/
 COPY --chown=user ml/src/data/regions.py ./ml/src/data/
-# Cited protein/energy ranges; app/nutrition.py finds kb/nutrition.json above itself
-COPY --chown=user kb/nutrition.json ./kb/nutrition.json
+# Knowledge base for /plan (ADR-057): index, manifest, baselines, templates, region map, nutrition.
+# The default KB_DIR is computed from the repo layout and is wrong in the image, so set both paths.
+ENV KB_DIR=/home/user/app/kb EMBEDDER_DIR=/home/user/app/ml/data/models/bge-small
+COPY --chown=user kb/*.py kb/*.json kb/chunks.jsonl kb/embeddings.npy ./kb/
+# bge-small int8 embedder, baked in (sha256 pinned in kb/manifest.json, checked by tests, ADR-043)
+COPY --chown=user ml/data/models/bge-small/model_quantized.onnx ml/data/models/bge-small/tokenizer.json \
+     ./ml/data/models/bge-small/
+ENV REQUIRE_EMBEDDER=true
 
 # The deployed API must never serve baseline A by accident: refuse to start without the model
 # (ADR-035). Local runs do not set this and fall back to A with a warning.

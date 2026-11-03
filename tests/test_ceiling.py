@@ -7,9 +7,7 @@ from physique_schemas.models import REGIONS, Ceiling, GapProfile, RegionGap, VTa
 
 def gap(v_taper, shoulders=0.2131):
     regions = {r: RegionGap(delta=0.0, confidence=0.5) for r in REGIONS}
-    regions["shoulders"] = RegionGap(
-        delta=0.0, confidence=0.5, goal_ratio=shoulders, current_ratio=shoulders
-    )
+    regions["shoulders"] = RegionGap(delta=0.0, confidence=0.5, goal_ratio=shoulders, current_ratio=shoulders)
     return GapProfile(analyzer="siamese_subtract", regions=regions, v_taper=v_taper)
 
 

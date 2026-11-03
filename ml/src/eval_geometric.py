@@ -79,9 +79,7 @@ def components(subj: pd.DataFrame) -> pd.DataFrame:
     for region, p in GIRTH_PREFIX.items():
         d = val.dropna(subset=[f"{p}_d"])
         y = d[REGION_COLUMN[region]] / d.height_cm
-        rows.append(
-            {"region": region, "n": len(d)} | {k: rho(d[f"{p}_{k}"], y) for k in ("w", "d", "g")}
-        )
+        rows.append({"region": region, "n": len(d)} | {k: rho(d[f"{p}_{k}"], y) for k in ("w", "d", "g")})
     return pd.DataFrame(rows)
 
 

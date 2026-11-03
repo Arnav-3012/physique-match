@@ -1,4 +1,8 @@
 import { useState } from "react";
+import Choice from "../ui/Choice";
+import { Heading, Item, Notice, Panel, Screen } from "../ui/Layout";
+import SideFigure from "../ui/SideFigure";
+import TextField from "../ui/TextField";
 import { PRIVACY_COPY } from "./privacyCopy";
 import {
   ADULT_ONLY_LINE,
@@ -55,107 +59,109 @@ export default function ScopeStep({ onStart, onBack }: Props) {
     });
 
   return (
-    <section className="mx-auto max-w-xl p-4" aria-labelledby="scope-h">
-      <h1 id="scope-h" className="text-xl font-bold">What do you want to compare?</h1>
-      <p className="mt-1 text-gray-600">
+    <Screen labelledBy="scope-h" aside={<SideFigure />}>
+      <Heading eyebrow="Step 2 · Your scan" title="What do you want to compare?" id="scope-h">
         Muscle definition can only be scored where the scan shows your body, so this decides what to wear. Size gaps
         work in any fitted clothing.
-      </p>
+      </Heading>
 
-      <fieldset className="mt-4">
-        <legend className="font-semibold">About you</legend>
-        <label className="mt-1 flex items-center gap-2">
-          Age
-          <input
-            className="w-20 rounded border px-2 py-1"
-            inputMode="numeric"
-            value={ageText}
-            onChange={(e) => setAgeText(e.target.value)}
-            aria-describedby="age-note"
-          />
-        </label>
-        <p id="age-note" className="text-sm text-gray-500">Used only to decide which options are offered.</p>
-        <div className="mt-2 flex flex-wrap gap-4" role="radiogroup" aria-label="Sex">
-          {SEXES.map((s) => (
-            <label key={s.value} className="flex items-center gap-1">
-              <input type="radio" name="sex" checked={sex === s.value} onChange={() => setSex(s.value)} />
-              {s.label}
-            </label>
-          ))}
-        </div>
-        <p className="text-sm text-gray-500">
-          Needed for body-fat %, calories, back width and the V-taper ceiling. Never guessed or filled in for you.
-        </p>
-        {sexUnsetNote(sex) && <p className="text-sm text-amber-700">{sexUnsetNote(sex)}</p>}
-      </fieldset>
-
-      <fieldset className="mt-4">
-        <legend className="font-semibold">Scan option</legend>
-        {offered.map((s) => (
-          <label key={s} className="mt-2 flex items-start gap-2">
-            <input type="radio" name="scope" className="mt-1" checked={scope === s} onChange={() => setPicked(s)} />
-            <span>
-              <span className="font-semibold">{SCOPE_TEXT[s].title}</span>
-              <span className="block text-gray-600">{SCOPE_TEXT[s].blurb}</span>
-            </span>
-          </label>
-        ))}
-        {!offered.includes("full_body") && <p className="mt-2 text-sm text-gray-500">{ADULT_ONLY_LINE}</p>}
-      </fieldset>
-
-      {scope && (
-        <div className="mt-4 rounded border p-3" aria-live="polite">
-          <h2 className="font-semibold">Before the camera starts</h2>
-          <p className="mt-1">{clothingGuidance(scope, torso)}</p>
-          {scope === "full_body" && (
-            <div className="mt-2 flex flex-wrap gap-4" role="radiogroup" aria-label="Torso clothing">
-              {TORSOS.map((t) => (
-                <label key={t.value} className="flex items-center gap-1">
-                  <input type="radio" name="torso" checked={torso === t.value} onChange={() => setTorsoPick(t.value)} />
-                  {t.label}
-                </label>
+      <div className="space-y-5">
+        <Panel>
+          <fieldset>
+            <legend>About you</legend>
+            <TextField
+              className="mt-5"
+              fieldClassName="max-w-[11rem]"
+              label="Age"
+              inputMode="numeric"
+              placeholder="e.g. 29"
+              value={ageText}
+              onChange={(e) => setAgeText(e.target.value)}
+              hint="Used only to decide which options are offered."
+            />
+            <p className="mt-7 text-[0.7rem] font-medium uppercase tracking-[0.18em] text-ink-3" id="sex-label">
+              Sex
+            </p>
+            <div className="mt-2 grid gap-3 sm:grid-cols-3" role="radiogroup" aria-labelledby="sex-label">
+              {SEXES.map((s) => (
+                <Choice key={s.value} compact type="radio" name="sex" checked={sex === s.value} onChange={() => setSex(s.value)} title={s.label} />
               ))}
             </div>
-          )}
-          {/* Dev only until the scores are shown to work on real photos (dev-log, first real-photo result). */}
-          {import.meta.env.DEV && scope === "full_body" && (
-            <label className="mt-3 flex items-start gap-2">
-              <input type="checkbox" className="mt-1" checked={onDevice} onChange={(e) => setOnDevice(e.target.checked)} />
-              <span>
-                Score my leanness &amp; muscularity on this device (experimental, off by default)
-                <span className="block text-sm text-gray-600">
-                  A small model runs in this browser on your front photo, then the photo is released. Only two bands
-                  can leave the device. Without this, size gaps still work and nothing is scored.
-                </span>
-              </span>
-            </label>
-          )}
-          {chestApproximate(scope, torso) && (
-            <p className="mt-1 text-sm text-amber-700">With a sports bra the chest estimate is labelled approximate.</p>
-          )}
-          <p className="mt-2 text-sm text-gray-600">
-            {SCOPE_REGIONS[scope].length
-              ? "One 4-view turn scan in this clothing feeds the size gaps. A leanness & muscularity comparison with your goal (experimental) is planned for a later step."
-              : scope === "none"
-                ? "Definition will be marked not scored, with the reason: clothed scan."
-                : "Definition will be marked not scored, with the reason: this scan does not show the abdomen."}
-          </p>
-          <p className="mt-2 text-sm text-gray-600">{PRIVACY_COPY}</p>
-          {sex === undefined && <p className="mt-1 text-sm text-amber-700">Choose an option under Sex to continue.</p>}
-        </div>
-      )}
+            <p className="mt-3 text-sm text-ink-3">
+              Needed for body-fat %, calories, back width and the V-taper ceiling. Never guessed or filled in for you.
+            </p>
+            {sexUnsetNote(sex) && <p className="mt-2 text-sm text-caution">{sexUnsetNote(sex)}</p>}
+          </fieldset>
+        </Panel>
 
-      <div className="mt-4 flex flex-wrap gap-3">
-        <button className="rounded bg-black px-4 py-2 text-white disabled:opacity-40" disabled={!ready} onClick={() => scope && start(scope)}>
+        <Panel>
+          <fieldset>
+            <legend>Scan option</legend>
+            <div className="mt-5 space-y-3">
+              {offered.map((s) => (
+                <Choice key={s} type="radio" name="scope" checked={scope === s} onChange={() => setPicked(s)} title={SCOPE_TEXT[s].title} description={SCOPE_TEXT[s].blurb} />
+              ))}
+            </div>
+            {!offered.includes("full_body") && <p className="mt-4 text-sm text-ink-3">{ADULT_ONLY_LINE}</p>}
+          </fieldset>
+        </Panel>
+
+        {scope && (
+          <Panel className="border-accent/40" >
+            <div aria-live="polite">
+              <h2>Before the camera starts</h2>
+              <p className="mt-3 leading-relaxed text-ink-2">{clothingGuidance(scope, torso)}</p>
+              {scope === "full_body" && (
+                <div className="mt-5 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Torso clothing">
+                  {TORSOS.map((t) => (
+                    <Choice key={t.value} compact type="radio" name="torso" checked={torso === t.value} onChange={() => setTorsoPick(t.value)} title={t.label} />
+                  ))}
+                </div>
+              )}
+              {/* Opt-in, off by default. Shown to everyone since the owner's 2026-11-03 decision; still experimental (ADR-059). */}
+              {scope === "full_body" && (
+                <div className="mt-5">
+                  <Choice
+                    type="checkbox"
+                    checked={onDevice}
+                    onChange={() => setOnDevice(!onDevice)}
+                    title={<>Score my leanness &amp; muscularity on this device (experimental, off by default)</>}
+                    description="A small model runs in this browser on the front photo of you and of your goal, then the photos are released. The two bands stay on this device. Experimental: not yet validated on real photos. Without this, size gaps still work and nothing is scored."
+                  />
+                </div>
+              )}
+              {chestApproximate(scope, torso) && (
+                <p className="mt-4 text-sm text-caution">With a sports bra the chest estimate is labelled approximate.</p>
+              )}
+              <p className="mt-5 text-sm leading-relaxed text-ink-2">
+                {SCOPE_REGIONS[scope].length
+                  ? "One 4-view turn scan in this clothing feeds the size gaps. A leanness & muscularity comparison with your goal (experimental) is planned for a later step."
+                  : scope === "none"
+                    ? "Definition will be marked not scored, with the reason: clothed scan."
+                    : "Definition will be marked not scored, with the reason: this scan does not show the abdomen."}
+              </p>
+              <div className="mt-5">
+                <Notice title="Your privacy">{PRIVACY_COPY}</Notice>
+              </div>
+              {sex === undefined && <p className="mt-4 text-sm text-caution">Choose an option under Sex to continue.</p>}
+            </div>
+          </Panel>
+        )}
+      </div>
+
+      <Item className="mt-8 flex flex-wrap items-center gap-3">
+        <button className="btn btn-primary disabled:opacity-40" disabled={!ready} onClick={() => scope && start(scope)}>
           Start scan
         </button>
         {scope && scope !== "none" && (
-          <button className="rounded border px-4 py-2 disabled:opacity-40" disabled={sex === undefined} onClick={() => start("none")}>
+          <button className="btn btn-ghost disabled:opacity-40" disabled={sex === undefined} onClick={() => start("none")}>
             Use clothed scan instead
           </button>
         )}
-        <button className="rounded border px-4 py-2" onClick={onBack}>Back</button>
-      </div>
-    </section>
+        <button className="btn btn-ghost" onClick={onBack}>
+          Back
+        </button>
+      </Item>
+    </Screen>
   );
 }

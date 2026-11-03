@@ -58,8 +58,7 @@ MIN_AGE = 18  # the schema's 18+ gate; body_comp checks it again
 check_energy(ENERGY, MAX_LOSS_PER_WEEK)
 
 NOTE_ED = (
-    "Calorie numbers are left out of this plan. If food or weight feels stressful, "
-    "a doctor or counsellor can help."
+    "Calorie numbers are left out of this plan. If food or weight feels stressful, a doctor or counsellor can help."
 )
 NOTE_LOW = (
     "Your estimated body fat or BMI is already low, so no calorie deficit is suggested. "
@@ -131,9 +130,7 @@ def waist_estimate(p: UserProfile, waist_g: float | None) -> tuple[float, float,
         "weight_kg": p.weight_kg,
         "male": float(p.sex == "male"),
     }
-    cm = WAIST["intercept"] + sum(
-        c * x[f] for f, c in zip(WAIST["features"], WAIST["coef"], strict=True)
-    )
+    cm = WAIST["intercept"] + sum(c * x[f] for f, c in zip(WAIST["features"], WAIST["coef"], strict=True))
     return float(cm), WAIST["sd_cm"], "silhouette"
 
 

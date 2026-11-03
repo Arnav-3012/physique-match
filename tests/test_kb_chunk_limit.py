@@ -10,9 +10,7 @@ from kb.build_index import KB, MODEL_DIR, over_limit
 sys.path.insert(0, str(Path(__file__).parents[1] / "services" / "api"))
 from app.rag import corpus as corpus_mod  # noqa: E402
 
-needs_tokenizer = pytest.mark.skipif(
-    not (MODEL_DIR / "tokenizer.json").exists(), reason="bge tokenizer not downloaded"
-)
+needs_tokenizer = pytest.mark.skipif(not (MODEL_DIR / "tokenizer.json").exists(), reason="bge tokenizer not downloaded")
 
 
 @needs_tokenizer

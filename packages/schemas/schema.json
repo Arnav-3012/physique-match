@@ -629,6 +629,26 @@
           ],
           "title": "Goal Sex",
           "type": "string"
+        },
+        "focus": {
+          "items": {
+            "enum": [
+              "shoulders",
+              "chest",
+              "upper_back",
+              "lats",
+              "waist",
+              "hips",
+              "upper_arm",
+              "forearm",
+              "thigh",
+              "calf"
+            ],
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Focus",
+          "type": "array"
         }
       },
       "required": [

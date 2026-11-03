@@ -46,12 +46,12 @@ class HttpxLLM:
     def _provider(name: str) -> Provider | None:
         env = os.environ
         if name == "primary":
-            p = Provider(env.get("LLM_BASE_URL", ""), env.get("LLM_MODEL", ""), env.get("GROQ_API_KEY", ""), {})
+            p = Provider(env.get("LLM_BASE_URL", ""), env.get("LLM_MODEL", ""), env.get("GROQ_API_KEY", "").strip(), {})
         else:  # ADR-017: the free fallback must not train on prompts
             p = Provider(
                 env.get("LLM_FALLBACK_BASE_URL", ""),
                 env.get("LLM_FALLBACK_MODEL", ""),
-                env.get("OPENROUTER_API_KEY", ""),
+                env.get("OPENROUTER_API_KEY", "").strip(),
                 {"provider": {"data_collection": "deny"}},
             )
         return p if p.base_url and p.model and p.key else None

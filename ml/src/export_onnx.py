@@ -124,14 +124,8 @@ def main() -> None:
         f"parity max |onnx - torch| {parity:.2e} over {PARITY_SUBJECTS} val subjects "
         f"(tolerance {PARITY_ATOL:.0e}): {'PASS' if parity <= PARITY_ATOL else 'FAIL'}"
     )
-    print(
-        f"1 thread, one encode:      p50 {run_p50:.1f} ms (limit {MAX_ENCODE_P50_MS}), "
-        f"p95 {run_p95:.1f} ms"
-    )
-    print(
-        f"1 thread, two encodes:     p50 {req_p50:.1f} ms, p95 {req_p95:.1f} ms "
-        f"(limit {MAX_REQUEST_P95_MS})"
-    )
+    print(f"1 thread, one encode:      p50 {run_p50:.1f} ms (limit {MAX_ENCODE_P50_MS}), p95 {run_p95:.1f} ms")
+    print(f"1 thread, two encodes:     p50 {req_p50:.1f} ms, p95 {req_p95:.1f} ms (limit {MAX_REQUEST_P95_MS})")
     fast = run_p50 <= MAX_ENCODE_P50_MS and req_p95 <= MAX_REQUEST_P95_MS
     print(f"latency rule (ADR-035): {'PASS' if fast else 'FAIL, next step is int8'}")
     print("region reliability (full-input goal / front-only goal; current has both views):")

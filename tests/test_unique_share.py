@@ -40,9 +40,7 @@ def test_check_splits_by_sex_and_ignores_case():
         {
             "sex": ["Male"] * n + ["female"] * n,
             "y_waist": np.r_[WAIST[:n], WAIST[n:]],
-            "y_shoulders": np.r_[
-                WAIST[:n] * (0.8 - WAIST[:n]), WAIST[n:] * RNG.normal(0.4, 0.03, n)
-            ],
+            "y_shoulders": np.r_[WAIST[:n] * (0.8 - WAIST[:n]), WAIST[n:] * RNG.normal(0.4, 0.03, n)],
         }
     )
     out = check(df)

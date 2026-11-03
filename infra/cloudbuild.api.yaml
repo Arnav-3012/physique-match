@@ -1,0 +1,9 @@
+# Build the API image from the repo root (Dockerfile is not at the root, so --tag alone does not work):
+#   gcloud builds submit --config infra/cloudbuild.api.yaml --substitutions _TAG=v1 .
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: [build, -f, services/api/Dockerfile, -t, "${_IMAGE}:${_TAG}", .]
+images: ["${_IMAGE}:${_TAG}"]
+substitutions:
+  _IMAGE: asia-south1-docker.pkg.dev/physique-gap-3012/physique-gap/api
+  _TAG: v1

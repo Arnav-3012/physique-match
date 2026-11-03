@@ -1,1 +1,328 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/cormorant-garamond/500.css";
+@import "@fontsource/cormorant-garamond/600.css";
+@import "@fontsource/cormorant-garamond/500-italic.css";
+
+/* Design tokens: "Obsidian and champagne" (ADR-059 Amendment 1, docs/ui-plan.md).
+   Premium = restrained dark palette, one metallic accent used sparingly, serif display, generous space, no gradients.
+   Contrast on #0b0a09: ink-3 #9a9283 is about 6.3:1 (allowed for safety labels); ink-4 #6b6459 is decoration only. */
+@theme {
+  --font-sans: "Inter Variable", "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-canvas: #0b0a09;
+  --color-panel: #11100e;
+  --color-card: #161412;
+  --color-raised: #1f1c19;
+  --color-emerald: #0e1d18;
+
+  --color-ink: #f4efe6;
+  --color-ink-2: #cfc7b9;
+  --color-ink-3: #9a9283;
+  --color-ink-4: #6b6459;
+
+  --color-accent: #c8a86a;
+  --color-accent-2: #dcc08a;
+  --color-accent-3: #ead7ad;
+  --color-on-accent: #1a1408;
+
+  --color-ok: #6fae7f;
+  --color-caution: #d9a441;
+
+  --color-line: rgb(244 239 230 / 0.12);
+  --color-line-soft: rgb(244 239 230 / 0.07);
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-canvas);
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv01", "ss03";
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent-2);
+    outline-offset: 3px;
+  }
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 500;
+    font-size: 0.92rem;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    transition:
+      transform 0.2s var(--ease-out-expo),
+      background-color 0.25s,
+      border-color 0.25s,
+      color 0.25s;
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  .btn:active {
+    transform: translateY(0) scale(0.985);
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+  .btn-primary:hover {
+    background: var(--color-accent-2);
+  }
+  .btn-ghost {
+    border: 1px solid var(--color-line);
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent-2);
+  }
+
+  .card {
+    background: var(--color-card);
+    border: 1px solid var(--color-line);
+    border-radius: 6px;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 0.98;
+  }
+
+  .rule {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .grain {
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  @keyframes scan-sweep {
+    0% {
+      top: 0;
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    85% {
+      opacity: 1;
+    }
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+  .scanline {
+    animation: scan-sweep 1.8s var(--ease-out-expo) 1 both;
+  }
+
+  @keyframes soft-pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  .soft-pulse {
+    animation: soft-pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes spin-slow {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .spin-slow {
+    animation: spin-slow 240s linear infinite;
+  }
+  .spin-slow-rev {
+    animation: spin-slow 300s linear infinite reverse;
+  }
+}
+
+/* Theme layer for the /app screens (capture, review, goal), which were written with plain gray/black utility
+   classes. Unlayered, so it wins over the Tailwind utilities; no component logic is touched (docs/ui-plan.md step 3).
+   New screens (profile, results, chat) use the tokens directly and do not need this. */
+.app-shell {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  min-height: 100vh;
+}
+.app-shell h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 2.75rem;
+  line-height: 1;
+  letter-spacing: -0.015em;
+}
+.app-shell h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+}
+.app-shell legend {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.35rem;
+}
+.app-shell .text-gray-500 {
+  color: var(--color-ink-3);
+}
+.app-shell .text-gray-600 {
+  color: var(--color-ink-2);
+}
+.app-shell .text-amber-700,
+.app-shell .text-amber-900 {
+  color: var(--color-caution);
+}
+.app-shell .bg-amber-50 {
+  background: rgb(217 164 65 / 0.08);
+}
+.app-shell .border-amber-600 {
+  border-color: rgb(217 164 65 / 0.6);
+}
+.app-shell .text-red-700 {
+  color: #e58b7b;
+}
+.app-shell .text-green-700 {
+  color: var(--color-ok);
+}
+.app-shell .bg-neutral-100,
+.app-shell .bg-neutral-200 {
+  background: var(--color-raised);
+}
+.app-shell .bg-neutral-300 {
+  background: var(--color-line);
+}
+.app-shell input[type="radio"],
+.app-shell input[type="checkbox"] {
+  accent-color: var(--color-accent);
+}
+.app-shell input.border {
+  background: var(--color-raised);
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  border-radius: 6px;
+}
+.app-shell button {
+  border-radius: 999px;
+  font-weight: 500;
+  transition:
+    transform 0.2s var(--ease-out-expo),
+    background-color 0.25s,
+    border-color 0.25s,
+    color 0.25s;
+}
+.app-shell button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.app-shell button.bg-black {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.app-shell button.bg-black:hover:not(:disabled) {
+  background: var(--color-accent-2);
+}
+.app-shell button.bg-green-700 {
+  background: var(--color-ok);
+  color: #07130b;
+}
+.app-shell button.border {
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
+.app-shell button.border:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent-2);
+}
+.app-shell button.underline,
+.app-shell a.underline {
+  color: var(--color-accent-2);
+  border-radius: 0;
+}
+.app-shell li.border,
+.app-shell div.border {
+  border-color: var(--color-line);
+  background: var(--color-card);
+  border-radius: 6px;
+}
+.app-shell li.bg-black {
+  background: var(--color-accent);
+}
+.app-shell li.bg-green-600 {
+  background: var(--color-ok);
+}
+
+/* "Save as PDF" = the browser's print dialog on a light paper theme: the tokens flip, the chrome is hidden. */
+@media print {
+  :root {
+    --color-canvas: #fff;
+    --color-panel: #fff;
+    --color-card: #fff;
+    --color-raised: #f4f4f2;
+    --color-ink: #111;
+    --color-ink-2: #333;
+    --color-ink-3: #555;
+    --color-ink-4: #777;
+    --color-accent: #8a6d2f;
+    --color-accent-2: #7a5f26;
+    --color-accent-3: #6b5320;
+    --color-on-accent: #fff;
+    --color-line: rgb(0 0 0 / 0.18);
+    --color-line-soft: rgb(0 0 0 / 0.1);
+  }
+  html,
+  body,
+  .app-shell {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

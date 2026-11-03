@@ -14,9 +14,7 @@ VAL_FRAC = 0.15
 SPLITS_JSON = ROOT.parent / "splits.json"
 
 
-def make_split(
-    tables: dict[str, pd.DataFrame], seed: int = SEED, val_frac: float = VAL_FRAC
-) -> dict[str, list[str]]:
+def make_split(tables: dict[str, pd.DataFrame], seed: int = SEED, val_frac: float = VAL_FRAC) -> dict[str, list[str]]:
     """Subject-id lists for train / val / testA / testB, pairwise disjoint.
 
     val is stratified by sex. A subject present in both test sets is dropped from testB.

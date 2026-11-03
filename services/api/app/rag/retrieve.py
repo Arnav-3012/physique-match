@@ -66,14 +66,10 @@ class Retriever:
 
         return np.array([ok(c) for c in self.corpus.chunks])
 
-    def _top(
-        self, scores: np.ndarray, allowed: np.ndarray, k: int, floor: float | None
-    ) -> list[int]:
+    def _top(self, scores: np.ndarray, allowed: np.ndarray, k: int, floor: float | None) -> list[int]:
         scores = np.where(allowed, scores, -np.inf)
         order = np.argsort(-scores, kind="stable")[:k]
-        return [
-            int(i) for i in order if np.isfinite(scores[i]) and (floor is None or scores[i] > floor)
-        ]
+        return [int(i) for i in order if np.isfinite(scores[i]) and (floor is None or scores[i] > floor)]
 
     def bm25_top(self, query: str, filters: Filters, k: int = LIST_SIZE) -> list[int]:
         return self._top(self.bm25.get_scores(tokens(query)), self.mask(filters), k, floor=0.0)
@@ -82,9 +78,7 @@ class Retriever:
         scores = self.corpus.embeddings @ self.embedder.embed_queries([query])[0]
         return self._top(scores, self.mask(filters), k, floor=None)
 
-    def search(
-        self, query: str, mode: str = "hybrid", filters: Filters | None = None, k: int = 5
-    ) -> list[str]:
+    def search(self, query: str, mode: str = "hybrid", filters: Filters | None = None, k: int = 5) -> list[str]:
         """Chunk ids, best first. Modes: bm25, dense, hybrid (the first two are for the eval)."""
         filters = filters or Filters()
         if mode == "bm25":

@@ -188,9 +188,6 @@ def test_under_18_gets_no_targets_and_a_short_message():
 def test_protein_and_loss_cap_do_not_scale_with_leanness():
     """No point is picked inside the protein range and the loss cap does not move with body fat;
     only the deficit opt-out depends on it (kb/nutrition.json planner_rules, user 2026-11-02)."""
-    outs = [
-        body_comp(profile(weight_kg=85, height_cm=175, goal="cut", tape_waist_cm=w))
-        for w in (75, 85, 95, 110)
-    ]
+    outs = [body_comp(profile(weight_kg=85, height_cm=175, goal="cut", tape_waist_cm=w)) for w in (75, 85, 95, 110)]
     assert all([t.goal for t in o.energy] == ["maintain", "cut"] for o in outs)
     assert all(o.energy == outs[0].energy and o.protein == outs[0].protein for o in outs)

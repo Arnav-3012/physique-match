@@ -69,6 +69,25 @@ export const REGION_LABEL: Record<GoalRegion, string> = {
   calf: "Calf",
 };
 
+/** Mirrors services/api/app/planner/priorities.py MAX_PRIORITIES: the server gives extra volume to at most 3 regions. */
+export const MAX_PRIORITY_REGIONS = 3;
+
+/**
+ * What the user can ask to prioritise (ADR-060). Each option maps to the gap regions the server ranks (`focus` in the plan
+ * request). Waist, back width and upper back are not offered: the planner never ranks them (abdominal work does not shrink
+ * the waist, back width is an estimate, upper back is not measured), and they always get their weekly minimum anyway.
+ */
+export const PRIORITY_OPTIONS: { id: string; label: string; regions: GoalRegion[] }[] = [
+  { id: "shoulders", label: "Shoulders", regions: ["shoulders"] },
+  { id: "chest", label: "Chest", regions: ["chest"] },
+  { id: "arms", label: "Biceps & triceps", regions: ["upper_arm"] },
+  { id: "forearm", label: "Forearms", regions: ["forearm"] },
+  { id: "hips", label: "Hips & glutes", regions: ["hips"] },
+  { id: "legs", label: "Legs (thighs & calves)", regions: ["thigh", "calf"] },
+];
+
+export const regionsOf = (ids: string[]): GoalRegion[] => ids.flatMap((id) => PRIORITY_OPTIONS.find((o) => o.id === id)?.regions ?? []);
+
 /** The reference chart does not exist yet, so the scale shows text anchors (ADR-052). */
 export const RATING_ANCHORS = ["1 soft", "2 average", "3 fit", "4 lean", "5 very lean and defined"] as const;
 /** An untuned placeholder, fixed before any result and never tuned after one (ADR-052 Amendment 1). */

@@ -176,6 +176,84 @@ export type Disclaimer = string;
 export type WaistG1 = number | null;
 export type GoalSex = "male" | "female" | "not_specified";
 /**
+ * @maxItems 10
+ */
+export type Focus =
+  | []
+  | ["shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ]
+  | [
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf",
+      "shoulders" | "chest" | "upper_back" | "lats" | "waist" | "hips" | "upper_arm" | "forearm" | "thigh" | "calf"
+    ];
+/**
  * @maxItems 3
  */
 export type Priorities1 =
@@ -431,6 +509,7 @@ export interface PlanRequest {
   gap: GapProfile;
   waist_g?: WaistG1;
   goal_sex?: GoalSex;
+  focus?: Focus;
 }
 export interface PlanResponse {
   priorities: Priorities1;

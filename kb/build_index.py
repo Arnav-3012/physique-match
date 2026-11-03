@@ -37,11 +37,7 @@ def frontmatter(text: str) -> tuple[dict, str]:
     meta = {}
     for line in head.splitlines():
         key, _, value = line.partition(": ")
-        meta[key] = (
-            [v.strip() for v in value[1:-1].split(",") if v.strip()]
-            if value.startswith("[")
-            else [value]
-        )
+        meta[key] = [v.strip() for v in value[1:-1].split(",") if v.strip()] if value.startswith("[") else [value]
     return meta, body
 
 

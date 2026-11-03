@@ -38,9 +38,7 @@ def geometric_route(monkeypatch):
 @pytest.fixture
 def body() -> dict:
     s = scan(from_bodym(figure()), from_bodym(side_figure()))
-    return json.loads(
-        AnalyzeRequest(goal=s, current=s, profile=UserProfile(**PROFILE)).model_dump_json()
-    )
+    return json.loads(AnalyzeRequest(goal=s, current=s, profile=UserProfile(**PROFILE)).model_dump_json())
 
 
 def post(payload: dict | bytes):
@@ -93,9 +91,7 @@ def test_shipped_model_gap_apart_from_lats_is_identical_with_and_without_sex(mon
     unset = post(body).json()["gap"]["regions"]
     body["profile"]["sex"], body["goal_profile"] = "male", {"sex": "male"}
     male = post(body).json()["gap"]["regions"]
-    assert {r: v for r, v in unset.items() if r != "lats"} == {
-        r: v for r, v in male.items() if r != "lats"
-    }
+    assert {r: v for r, v in unset.items() if r != "lats"} == {r: v for r, v in male.items() if r != "lats"}
     assert unset["lats"]["measured"] is False and male["lats"]["measured"] is True
 
 
@@ -149,9 +145,7 @@ def test_current_scan_with_only_a_right_side_view_gives_the_same_gap(body):
 
 
 @pytest.mark.parametrize("broken", ["missing", "corrupt"])
-def test_deployed_refuses_to_start_without_a_working_model_and_local_falls_back(
-    monkeypatch, tmp_path, caplog, broken
-):
+def test_deployed_refuses_to_start_without_a_working_model_and_local_falls_back(monkeypatch, tmp_path, caplog, broken):
     path = tmp_path / "gap_regressor.onnx"
     if broken == "corrupt":
         path.write_bytes(b"not an onnx file")

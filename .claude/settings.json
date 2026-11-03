@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:www.openlab.psu.edu)",
-      "WebFetch(domain:apps.dtic.mil)"
+      "WebFetch(domain:apps.dtic.mil)",
+      "WebFetch(domain:link.springer.com)",
+      "WebFetch(domain:sportrxiv.org)",
+      "WebFetch(domain:pubmed.ncbi.nlm.nih.gov)",
+      "WebFetch(domain:www.google.com)",
+      "WebFetch(domain:pmc.ncbi.nlm.nih.gov)",
+      "WebFetch(domain:jissn.biomedcentral.com)",
+      "WebFetch(domain:www.ebi.ac.uk)",
+      "WebFetch(domain:huggingface.co)",
+      "WebFetch(domain:shapy.is.tue.mpg.de)"
     ]
   }
 }

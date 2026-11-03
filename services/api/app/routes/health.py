@@ -19,7 +19,7 @@ _cache: dict[str, tuple[float, dict]] = {}
 
 async def _probe(client: httpx.AsyncClient, name: str) -> dict:
     env_var, url = PROVIDERS[name]
-    key = os.environ.get(env_var)
+    key = os.environ.get(env_var, "").strip()  # a trailing newline in a secret breaks the header
     if not key:
         return {"status": "not_configured"}
 
